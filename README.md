@@ -89,6 +89,7 @@ Defina o modelo a ser usado:
    Se o modelo não estiver configurado ou for inválido, você será solicitado a inseri-lo.
 
 **Modelos Disponíveis:**
+Atualmente é integrado apenas com o ChatGPT da OpenAi.
 
 - `gpt-4o`
 - `gpt-4o-mini`
@@ -204,5 +205,3 @@ Este projeto está licenciado sob a licença MIT.
 - **Atualizações:** Mantenha suas dependências atualizadas para aproveitar melhorias e correções de segurança.
 
 ---
-
-Este documento fornece todas as orientações e sugestões necessárias para usar e contribuir com o projeto. Certifique-se de atualizar as seções com informações específicas do seu repositório, como o URL do GitHub e detalhes de contato.
