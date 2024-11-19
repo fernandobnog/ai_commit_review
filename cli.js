@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 // cli.js
-const fs = require("fs-extra");
+
 const { program } = require("commander");
 const { OpenAI } = require("openai");
 const {
@@ -9,7 +9,7 @@ const {
   validateAndConfigure,
   updateConfigFromString,
 } = require("./helpers");
-const { getModifiedFiles, executeGitCommand } = require("./gitUtils");
+const { getModifiedFiles, getFileDiff } = require("./gitUtils"); // Importar getFileDiff
 const { analyzeUpdatedCode } = require("./openaiUtils");
 
 // Configuração dos comandos
@@ -37,37 +37,39 @@ program
         return;
       }
 
-      console.log("Lendo conteúdo dos arquivos...");
+      console.log("Lendo diffs dos arquivos...");
       const files = modifiedFiles
         .map(({ status, file }) => {
-          let content = "";
+          let diff = "";
           try {
-            if (status === "D") {
-              // Arquivo deletado - obter conteúdo do commit anterior
-              content = executeGitCommand(`git show ${sha}^:${file}`);
-            } else {
-              // Arquivo adicionado ou modificado - obter conteúdo do commit atual
-              content = executeGitCommand(`git show ${sha}:${file}`);
+            diff = getFileDiff(sha, file);
+            if (!diff) {
+              console.warn(`Nenhum diff encontrado para o arquivo ${file}.`);
+              return null;
             }
             return {
               filename: file,
-              content,
+              content: diff,
+              status, // Incluímos o status caso seja necessário no futuro
             };
           } catch (error) {
-            console.error(`Erro ao ler o arquivo ${file}:`, error.message);
+            console.error(
+              `Erro ao obter o diff do arquivo ${file}:`,
+              error.message
+            );
             return null;
           }
         })
         .filter((file) => file !== null);
 
       if (files.length === 0) {
-        console.log("Nenhum arquivo válido encontrado para análise.");
+        console.log("Nenhum diff válido encontrado para análise.");
         return;
       }
 
-      console.log("Analisando código...");
+      console.log("Analisando mudanças no código...");
       const analysis = await analyzeUpdatedCode(files, openai, config);
-      console.log("Análise do Código Atualizado:\n", analysis);
+      console.log("Análise das Mudanças do Código:\n", analysis);
     } catch (error) {
       console.error("Erro:", error.message);
     }

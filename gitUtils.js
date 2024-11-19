@@ -1,4 +1,5 @@
 // gitUtils.js
+
 const { execSync } = require("child_process");
 
 // Função para executar comandos Git
@@ -22,7 +23,14 @@ function getModifiedFiles(sha) {
   });
 }
 
+// **Nova função para obter o diff de um arquivo no commit**
+function getFileDiff(sha, file) {
+  // Usamos o comando git diff para obter as alterações no arquivo específico
+  return executeGitCommand(`git diff ${sha}~1 ${sha} -- ${file} || true`);
+}
+
 module.exports = {
   executeGitCommand,
   getModifiedFiles,
+  getFileDiff, // Exportamos a nova função
 };
