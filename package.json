@@ -2,11 +2,12 @@
   "name": "relatoriocommit",
   "version": "1.0.0",
   "description": "Análise de commits e código com IA a partir do Git local",
-  "main": "index.js",
+  "main": "cli.js",
   "bin": {
-    "relatoriocommit": "./index.js"
+    "relatoriocommit": "./cli.js"
   },
   "scripts": {
+    "start": "node cli.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
