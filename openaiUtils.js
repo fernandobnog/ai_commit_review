@@ -2,7 +2,7 @@
 
 import chalk from "chalk";
 import { SupportedLanguages } from "./models.js"; // Import SupportedLanguages
-import { validateConfiguration } from "./helpers.js";
+import { validateConfiguration } from "./configManager.js";
 import { OpenAI } from "openai";
 
 /**
@@ -45,9 +45,8 @@ function generatePrompt(files, config) {
 
   Please respond:
   1. Briefly describe what was changed.
-  2. Do the changes follow best practices? Justify.
-  3. Are there any issues with readability, efficiency, or style in the changes? Suggest improvements.
-  4. Additional recommendations to improve the code.`
+  2. Check for any obvious errors or bugs in the code.
+  3. Suggest improvements and additional recommendations to enhance the code, only if necessary.`
     )
     .join("\n\n");
 }
