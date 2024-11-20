@@ -1,52 +1,12 @@
 import chalk from "chalk";
 import inquirer from "inquirer";
-import { execSync } from "child_process";
-import { validateConfiguration } from "./configManager.js";
-import { getModifiedFiles, getFileDiff } from "./gitUtils.js";
+import { getCommits, getModifiedFiles, getFileDiff } from "./gitUtils.js";
 import { analyzeUpdatedCode } from "./openaiUtils.js";
 
-// Truncate strings to a maximum length.
-const truncateString = (str, maxLength) =>
-  str.length <= maxLength ? str : `${str.slice(0, maxLength - 3)}...`;
-
-// Fetch commits from git in batches.
-const fetchCommits = (skip = 0, limit = 5) => {
-  try {
-    const stdout = execSync(
-      `git log --skip=${skip} -n ${limit} --pretty=format:"%H\x1f%ct\x1f%s"`,
-      { encoding: "utf-8" }
-    );
-    return stdout
-      .split("\n")
-      .filter(Boolean)
-      .map((line) => {
-        const [shaFull, timestamp, message] = line.split("\x1f");
-        return {
-          shaFull,
-          shaShort: shaFull.slice(0, 7),
-          date: formatDate(timestamp),
-          message: truncateString(message.replace(/\n/g, " "), 100),
-        };
-      });
-  } catch (error) {
-    console.error(chalk.red("❌ Error fetching commits:"), error.message);
-    process.exit(1);
-  }
-};
-
-// Format a timestamp into a readable date string.
-const formatDate = (timestamp) =>
-  new Date(parseInt(timestamp, 10) * 1000)
-    .toLocaleString("en-US", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    })
-    .replace(",", "");
-
-// Allow user to select commits for analysis, with dynamic load.
+/**
+ * Handles the user's selection of commits, including dynamic loading.
+ * @returns {Array<string>} - List of selected commit SHAs.
+ */
 const selectCommits = async () => {
   let skip = 0;
   let limit = 5;
@@ -56,9 +16,8 @@ const selectCommits = async () => {
   let reachedEnd = false;
 
   while (continueFetching) {
-    if (!reachedEnd) {
-      // Fetch additional commits only if not already at the end
-      const newCommits = fetchCommits(skip, limit);
+    if (!reachedEnd && allCommits.length === 0) {
+      const newCommits = getCommits(skip, limit);
       if (!newCommits.length) {
         console.log(
           chalk.yellow(
@@ -77,27 +36,26 @@ const selectCommits = async () => {
       value: commit.shaFull,
     }));
 
-    // Add options to load more commits or finish selection
     choices.push(new inquirer.Separator());
     if (!reachedEnd) {
       choices.push({ name: "⬇️  Load more commits", value: "load_more" });
     }
-    choices.push({ name: "✅  Finish selection", value: "finish_selection" });
+    choices.push({ name: "🚪 Exit", value: "finish_selection" });
 
     const answers = await inquirer.prompt([
       {
         type: "checkbox",
         name: "selectedShas",
-        message: "Select commits to analyze:",
+        message: "Select commits to analyze: ",
         choices,
-        pageSize: 50,
+        pageSize: 100,
+        loop: false,
       },
     ]);
 
     const loadMore = answers.selectedShas.includes("load_more");
     const finishSelection = answers.selectedShas.includes("finish_selection");
 
-    // Filter selected SHAs excluding control options
     selectedShas = selectedShas.concat(
       answers.selectedShas.filter(
         (sha) => sha !== "load_more" && sha !== "finish_selection"
@@ -108,20 +66,57 @@ const selectCommits = async () => {
       break;
     }
 
-    if (!loadMore) {
-      continueFetching = false;
+    if (loadMore) {
+      const newCommits = getCommits(skip, limit);
+      if (!newCommits.length) {
+        console.log(
+          chalk.yellow(
+            "⚠️ No more commits to load. All available commits are displayed."
+          )
+        );
+        reachedEnd = true;
+      } else {
+        allCommits = [...allCommits, ...newCommits];
+        skip += limit;
+      }
     }
   }
 
   return selectedShas;
 };
 
+/**
+ * Main function for commit analysis.
+ */
+export const analyzeCommits = async () => {
+  try {
+    const selectedShas = await selectCommits();
 
-// Analyze a specific commit.
+    if (!selectedShas.length) {
+      console.log(
+        chalk.yellow(
+          "⚠️   You exited without selecting any commits for analysis."
+        )
+      );
+      return;
+    }
+
+    for (const sha of selectedShas) {
+      await analyzeCommit(sha);
+    }
+  } catch (error) {
+    console.error(chalk.red("❌ Error during execution:"), error.message);
+  }
+};
+
+/**
+ * Analyzes a specific commit.
+ * @param {string} sha - The commit SHA to analyze.
+ */
 const analyzeCommit = async (sha) => {
   try {
     console.log(chalk.blueBright(`\n📂 Analyzing commit ${sha}...`));
-    const modifiedFiles = await getModifiedFiles(sha);
+    const modifiedFiles = getModifiedFiles(sha);
 
     if (!modifiedFiles.length) {
       console.log(chalk.yellow("⚠️ No modified files found in the commit."));
@@ -147,12 +142,17 @@ const analyzeCommit = async (sha) => {
   }
 };
 
-// Processes modified files to extract differences.
+/**
+ * Processes modified files to extract differences.
+ * @param {string} sha - The commit SHA.
+ * @param {Array<{status: string, file: string}>} modifiedFiles - List of modified files.
+ * @returns {Array<{filename: string, content: string, status: string}>} - List of files with diffs.
+ */
 const processModifiedFiles = async (sha, modifiedFiles) => {
   const files = await Promise.all(
     modifiedFiles.map(async ({ status, file }) => {
       try {
-        const diff = await getFileDiff(sha, file);
+        const diff = getFileDiff(sha, file);
         if (!diff) {
           console.warn(
             chalk.yellow(`⚠️ No differences found for file ${file}.`)
@@ -170,24 +170,4 @@ const processModifiedFiles = async (sha, modifiedFiles) => {
     })
   );
   return files.filter(Boolean);
-};
-
-// Main function to analyze selected commits.
-export const analyzeCommits = async () => {
-  try {
-    validateConfiguration();
-
-    const selectedShas = await selectCommits();
-
-    if (!selectedShas.length) {
-      console.log(chalk.yellow("⚠️ No commits selected for analysis."));
-      return;
-    }
-
-    for (const sha of selectedShas) {
-      await analyzeCommit(sha);
-    }
-  } catch (error) {
-    console.error(chalk.red("❌ Error during execution:"), error.message);
-  }
 };
