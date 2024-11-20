@@ -1,210 +1,267 @@
+
 # AI Commit Report
 
-Command-line tool for AI-powered commit and code analysis from the local Git repository.
+Ferramenta de linha de comando para análise de commits e código impulsionada por IA a partir do repositório Git local.
 
-## Table of Contents
+## Índice
 
-- [Introduction](#introduction)
-- [Installation](#installation)
-  - [Global Installation](#global-installation)
-- [Getting Started](#getting-started)
-  - [Set the API Key](#set-the-api-key)
-  - [Set the OpenAI Model](#set-the-openai-model)
-- [Usage](#usage)
-  - [Analyze a Commit](#analyze-a-commit)
-  - [Display Help](#display-help)
-- [Examples](#examples)
-- [Dependencies](#dependencies)
-- [Contributing](#contributing)
-  - [How to Contribute](#how-to-contribute)
-- [License](#license)
-- [Notes and Suggestions](#notes-and-suggestions)
-- [Additional Tips](#additional-tips)
-- [FAQs](#faqs)
+- [Introdução](#introdução)
+- [Instalação](#instalação)
+  - [Instalação Global](#instalação-global)
+- [Começando](#começando)
+  - [Configurar a Chave API](#configurar-a-chave-api)
+  - [Configurar o Modelo OpenAI](#configurar-o-modelo-openai)
+  - [Configurar o Idioma de Resposta](#configurar-o-idioma-de-resposta)
+- [Uso](#uso)
+  - [Analisar um Commit](#analisar-um-commit)
+  - [Exibir Ajuda](#exibir-ajuda)
+- [Exemplos](#exemplos)
+- [Dependências](#dependências)
+- [Contribuindo](#contribuindo)
+  - [Como Contribuir](#como-contribuir)
+- [Licença](#licença)
+- [Notas e Sugestões](#notas-e-sugestões)
+- [Dicas Adicionais](#dicas-adicionais)
+- [Perguntas Frequentes (FAQs)](#perguntas-frequentes-faqs)
 
-## Introduction
+## Introdução
 
-The **AI Commit Report** is a tool that uses the OpenAI API to analyze code changes in Git commits. It provides insights about the changes made, checks for best practices, and suggests improvements.
+O **AI Commit Report** é uma ferramenta que utiliza a API da OpenAI para analisar as alterações de código em commits Git. Ele fornece insights sobre as mudanças realizadas, verifica as melhores práticas e sugere melhorias, ajudando a manter a qualidade do código e a eficiência do desenvolvimento.
 
-## Installation
+## Instalação
 
-### Global Installation
+### Instalação Global
 
-To install the tool globally on your system:
+Para instalar a ferramenta globalmente no seu sistema, siga os passos abaixo:
 
-1. **Clone the repository:**
+1. **Clone o repositório:**
 
    ```bash
-   git clone https://github.com/your-username/ai-commit-report.git
+   git clone https://github.com/seu-usuario/ai-commit-report.git
    ```
 
-2. **Navigate to the project directory:**
+2. **Navegue para o diretório do projeto:**
 
    ```bash
    cd ai-commit-report
    ```
 
-3. **Install the dependencies:**
+3. **Instale as dependências:**
 
    ```bash
    npm install
    ```
 
-4. **Install the package globally:**
+4. **Instale o pacote globalmente:**
 
    ```bash
    npm install -g .
    ```
 
-   **Note:** You may need to adjust permissions or use `sudo` if you encounter permission errors. It's recommended to configure your environment to avoid using `sudo` with npm.
+   **Nota:** Pode ser necessário ajustar permissões ou usar `sudo` caso encontre erros de permissão. É recomendado configurar seu ambiente para evitar o uso de `sudo` com o npm.
 
-## Getting Started
+## Começando
 
-Before using the tool, you need to configure your OpenAI API key and the model to be used.
+Antes de utilizar a ferramenta, é necessário configurar sua chave API da OpenAI, o modelo a ser usado e o idioma de resposta.
 
-### Set the API Key
+### Configurar a Chave API
 
-1. **Using the `set_config` command:**
+1. **Usando o comando `set_config`:**
 
    ```bash
-   gcr set_config OPENAI_API_KEY=sk-your-key
+   gcr set_config OPENAI_API_KEY=sk-sua-chave
    ```
 
-### Set the OpenAI Model
+### Configurar o Modelo OpenAI
 
-1. **Using the `set_config` command:**
+1. **Usando o comando `set_config`:**
 
    ```bash
    gcr set_config OPENAI_API_MODEL=gpt-4
    ```
 
-**Available Models:**
+   **Modelos Disponíveis:**
 
-Currently, integration is only with OpenAI's ChatGPT.
+   Atualmente, a integração é apenas com os modelos ChatGPT da OpenAI.
 
-- `gpt-4o`
-- `gpt-4o-mini`
-- `gpt-4`
-- `gpt-4-turbo`
-- `gpt-3.5-turbo`
-- `o1-preview`
-- `o1-mini`
+   - `gpt-4o`
+   - `gpt-4o-mini`
+   - `gpt-4`
+   - `gpt-4-turbo`
+   - `gpt-3.5-turbo`
+   - `o1-preview`
+   - `o1-mini`
 
-## Usage
+### Configurar o Idioma de Resposta
 
-The tool offers a basic command to facilitate the analysis of commits.
+1. **Usando o comando `set_config`:**
 
-### Analyze a Commit
+   ```bash
+   gcr set_config OPENAI_RESPONSE_LANGUAGE=pt-BR
+   ```
 
-To analyze the changes in a specific commit:
+   **Idiomas Disponíveis:**
+
+   - `EN_US`: English (US)
+   - `EN_GB`: English (UK)
+   - `ES`: Spanish
+   - `ZH`: Mandarin
+   - `HI`: Hindi
+   - `AR`: Arabic
+   - `FR`: French
+   - `RU`: Russian
+   - `PT_BR`: Portuguese (Brazil)
+   - `PT_PT`: Portuguese (Portugal)
+
+## Variáveis de Configuração
+
+A ferramenta utiliza as seguintes variáveis de configuração:
+
+- `OPENAI_API_KEY`: Sua chave API da OpenAI.
+- `OPENAI_API_MODEL`: O modelo da OpenAI a ser utilizado.
+- `OPENAI_RESPONSE_LANGUAGE`: O idioma das respostas da análise.
+
+## Uso
+
+A ferramenta oferece comandos básicos para facilitar a análise de commits.
+
+### Analisar um Commit
+
+Para analisar as alterações em um commit específico:
 
 ```bash
 gcr <COMMIT_SHA>
 ```
 
-Replace `<COMMIT_SHA>` with the SHA of the commit you want to analyze.
+Substitua `<COMMIT_SHA>` pelo SHA do commit que você deseja analisar.
 
-### Display Help
+### Exibir Ajuda
 
-To display help and see all available commands:
+Para exibir a ajuda e ver todos os comandos disponíveis:
 
 ```bash
 gcr help
 ```
 
-## Examples
+## Exemplos
 
-- **Analyze a specific commit:**
+- **Analisar um commit específico:**
 
   ```bash
   gcr 123abc
   ```
 
-- **Set the OpenAI API key:**
+- **Configurar a chave API da OpenAI:**
 
   ```bash
-  gcr set_config OPENAI_API_KEY=your-key
+  gcr set_config OPENAI_API_KEY=sua-chave
   ```
 
-- **Set the OpenAI model:**
+- **Configurar o modelo OpenAI:**
 
   ```bash
   gcr set_config OPENAI_API_MODEL=gpt-4o-mini
   ```
 
-## Dependencies
+- **Configurar o idioma de resposta:**
 
-- **Node.js** (version 14 or higher)
+  ```bash
+  gcr set_config OPENAI_RESPONSE_LANGUAGE=pt-BR
+  ```
+
+## Dependências
+
+- **Node.js** (versão 14 ou superior)
 - **npm**
 
-## Contributing
+## Contribuindo
 
-Contributions are welcome! Feel free to open issues and pull requests in the repository.
+Contribuições são bem-vindas! Sinta-se à vontade para abrir issues e pull requests no repositório.
 
-### How to Contribute
+### Como Contribuir
 
-1. **Fork the project.**
-2. **Create a new branch:**
-
-   ```bash
-   git checkout -b my-feature
-   ```
-
-3. **Make your modifications.**
-4. **Commit your changes:**
+1. **Faça um fork do projeto.**
+2. **Crie uma nova branch:**
 
    ```bash
-   git commit -m 'My new feature'
+   git checkout -b minha-funcionalidade
    ```
 
-5. **Push to the remote branch:**
+3. **Faça suas modificações.**
+4. **Commita suas alterações:**
 
    ```bash
-   git push origin my-feature
+   git commit -m 'Minha nova funcionalidade'
    ```
 
-6. **Open a pull request.**
+5. **Envie para a branch remota:**
 
-Navigate to your fork on GitHub and click the "Compare & pull request" button to submit your changes for review.
+   ```bash
+   git push origin minha-funcionalidade
+   ```
 
-## License
+6. **Abra um pull request.**
 
-This project is licensed under the MIT License.
+   Navegue até o seu fork no GitHub e clique no botão "Compare & pull request" para submeter suas alterações para revisão.
 
-## Notes and Suggestions
+## Licença
 
-- **Focused Analysis on Changes:** The tool now analyzes only the changes (diffs) made in commits, making the analysis more efficient and focused.
+Este projeto está licenciado sob a Licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
 
-- **API Limitations:** Be mindful of the token limits of the OpenAI API. Analyzing only diffs helps avoid hitting these limits.
+## Notas e Sugestões
 
-- **Sensitive Configurations:** Do not expose your API key in public places or in files that will be committed.
+- **Análise Focada nas Alterações:** A ferramenta analisa apenas as mudanças (diffs) feitas nos commits, tornando a análise mais eficiente e direcionada.
+  
+- **Limitações da API:** Esteja atento aos limites de tokens da API da OpenAI. Analisar apenas diffs ajuda a evitar ultrapassar esses limites.
+  
+- **Configurações Sensíveis:** Não exponha sua chave API em locais públicos ou em arquivos que serão commitados.
+  
+- **Melhorias Futuras:**
+  - Implementar testes unitários para garantir a qualidade do código.
+  - Adicionar suporte para outros modelos da OpenAI conforme disponíveis.
+  - Melhorar o tratamento de erros e as mensagens para o usuário.
+  
+- **Suporte:** Se encontrar problemas ou tiver dúvidas, abra uma issue no GitHub.
 
-- **Future Improvements:**
+## Dicas Adicionais
 
-  - Implement unit tests to ensure code quality.
-  - Add support for other OpenAI models as they become available.
-  - Improve error handling and user messages.
+- **Eficiência:** Analisar apenas as alterações torna o processo mais rápido e consome menos recursos da API.
+  
+- **Foco nas Alterações:** A análise é mais precisa quando focada nas mudanças recentes, facilitando a identificação de possíveis problemas introduzidos.
+  
+- **Segurança:** Assegure-se de que informações sensíveis não estejam incluídas nos diffs ou logs.
+  
+- **Atualizações:** Mantenha suas dependências atualizadas para se beneficiar de melhorias e correções de segurança.
 
-- **Support:** If you encounter problems or have questions, open an issue on GitHub.
+## Perguntas Frequentes (FAQs)
 
-## Additional Tips
+**P:** _Posso usar esta ferramenta com outros modelos de IA além do ChatGPT da OpenAI?_
 
-- **Efficiency:** Analyzing only the changes makes the process faster and consumes fewer API resources.
+**R:** Atualmente, a ferramenta só suporta integração com os modelos ChatGPT da OpenAI. O suporte para modelos adicionais pode ser adicionado em futuras atualizações.
 
-- **Focus on Changes:** The analysis is more accurate when focused on recent changes, making it easier to identify potential issues introduced.
+---
 
-- **Security:** Ensure that sensitive information is not included in diffs or logs.
+**P:** _O que devo fazer se encontrar um erro durante a instalação?_
 
-- **Updates:** Keep your dependencies up to date to benefit from improvements and security fixes.
+**R:** Certifique-se de que você possui as dependências necessárias instaladas e que tem as permissões adequadas. Verifique as mensagens de erro para detalhes específicos e considere abrir uma issue no GitHub se o problema persistir.
 
-## FAQs
+**P:** _Como proteger minha chave API ao usar esta ferramenta?_
 
-**Q:** _Can I use this tool with other AI models besides OpenAI's ChatGPT?_
+**R:** Nunca compartilhe sua chave API publicamente. Utilize variáveis de ambiente e evite commitá-las no repositório. Considere usar ferramentas de gerenciamento de segredos para maior segurança.
 
-**A:** Currently, the tool only supports integration with OpenAI's ChatGPT models. Support for additional models may be added in future updates.
+**P:** _Quais idiomas estão disponíveis para as respostas da análise?_
 
-**Q:** _What should I do if I encounter an error during installation?_
+**R:** As respostas podem ser configuradas nos seguintes idiomas:
 
-**A:** Ensure that you have the required dependencies installed and that you have the necessary permissions. Check the error messages for specific details, and consider opening an issue on GitHub if the problem persists.
+- **English (US)** - `en-US`
+- **English (UK)** - `en-GB`
+- **Spanish** - `es`
+- **Mandarin** - `zh`
+- **Hindi** - `hi`
+- **Arabic** - `ar`
+- **French** - `fr`
+- **Russian** - `ru`
+- **Portuguese (Brazil)** - `pt-BR`
+- **Portuguese (Portugal)** - `pt-PT`
 
 ---

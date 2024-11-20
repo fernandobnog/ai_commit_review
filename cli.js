@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 import { program } from "commander";
-import { OpenAI } from "openai";
 import chalk from "chalk";
 import {
   validateConfiguration,
@@ -30,9 +29,7 @@ program
     }
 
     try {
-      const config = validateConfiguration();
-
-      const openai = new OpenAI({ apiKey: config.OPENAI_API_KEY });
+      validateConfiguration();
 
       console.log(
         chalk.blueBright(
@@ -85,7 +82,7 @@ program
         );
         return;
       }
-      const analysis = await analyzeUpdatedCode(files, openai, config);
+      const analysis = await analyzeUpdatedCode(files);
 
       console.log(chalk.magentaBright("\nCode Analysis Result:\n"));
       console.log(chalk.magenta(analysis));
