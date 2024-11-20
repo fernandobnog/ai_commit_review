@@ -1,61 +1,78 @@
 #!/usr/bin/env node
 
-// cli.js
-
-const { program } = require("commander");
-const { OpenAI } = require("openai");
-const {
-  showHelp,
-  validateAndConfigure,
+import { program } from "commander";
+import { OpenAI } from "openai";
+import chalk from "chalk";
+import {
+  validateConfiguration,
   updateConfigFromString,
-} = require("./helpers");
-const { getModifiedFiles, getFileDiff } = require("./gitUtils"); // Importar getFileDiff
-const { analyzeUpdatedCode } = require("./openaiUtils");
+  showHelp,
+} from "./helpers.js";
+import { getModifiedFiles, getFileDiff } from "./gitUtils.js";
+import { analyzeUpdatedCode } from "./openaiUtils.js";
 
-// Configuração dos comandos
 program
-  .name("relatoriocommit")
-  .description("Análise de commits e código com IA a partir do Git local");
+  .name("gcr")
+  .description(
+    "A tool to analyze commits with AI from the local Git repository"
+  );
 
-// Comando padrão para analisar um commit
+// Default command to analyze a commit
 program
-  .argument("[sha]", "SHA do commit a ser analisado")
+  .argument(
+    "[sha]",
+    "SHA of the commit to be analyzed or 'help' to display instructions"
+  )
   .action(async (sha) => {
-    if (!sha) {
-      showHelp();
+    if (!sha || sha === "help") {
+      showHelp(); // Show help if no argument or 'help' is provided
       return;
     }
 
     try {
-      const config = validateAndConfigure();
+      const config = validateConfiguration();
+
       const openai = new OpenAI({ apiKey: config.OPENAI_API_KEY });
-      console.log(`Obtendo arquivos modificados no commit ${sha}...`);
+
+      console.log(
+        chalk.blueBright(
+          `📂 Fetching modified files for commit ${chalk.bold(sha)}...`
+        )
+      );
       const modifiedFiles = getModifiedFiles(sha);
 
       if (modifiedFiles.length === 0) {
-        console.log("Nenhum arquivo modificado encontrado.");
+        console.log(
+          chalk.yellow("⚠️ No modified files found in the commit.")
+        );
         return;
       }
 
-      console.log("Lendo diffs dos arquivos...");
+      console.log(chalk.blueBright("📄 Reading file differences..."));
       const files = modifiedFiles
         .map(({ status, file }) => {
           let diff = "";
           try {
             diff = getFileDiff(sha, file);
             if (!diff) {
-              console.warn(`Nenhum diff encontrado para o arquivo ${file}.`);
+              console.warn(
+                chalk.yellow(
+                  `⚠️ No differences found for the file ${chalk.italic(
+                    file
+                  )}.`
+                )
+              );
               return null;
             }
-            return {
-              filename: file,
-              content: diff,
-              status, // Incluímos o status caso seja necessário no futuro
-            };
+            return { filename: file, content: diff, status };
           } catch (error) {
             console.error(
-              `Erro ao obter o diff do arquivo ${file}:`,
-              error.message
+              chalk.red(
+                `❌ Error reading differences for file ${chalk.bold(
+                  file
+                )}:`,
+                error.message
+              )
             );
             return null;
           }
@@ -63,44 +80,44 @@ program
         .filter((file) => file !== null);
 
       if (files.length === 0) {
-        console.log("Nenhum diff válido encontrado para análise.");
+        console.log(
+          chalk.yellow("⚠️ No valid differences found for analysis.")
+        );
         return;
       }
-
-      console.log("Analisando mudanças no código...");
       const analysis = await analyzeUpdatedCode(files, openai, config);
-      console.log("Análise das Mudanças do Código:\n", analysis);
+
+      console.log(chalk.magentaBright("\nCode Analysis Result:\n"));
+      console.log(chalk.magenta(analysis));
     } catch (error) {
-      console.error("Erro:", error.message);
+      console.error(chalk.red("❌ Error:", error.message));
     }
   });
 
-// Subcomando para definir configurações
+// Subcommand to update configurations
 program
   .command("set_config")
   .description(
-    "Atualizar uma configuração no formato CHAVE=VALOR (ex: OPENAI_API_KEY=<valor>)"
+    "Updates configurations in the format KEY=VALUE (e.g., OPENAI_API_KEY=<value>)"
   )
-  .argument("<keyValue>", "Configuração no formato CHAVE=VALOR")
+  .argument("<keyValue>", "Configuration in the format KEY=VALUE")
   .action((keyValue) => {
     try {
       updateConfigFromString(keyValue);
     } catch (error) {
-      console.error(error.message);
+      console.error(
+        chalk.red("❌ Error updating configuration:", error.message)
+      );
     }
   });
 
-// Exibir ajuda personalizada ao usar `help`
+// Displays custom help for the 'help' command
 program
   .command("help")
-  .description("Exibir esta ajuda")
+  .description("Displays help")
   .action(() => {
     showHelp();
   });
 
+// Parses the arguments
 program.parse(process.argv);
-
-// Exibir ajuda personalizada se nenhum argumento for fornecido
-if (!process.argv.slice(2).length) {
-  showHelp();
-}

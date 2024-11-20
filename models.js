@@ -1,11 +1,18 @@
-const Models = Object.freeze({
-  GPT_4o: "gpt-4o",
-  GPT_4o_mini: "gpt-4o-mini",
+// models.js
+
+// Enum for OpenAI models
+export const OpenAIModels = Object.freeze({
+  GPT_4O: "gpt-4o",
+  GPT_4O_MINI: "gpt-4o-mini",
   GPT_4: "gpt-4",
-  gpt_4_turbo: "gpt-4-turbo",
+  GPT_4_TURBO: "gpt-4-turbo",
   GPT_3_5_TURBO: "gpt-3.5-turbo",
-  GPT_o1_preview: "o1-preview",
-  GPT_o1_mini: "o1-mini",
+  O1_PREVIEW: "o1-preview",
+  O1_MINI: "o1-mini",
 });
 
-module.exports = Models;
+// Enum for configuration keys
+export const ConfigKeys = Object.freeze({
+  OPENAI_API_KEY: "OPENAI_API_KEY",
+  OPENAI_API_MODEL: "OPENAI_API_MODEL",
+});
