@@ -56,7 +56,7 @@ export function validateConfiguration() {
 
   if (!config.OPENAI_API_KEY) {
     throw new Error(
-      "OpenAI API key not configured.\n\nUse 'gcr set_config OPENAI_API_KEY=your-key' to configure it."
+      "OpenAI API key not configured.\n\nUse 'acr set_config OPENAI_API_KEY=your-key' to configure it."
     );
   }
 
@@ -71,14 +71,14 @@ export function validateConfiguration() {
 export function updateConfigFromString(configString) {
   const index = configString.indexOf("=");
   if (index === -1) {
-    throw new Error("Invalid format.\n\nUse 'gcr set_config KEY=VALUE'");
+    throw new Error("Invalid format.\n\nUse 'acr set_config KEY=VALUE'");
   }
 
   const key = configString.substring(0, index).trim().toUpperCase();
   const value = configString.substring(index + 1).trim();
 
   if (!key || !value) {
-    throw new Error("Invalid format.\n\nUse 'gcr set_config KEY=VALUE'");
+    throw new Error("Invalid format.\n\nUse 'acr set_config KEY=VALUE'");
   }
 
   // Validate the configuration key

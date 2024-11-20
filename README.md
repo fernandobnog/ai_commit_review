@@ -1,4 +1,3 @@
-
 # AI Commit Report
 
 Ferramenta de linha de comando para análise de commits e código impulsionada por IA a partir do repositório Git local.
@@ -69,7 +68,7 @@ Antes de utilizar a ferramenta, é necessário configurar sua chave API da OpenA
 1. **Usando o comando `set_config`:**
 
    ```bash
-   gcr set_config OPENAI_API_KEY=sk-sua-chave
+   acr set_config OPENAI_API_KEY=sk-sua-chave
    ```
 
 ### Configurar o Modelo OpenAI
@@ -77,7 +76,7 @@ Antes de utilizar a ferramenta, é necessário configurar sua chave API da OpenA
 1. **Usando o comando `set_config`:**
 
    ```bash
-   gcr set_config OPENAI_API_MODEL=gpt-4
+   acr set_config OPENAI_API_MODEL=gpt-4
    ```
 
    **Modelos Disponíveis:**
@@ -97,7 +96,7 @@ Antes de utilizar a ferramenta, é necessário configurar sua chave API da OpenA
 1. **Usando o comando `set_config`:**
 
    ```bash
-   gcr set_config OPENAI_RESPONSE_LANGUAGE=pt-BR
+   acr set_config OPENAI_RESPONSE_LANGUAGE=pt-BR
    ```
 
    **Idiomas Disponíveis:**
@@ -130,7 +129,7 @@ A ferramenta oferece comandos básicos para facilitar a análise de commits.
 Para analisar as alterações em um commit específico:
 
 ```bash
-gcr <COMMIT_SHA>
+acr <COMMIT_SHA>
 ```
 
 Substitua `<COMMIT_SHA>` pelo SHA do commit que você deseja analisar.
@@ -140,7 +139,7 @@ Substitua `<COMMIT_SHA>` pelo SHA do commit que você deseja analisar.
 Para exibir a ajuda e ver todos os comandos disponíveis:
 
 ```bash
-gcr help
+acr help
 ```
 
 ## Exemplos
@@ -148,25 +147,25 @@ gcr help
 - **Analisar um commit específico:**
 
   ```bash
-  gcr 123abc
+  acr 123abc
   ```
 
 - **Configurar a chave API da OpenAI:**
 
   ```bash
-  gcr set_config OPENAI_API_KEY=sua-chave
+  acr set_config OPENAI_API_KEY=sua-chave
   ```
 
 - **Configurar o modelo OpenAI:**
 
   ```bash
-  gcr set_config OPENAI_API_MODEL=gpt-4o-mini
+  acr set_config OPENAI_API_MODEL=gpt-4o-mini
   ```
 
 - **Configurar o idioma de resposta:**
 
   ```bash
-  gcr set_config OPENAI_RESPONSE_LANGUAGE=pt-BR
+  acr set_config OPENAI_RESPONSE_LANGUAGE=pt-BR
   ```
 
 ## Dependências
@@ -211,26 +210,19 @@ Este projeto está licenciado sob a Licença MIT. Veja o arquivo [LICENSE](LICEN
 ## Notas e Sugestões
 
 - **Análise Focada nas Alterações:** A ferramenta analisa apenas as mudanças (diffs) feitas nos commits, tornando a análise mais eficiente e direcionada.
-  
 - **Limitações da API:** Esteja atento aos limites de tokens da API da OpenAI. Analisar apenas diffs ajuda a evitar ultrapassar esses limites.
-  
 - **Configurações Sensíveis:** Não exponha sua chave API em locais públicos ou em arquivos que serão commitados.
-  
 - **Melhorias Futuras:**
   - Implementar testes unitários para garantir a qualidade do código.
   - Adicionar suporte para outros modelos da OpenAI conforme disponíveis.
   - Melhorar o tratamento de erros e as mensagens para o usuário.
-  
 - **Suporte:** Se encontrar problemas ou tiver dúvidas, abra uma issue no GitHub.
 
 ## Dicas Adicionais
 
 - **Eficiência:** Analisar apenas as alterações torna o processo mais rápido e consome menos recursos da API.
-  
 - **Foco nas Alterações:** A análise é mais precisa quando focada nas mudanças recentes, facilitando a identificação de possíveis problemas introduzidos.
-  
 - **Segurança:** Assegure-se de que informações sensíveis não estejam incluídas nos diffs ou logs.
-  
 - **Atualizações:** Mantenha suas dependências atualizadas para se beneficiar de melhorias e correções de segurança.
 
 ## Perguntas Frequentes (FAQs)

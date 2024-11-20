@@ -10,7 +10,7 @@ import { analyzeCommits } from "./analyzeCommit.js"; // Updated import
 program.helpInformation = showHelp;
 
 program
-  .name("gcr")
+  .name("acr")
   .description(
     "A tool to analyze commits with AI from the local Git repository"
   )
