@@ -9,19 +9,18 @@ import { analyzeUpdatedCode } from "./openaiUtils.js";
  */
 const selectCommits = async () => {
   let skip = 0;
-  let limit = 5;
+  const limit = 5;
   let allCommits = [];
   let selectedShas = [];
-  let continueFetching = true;
   let reachedEnd = false;
 
-  while (continueFetching) {
+  while (true) {
     if (!reachedEnd && allCommits.length === 0) {
       const newCommits = getCommits(skip, limit);
       if (!newCommits.length) {
         console.log(
           chalk.yellow(
-            "⚠️ No more commits to load. All available commits are displayed."
+            "⚠️ Nenhum commit adicional para carregar. Todos os commits disponíveis estão exibidos."
           )
         );
         reachedEnd = true;
@@ -36,42 +35,48 @@ const selectCommits = async () => {
       value: commit.shaFull,
     }));
 
+    // Adiciona um separador para separar commits das opções adicionais
     choices.push(new inquirer.Separator());
+
     if (!reachedEnd) {
-      choices.push({ name: "⬇️  Load more commits", value: "load_more" });
+      choices.push({ name: "⬇️  Carregar mais commits", value: "load_more" });
     }
-    choices.push({ name: "🚪 Exit", value: "finish_selection" });
+
+    // Adiciona a opção "Exit"
+    choices.push({ name: "🚪 Sair", value: "exit" });
 
     const answers = await inquirer.prompt([
       {
         type: "checkbox",
         name: "selectedShas",
-        message: "Select commits to analyze: ",
+        message:
+          "Selecione os commits para analisar (Pressione Enter para finalizar):",
         choices,
         pageSize: 100,
         loop: false,
+        // Removida a validação para permitir selecionar "Exit" juntamente com outros commits
       },
     ]);
 
     const loadMore = answers.selectedShas.includes("load_more");
-    const finishSelection = answers.selectedShas.includes("finish_selection");
-
-    selectedShas = selectedShas.concat(
-      answers.selectedShas.filter(
-        (sha) => sha !== "load_more" && sha !== "finish_selection"
-      )
+    const exitSelected = answers.selectedShas.includes("exit");
+    const commitsSelected = answers.selectedShas.filter(
+      (sha) => sha !== "load_more" && sha !== "exit"
     );
 
-    if (finishSelection) {
-      break;
+    if (exitSelected) {
+      console.log(chalk.blue("👋 Processo encerrado pelo usuário."));
+      process.exit(0); // Encerra o processo imediatamente
     }
+
+    selectedShas = selectedShas.concat(commitsSelected);
 
     if (loadMore) {
       const newCommits = getCommits(skip, limit);
       if (!newCommits.length) {
         console.log(
           chalk.yellow(
-            "⚠️ No more commits to load. All available commits are displayed."
+            "⚠️ Nenhum commit adicional para carregar. Todos os commits disponíveis estão exibidos."
           )
         );
         reachedEnd = true;
@@ -79,6 +84,9 @@ const selectCommits = async () => {
         allCommits = [...allCommits, ...newCommits];
         skip += limit;
       }
+    } else {
+      // Se 'load_more' não foi selecionado, assumimos que o usuário terminou a seleção
+      break;
     }
   }
 
@@ -94,9 +102,7 @@ export const analyzeCommits = async () => {
 
     if (!selectedShas.length) {
       console.log(
-        chalk.yellow(
-          "⚠️   You exited without selecting any commits for analysis."
-        )
+        chalk.yellow("⚠️ Você não selecionou nenhum commit para análise.")
       );
       return;
     }
@@ -105,7 +111,7 @@ export const analyzeCommits = async () => {
       await analyzeCommit(sha);
     }
   } catch (error) {
-    console.error(chalk.red("❌ Error during execution:"), error.message);
+    console.error(chalk.red("❌ Erro durante a execução:"), error.message);
   }
 };
 
@@ -115,30 +121,36 @@ export const analyzeCommits = async () => {
  */
 const analyzeCommit = async (sha) => {
   try {
-    console.log(chalk.blueBright(`\n📂 Analyzing commit ${sha}...`));
+    console.log(chalk.blueBright(`\n📂 Analisando commit ${sha}...`));
     const modifiedFiles = getModifiedFiles(sha);
 
     if (!modifiedFiles.length) {
-      console.log(chalk.yellow("⚠️ No modified files found in the commit."));
+      console.log(
+        chalk.yellow("⚠️ Nenhum arquivo modificado encontrado no commit.")
+      );
       return;
     }
 
     const files = await processModifiedFiles(sha, modifiedFiles);
     if (!files.length) {
-      console.log(chalk.yellow("⚠️ No valid differences found for analysis."));
+      console.log(
+        chalk.yellow("⚠️ Nenhuma diferença válida encontrada para análise.")
+      );
       return;
     }
 
     const analysis = await analyzeUpdatedCode(files);
     console.log(
-      chalk.magentaBright(`\n📊 Code analysis result for commit ${sha}:\n`),
+      chalk.magentaBright(
+        `\n📊 Resultado da análise de código para o commit ${sha}:\n`
+      ),
       chalk.magenta(analysis)
     );
 
-    console.log(chalk.green("\nAnalyzed files:"));
+    console.log(chalk.green("\nArquivos analisados:"));
     files.forEach((file) => console.log(chalk.green(`- ${file.filename}`)));
   } catch (error) {
-    console.error(chalk.red("❌ Error analyzing commit:"), error.message);
+    console.error(chalk.red("❌ Erro ao analisar o commit:"), error.message);
   }
 };
 
@@ -155,14 +167,16 @@ const processModifiedFiles = async (sha, modifiedFiles) => {
         const diff = getFileDiff(sha, file);
         if (!diff) {
           console.warn(
-            chalk.yellow(`⚠️ No differences found for file ${file}.`)
+            chalk.yellow(
+              `⚠️ Nenhuma diferença encontrada para o arquivo ${file}.`
+            )
           );
           return null;
         }
         return { filename: file, content: diff, status };
       } catch (error) {
         console.error(
-          chalk.red(`❌ Error processing differences for file ${file}:`),
+          chalk.red(`❌ Erro ao processar diferenças para o arquivo ${file}:`),
           error.message
         );
         return null;
