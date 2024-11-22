@@ -2,28 +2,32 @@
 import { execSync } from "child_process";
 import chalk from "chalk";
 import fs from "fs";
+import os from "os";
+import path from "path";
 
 /**
- * Executes a Git command synchronously.
- * @param {string} command - The Git command to execute.
- * @returns {string} - The trimmed output of the command.
- * @throws Will throw an error if the command execution fails.
+ * Executa um comando Git de forma síncrona.
+ * @param {string} command - O comando Git a ser executado.
+ * @returns {string} - A saída do comando, com espaços em branco removidos.
+ * @throws Lança um erro se a execução do comando falhar.
  */
 export function executeGitCommand(command) {
   try {
     return execSync(command, { encoding: "utf-8" }).trim();
   } catch (error) {
     console.error(
-      chalk.red(`❌ Error executing Git command '${command}': ${error.message}`)
+      chalk.red(
+        `❌ Erro ao executar o comando Git '${command}': ${error.message}`
+      )
     );
     throw error;
   }
 }
 
 /**
- * Retrieves a list of commits with details (SHA, timestamp, message).
- * @param {number} skip - Number of commits to skip.
- * @param {number} limit - Number of commits to retrieve.
+ * Recupera uma lista de commits com detalhes (SHA, timestamp, mensagem).
+ * @param {number} skip - Número de commits a pular.
+ * @param {number} limit - Número de commits a recuperar.
  * @returns {Array<{shaFull: string, shaShort: string, date: string, message: string}>}
  */
 export function getCommits(skip = 0, limit = 5) {
@@ -41,19 +45,19 @@ export function getCommits(skip = 0, limit = 5) {
       };
     });
   } catch (error) {
-    console.error(chalk.red("❌ Error fetching commits:"), error.message);
+    console.error(chalk.red("❌ Erro ao buscar commits:"), error.message);
     return [];
   }
 }
 
 /**
- * Formats a Git timestamp into a readable date string.
- * @param {string} timestamp - The Unix timestamp from Git log.
- * @returns {string} - Formatted date string.
+ * Formata um timestamp Git em uma string de data legível.
+ * @param {string} timestamp - O timestamp Unix do log Git.
+ * @returns {string} - String de data formatada.
  */
 function formatGitDate(timestamp) {
   return new Date(parseInt(timestamp, 10) * 1000)
-    .toLocaleString("en-US", {
+    .toLocaleString("pt-BR", {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
@@ -64,19 +68,19 @@ function formatGitDate(timestamp) {
 }
 
 /**
- * Truncates a string to a specified maximum length.
- * @param {string} str - The string to truncate.
- * @param {number} maxLength - The maximum length of the string.
- * @returns {string} - The truncated string with ellipsis if necessary.
+ * Trunca uma string para um comprimento máximo especificado.
+ * @param {string} str - A string a ser truncada.
+ * @param {number} maxLength - O comprimento máximo da string.
+ * @returns {string} - A string truncada com reticências, se necessário.
  */
 function truncateString(str, maxLength) {
   return str.length <= maxLength ? str : `${str.slice(0, maxLength - 3)}...`;
 }
 
 /**
- * Retrieves the list of modified files for a given commit SHA.
- * @param {string} sha - The commit SHA to analyze.
- * @returns {Array<{status: string, file: string}>} - An array of objects containing the status and file name.
+ * Recupera a lista de arquivos modificados para um determinado SHA de commit.
+ * @param {string} sha - O SHA do commit a ser analisado.
+ * @returns {Array<{status: string, file: string}>} - Array de objetos contendo o status e o nome do arquivo.
  */
 export function getModifiedFiles(sha) {
   try {
@@ -89,7 +93,7 @@ export function getModifiedFiles(sha) {
     });
   } catch (error) {
     console.error(
-      chalk.red("❌ Error retrieving modified files:"),
+      chalk.red("❌ Erro ao recuperar arquivos modificados:"),
       error.message
     );
     return [];
@@ -97,17 +101,17 @@ export function getModifiedFiles(sha) {
 }
 
 /**
- * Retrieves the diff for a specific file in a given commit.
- * @param {string} sha - The commit SHA.
- * @param {string} file - The file path to get the diff for.
- * @returns {string} - The diff content of the file.
+ * Recupera o diff para um arquivo específico em um determinado commit.
+ * @param {string} sha - O SHA do commit.
+ * @param {string} file - O caminho do arquivo para obter o diff.
+ * @returns {string} - O conteúdo do diff do arquivo.
  */
 export function getFileDiff(sha, file) {
   try {
     return executeGitCommand(`git diff ${sha}~1 ${sha} -- ${file} || true`);
   } catch (error) {
     console.error(
-      chalk.red(`❌ Error retrieving file diff for '${file}':`),
+      chalk.red(`❌ Erro ao recuperar diff do arquivo '${file}':`),
       error.message
     );
     return "";
@@ -115,36 +119,38 @@ export function getFileDiff(sha, file) {
 }
 
 /**
- * Clears the staging area to ensure all changes are reviewed.
+ * Limpa a área de stage para garantir que todas as alterações sejam revisadas.
  */
 export function clearStage() {
   try {
     executeGitCommand("git reset");
-    console.log(chalk.green("✔ Stage cleared. All changes unstaged."));
+    console.log(
+      chalk.green("✔ Stage limpo. Todas as alterações desestagadas.")
+    );
   } catch (error) {
-    console.error(chalk.red("❌ Error clearing stage:"), error.message);
+    console.error(chalk.red("❌ Erro ao limpar o stage:"), error.message);
   }
 }
 
 /**
- * Gets the current branch of the repository.
- * @returns {string} - Current branch name.
+ * Obtém o branch atual do repositório.
+ * @returns {string} - Nome do branch atual.
  */
 export function getCurrentBranch() {
   try {
     return executeGitCommand("git branch --show-current");
   } catch (error) {
     console.error(
-      chalk.red("❌ Error retrieving current branch:"),
+      chalk.red("❌ Erro ao recuperar o branch atual:"),
       error.message
     );
-    return "unknown";
+    return "desconhecido";
   }
 }
 
 /**
- * Lists all branches in the repository.
- * @returns {Array<string>} - List of branch names.
+ * Lista todos os branches no repositório.
+ * @returns {Array<string>} - Lista de nomes de branches.
  */
 export function listBranches() {
   try {
@@ -152,22 +158,24 @@ export function listBranches() {
       .split("\n")
       .map((branch) => branch.trim().replace("* ", ""));
   } catch (error) {
-    console.error(chalk.red("❌ Error listing branches:"), error.message);
+    console.error(chalk.red("❌ Erro ao listar branches:"), error.message);
     return [];
   }
 }
 
 /**
- * Switches to the specified branch.
- * @param {string} branch - Name of the branch to switch to.
+ * Muda para o branch especificado.
+ * @param {string} branch - Nome do branch para alternar.
  */
 export function switchBranch(branch) {
   try {
     executeGitCommand(`git checkout ${branch}`);
-    console.log(chalk.green(`✔ Switched to branch '${branch}' successfully.`));
+    console.log(
+      chalk.green(`✔ Alternado para o branch '${branch}' com sucesso.`)
+    );
   } catch (error) {
     console.error(
-      chalk.red(`❌ Error switching to branch '${branch}':`),
+      chalk.red(`❌ Erro ao alternar para o branch '${branch}':`),
       error.message
     );
     throw error;
@@ -175,8 +183,8 @@ export function switchBranch(branch) {
 }
 
 /**
- * Checks for conflicts in the repository.
- * @returns {Array<string>} - List of files with conflicts.
+ * Verifica conflitos no repositório.
+ * @returns {Array<string>} - Lista de arquivos com conflitos.
  */
 export function checkConflicts() {
   try {
@@ -186,21 +194,21 @@ export function checkConflicts() {
       .filter((line) => line.startsWith("UU"))
       .map((line) => line.replace("UU ", "").trim());
   } catch (error) {
-    console.error(chalk.red("❌ Error checking conflicts:"), error.message);
+    console.error(chalk.red("❌ Erro ao verificar conflitos:"), error.message);
     return [];
   }
 }
 
 /**
- * Retrieves the diff of the repository.
- * @returns {string} - The full diff output.
+ * Recupera o diff do repositório.
+ * @returns {string} - A saída completa do diff.
  */
 export function getRepositoryDiff() {
   try {
     return executeGitCommand("git diff");
   } catch (error) {
     console.error(
-      chalk.red("❌ Error retrieving repository diff:"),
+      chalk.red("❌ Erro ao recuperar o diff do repositório:"),
       error.message
     );
     return "";
@@ -208,37 +216,57 @@ export function getRepositoryDiff() {
 }
 
 /**
- * Stages all changes using 'git add .'.
+ * Obtém o diff de um arquivo staged específico.
+ * @param {string} file - O caminho do arquivo.
+ * @returns {string} - O diff do arquivo.
+ */
+export function getStagedFileDiff(file) {
+  try {
+    return executeGitCommand(`git diff --cached -- ${file}`);
+  } catch (error) {
+    console.error(
+      chalk.red(`❌ Erro ao obter o diff do arquivo '${file}':`),
+      error.message
+    );
+    return "";
+  }
+}
+
+/**
+ * Adiciona todas as mudanças ao stage usando 'git add .'.
  */
 export function stageAllChanges() {
   try {
-    executeGitCommand("git add .");
-    console.log(chalk.green("✔ All changes have been staged."));
+    executeGitCommand("git add ."); // Executa o comando diretamente
+    console.log(chalk.green("✔ Todas as mudanças foram adicionadas ao stage."));
   } catch (error) {
-    console.error(chalk.red("❌ Error staging all changes:"), error.message);
+    console.error(
+      chalk.red("❌ Erro ao adicionar todas as mudanças ao stage:"),
+      error.message
+    );
     throw error;
   }
 }
 
 /**
- * Retrieves the list of staged files with their contents.
- * @returns {Array<{filename: string, content: string}>} - List of staged files and their contents.
+ * Recupera a lista de arquivos staged com seus diffs.
+ * @returns {Array<{filename: string, diff: string}>} - Lista de arquivos staged e seus diffs.
  */
-export function getStagedFiles() {
+export function getStagedFilesDiffs() {
   try {
     // Obter a lista de arquivos staged
     const files = executeGitCommand("git diff --cached --name-only")
       .split("\n")
       .filter((line) => line);
 
-    // Obter o conteúdo de cada arquivo staged
+    // Obter o diff de cada arquivo staged
     return files.map((file) => ({
       filename: file,
-      content: executeGitCommand(`git show :${file}`),
+      diff: getStagedFileDiff(file), // Usando 'diff' ao invés de 'content'
     }));
   } catch (error) {
     console.error(
-      chalk.red("❌ Error retrieving staged files:"),
+      chalk.red("❌ Erro ao recuperar os diffs dos arquivos staged:"),
       error.message
     );
     return [];
@@ -246,28 +274,31 @@ export function getStagedFiles() {
 }
 
 /**
- * Commits changes using the Git editor.
- * @param {string} message - Commit message to pre-fill.
+ * Realiza o commit das alterações usando o editor do Git.
+ * @param {string} tempFilePath - Caminho para o arquivo temporário contendo a mensagem de commit.
  */
-export function commitChangesWithEditor(message) {
+export function commitChangesWithEditor(tempFilePath) {
   try {
-    const tempFile = "/tmp/commit_message.txt";
-    fs.writeFileSync(tempFile, message, { encoding: "utf-8" });
-    executeGitCommand(`git commit --edit --file="${tempFile}"`);
-    console.log(chalk.green("✔ Commit completed successfully!"));
+    executeGitCommand(`git commit --edit --file="${tempFilePath}"`);
+    console.log(chalk.green("✔ Commit realizado com sucesso!"));
   } catch (error) {
-    console.error(chalk.red("❌ Error committing changes:"), error.message);
+    console.error(chalk.red("❌ Erro ao realizar o commit:"), error.message);
+    throw error;
   }
 }
 
 /**
- * Pushes changes to the remote repository.
+ * Envia as alterações para o repositório remoto.
  */
 export function pushChanges() {
   try {
     executeGitCommand("git push");
-    console.log(chalk.green("✔ Changes pushed to remote successfully!"));
+    console.log(
+      chalk.green(
+        "✔ Alterações enviadas para o repositório remoto com sucesso!"
+      )
+    );
   } catch (error) {
-    console.error(chalk.red("❌ Error pushing changes:"), error.message);
+    console.error(chalk.red("❌ Erro ao enviar alterações:"), error.message);
   }
 }

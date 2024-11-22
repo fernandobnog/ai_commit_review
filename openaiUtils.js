@@ -70,8 +70,6 @@ export async function analyzeUpdatedCode(
 
   const openai = new OpenAI({ apiKey: config.OPENAI_API_KEY });
   const prompt = generatePrompt(files, promptType, config);
-  console.log(chalk.blue(prompt));
-
   try {
     console.log(chalk.blue("📤 Sending request to OpenAI..."));
     const response = await openai.chat.completions.create({
@@ -81,14 +79,7 @@ export async function analyzeUpdatedCode(
     });
     console.log(chalk.green("✅ Response received."));
 
-    const completion = response.choices[0].message.content.trim();
-    const cleanedText = completion.replace(
-      /^(\*\*Commit Title:\*\*|(\*\*Commit Message:\*\*))\s*$/gm,
-      ""
-    );
-
-    console.log(chalk.blue(cleanedText));
-    return cleanedText;
+    return response.choices[0].message.content.trim();
   } catch (error) {
     console.error(chalk.red("❌ Error analyzing updated code:", error.message));
     throw error;
