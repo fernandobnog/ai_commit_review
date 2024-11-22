@@ -66,7 +66,10 @@ function generatePrompt(files, promptType, config) {
     throw new Error(`Invalid prompt type: ${promptType}`);
   }
 
-  return files.map(promptMap[promptType]).join("\n\n");
+  const prompt = files.map(promptMap[promptType]).join("\n\n");
+
+  console.log(chalk.blue("📝 Generated prompt for OpenAI:"));
+  return prompt;
 }
 
 /**
@@ -89,7 +92,10 @@ export async function analyzeUpdatedCode(
       max_tokens: 2000,
     });
     console.log(chalk.green("✅ Response received."));
-    return response.choices[0].message.content.trim();
+
+    const completion = response.choices[0].message.content.trim();
+    console.log(chalk.blue(completion));
+    return completion;
   } catch (error) {
     console.error(chalk.red("❌ Error analyzing updated code:", error.message));
     throw error;
