@@ -25,51 +25,43 @@ function generatePrompt(files, promptType, config) {
 
   const promptMap = {
     [PromptType.ANALYZE]: (file) =>
-      `Por favor, analise as alterações neste commit. Forneça uma visão geral das modificações realizadas nos arquivos. Verifique se há algum erro ou bug aparente nas mudanças e aponte possíveis melhorias ou otimizações que podem ser implementadas. Além disso, sugira boas práticas que poderiam ser aplicadas para aumentar a qualidade do código.
+      `Please analyze the changes in this commit. Provide an overview of the modifications made to the files. Check for any apparent errors or bugs in the changes and point out potential improvements or optimizations that could be implemented. Additionally, suggest best practices that could be applied to improve code quality.
         ${file.filename}:\n${file.content}\n\n${languageInstruction}`,
     [PromptType.CREATE]: (file) =>
-      `Analise o conteúdo do arquivo ${file.filename} abaixo e crie um título e uma mensagem de commit que sigam as melhores práticas para controle de versões:
+      `Analyze the content of the file ${file.filename} below and create a title and a commit message that follow best practices for version control, respecting the language of the file's content:
 
         ${file.content}
 
-        Instruções:
+        Instructions:
 
-        Para o Título do Commit:
+        - For the Commit Title:
+          - Use a maximum of 50 characters.
+          - Start with an imperative verb (e.g., "Add", "Fix", "Remove").
+          - Be specific and direct about the change made.
+        - For the Commit Message:
+          - Describe in detail the changes made.
+          - Explain the reason for the change and how it impacts the project.
+          - Use lists or short paragraphs to organize the explanation.
+        - Restrictions:
+          - Strictly base your response on the information provided in the file content.
+          - Do not invent information not present in the file content.
+          - Avoid copying and pasting large portions of the file content.
+          - Do not include personal or sensitive information in the commit.
 
-        Não insira as palavras "Título do Commit:" no texto.
-        Use no máximo 50 caracteres.
-        Comece com um verbo no imperativo (ex.: "Adicionar", "Corrigir", "Remover").
-        Seja específico e direto sobre a alteração realizada.
-        Para a Mensagem do Commit:
-
-        Não insira as palavras "Mensagem do Commit:" no texto.
-        Separe o título e a mensagem com uma linha em branco.
-        Descreva de forma detalhada as alterações realizadas.
-        Explique o motivo da alteração e como ela impacta o projeto.
-        Use listas ou parágrafos curtos para organizar a explicação.
-        Restrições:
-
-        Não inclua Título do Commit: ou Mensagem do Commit: no texto da resposta.
-        Baseie-se estritamente nas informações fornecidas no conteúdo do arquivo.
-        Não invente informações que não estejam no conteúdo do arquivo.
-        Evite copiar e colar trechos extensos do arquivo.
-        Não insira informações pessoais ou sensíveis no commit.
-        Formato da Resposta:
-
-        [Título do Commit]
-        [Descrição detalhada das alterações, incluindo o porquê da mudança e qualquer informação relevante.]
-
-        ${languageInstruction}`,
+        ${languageInstruction}
+        
+        Response Format:
+        Return a JSON object in the following format:
+        {
+          "title": "Commit title (in the file's language, up to 50 characters)",
+          "body": "Detailed commit message explaining the changes (in the file's language)"
+        }`,
   };
 
   if (!promptMap[promptType]) {
     throw new Error(`Invalid prompt type: ${promptType}`);
   }
-
-  const prompt = files.map(promptMap[promptType]).join("\n\n");
-
-  console.log(chalk.blue("📝 Generated prompt for OpenAI:"));
-  return prompt;
+  return files.map(promptMap[promptType]).join("\n\n");
 }
 
 /**
@@ -83,6 +75,7 @@ export async function analyzeUpdatedCode(
 
   const openai = new OpenAI({ apiKey: config.OPENAI_API_KEY });
   const prompt = generatePrompt(files, promptType, config);
+  console.log(chalk.blue(prompt));
 
   try {
     console.log(chalk.blue("📤 Sending request to OpenAI..."));
@@ -94,8 +87,13 @@ export async function analyzeUpdatedCode(
     console.log(chalk.green("✅ Response received."));
 
     const completion = response.choices[0].message.content.trim();
-    console.log(chalk.blue(completion));
-    return completion;
+    const cleanedText = completion.replace(
+      /^(\*\*Commit Title:\*\*|(\*\*Commit Message:\*\*))\s*$/gm,
+      ""
+    );
+
+    console.log(chalk.blue(cleanedText));
+    return cleanedText;
   } catch (error) {
     console.error(chalk.red("❌ Error analyzing updated code:", error.message));
     throw error;
