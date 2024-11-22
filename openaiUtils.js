@@ -28,26 +28,29 @@ function generatePrompt(files, promptType, config) {
       `Por favor, analise as alterações neste commit. Forneça uma visão geral das modificações realizadas nos arquivos. Verifique se há algum erro ou bug aparente nas mudanças e aponte possíveis melhorias ou otimizações que podem ser implementadas. Além disso, sugira boas práticas que poderiam ser aplicadas para aumentar a qualidade do código.
         ${file.filename}:\n${file.content}\n\n${languageInstruction}`,
     [PromptType.CREATE]: (file) =>
-      `Crie um título e uma mensagem de commit seguindo as melhores práticas para as alterações no arquivo ${file.filename}:
-
-        ${file.content}
-
+      `Analise o conteúdo do arquivo ${file.filename} abaixo e crie um título e uma mensagem de commit que sigam as melhores práticas para controle de versões: \n
+        ${file.content}\n\n     
         Instruções:\n\n
+        1. Título do Commit
+          - Use no máximo 50 caracteres.
+          - Comece com um verbo no imperativo (ex.: "Adicionar", "Corrigir", "Remover").
+          - Seja específico e direto sobre a alteração realizada.
 
-        Título do Commit:\n
-        Deve ser conciso (até 50 caracteres).\n
-        Comece com um verbo no imperativo (por exemplo, "Adicionar", "Corrigir", "Atualizar").\n
-        Seja descritivo sobre a alteração realizada.\n\n
+        2. Mensagem do Commit:
+          - Separe o título e a mensagem com uma linha em branco.
+          - Descreva de forma detalhada as alterações realizadas.
+          - Explique o motivo da alteração e como ela impacta o projeto.
+          - Use listas ou parágrafos curtos para organizar a explicação.
 
-        Mensagem do Commit:\n
-        Separe o título da mensagem com uma linha em branco.\n
-        Forneça uma descrição detalhada das alterações.\n
-        Explique o porquê das mudanças, não apenas o o quê.\n
-        Utilize parágrafos ou listas para organizar melhor a informação.\n\n
+        Formato da Resposta:
 
-        Formato Esperado:\n
-        [Título conciso e descritivo]\n
-        [Descrição detalhada das alterações, explicando o motivo das mudanças e qualquer informação adicional relevante.]\n\n
+        [Título do Commit]
+
+        [Descrição detalhada das alterações, incluindo o porquê da mudança e qualquer informação relevante.]
+
+        Restrições:
+        - Não invente informações que não estejam no conteúdo do arquivo.
+        - Use apenas os dados presentes no arquivo como base para criar o título e a mensagem.
 
         ${languageInstruction}`,
   };
