@@ -28,31 +28,36 @@ function generatePrompt(files, promptType, config) {
       `Por favor, analise as alterações neste commit. Forneça uma visão geral das modificações realizadas nos arquivos. Verifique se há algum erro ou bug aparente nas mudanças e aponte possíveis melhorias ou otimizações que podem ser implementadas. Além disso, sugira boas práticas que poderiam ser aplicadas para aumentar a qualidade do código.
         ${file.filename}:\n${file.content}\n\n${languageInstruction}`,
     [PromptType.CREATE]: (file) =>
-      `Analise o conteúdo do arquivo ${file.filename} abaixo e crie um título e uma mensagem de commit que sigam as melhores práticas para controle de versões: \n
-        ${file.content}\n\n     
-        Instruções:\n\n
-        1. Título do Commit
-          - Use no máximo 50 caracteres.
-          - Comece com um verbo no imperativo (ex.: "Adicionar", "Corrigir", "Remover").
-          - Seja específico e direto sobre a alteração realizada.
+      `Analise o conteúdo do arquivo ${file.filename} abaixo e crie um título e uma mensagem de commit que sigam as melhores práticas para controle de versões:
 
-        2. Mensagem do Commit:
-          - Separe o título e a mensagem com uma linha em branco.
-          - Descreva de forma detalhada as alterações realizadas.
-          - Explique o motivo da alteração e como ela impacta o projeto.
-          - Use listas ou parágrafos curtos para organizar a explicação.
+        ${file.content}
 
+        Instruções:
+
+        Para o Título do Commit:
+
+        Não insira as palavras "Título do Commit:" no texto.
+        Use no máximo 50 caracteres.
+        Comece com um verbo no imperativo (ex.: "Adicionar", "Corrigir", "Remover").
+        Seja específico e direto sobre a alteração realizada.
+        Para a Mensagem do Commit:
+
+        Não insira as palavras "Mensagem do Commit:" no texto.
+        Separe o título e a mensagem com uma linha em branco.
+        Descreva de forma detalhada as alterações realizadas.
+        Explique o motivo da alteração e como ela impacta o projeto.
+        Use listas ou parágrafos curtos para organizar a explicação.
+        Restrições:
+
+        Não inclua Título do Commit: ou Mensagem do Commit: no texto da resposta.
+        Baseie-se estritamente nas informações fornecidas no conteúdo do arquivo.
+        Não invente informações que não estejam no conteúdo do arquivo.
+        Evite copiar e colar trechos extensos do arquivo.
+        Não insira informações pessoais ou sensíveis no commit.
         Formato da Resposta:
 
         [Título do Commit]
         [Descrição detalhada das alterações, incluindo o porquê da mudança e qualquer informação relevante.]
-
-        Restrições:
-        - Não invente informações que não estejam no conteúdo do arquivo.
-        - Use apenas os dados presentes no arquivo como base para criar o título e a mensagem.
-        - Não inclua informações pessoais ou sensíveis no commit.
-        - Evite copiar e colar trechos inteiros do arquivo no commit.
-        - Não use expressões como **Mensagem do Commit:** ou **Título do Commit:** no texto.
 
         ${languageInstruction}`,
   };
