@@ -43,7 +43,6 @@ function generatePrompt(files, promptType, config) {
         Separe o título da mensagem com uma linha em branco.\n
         Forneça uma descrição detalhada das alterações.\n
         Explique o porquê das mudanças, não apenas o o quê.\n
-        Se aplicável, inclua referências a issues ou tickets relacionados.\n
         Utilize parágrafos ou listas para organizar melhor a informação.\n\n
 
         Formato Esperado:\n
