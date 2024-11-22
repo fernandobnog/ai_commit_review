@@ -16,7 +16,7 @@ import { analyzeUpdatedCode } from "./openaiUtils.js";
 import { PromptType } from "./models.js";
 import fs from "fs";
 import path from "path";
-import os from "os"; // <--- Certifique-se de que esta linha está presente
+import os from "os"; 
 
 /**
  * Confirma o branch atual ou permite a troca para outro.
@@ -193,13 +193,7 @@ export async function createCommit() {
         finalMessageGenerated = true; // Sair do loop se a mensagem não estiver vazia
       }
     }
-
-    // 7. Realizar o commit com a mensagem final
-    // Note que a mensagem já foi passada para o editor, então essa chamada pode ser removida
-    // Caso contrário, certifique-se de que a função não está duplicando o commit
-    // commitChangesWithEditor(commitMessage); // Removido para evitar duplicação
-
-    // 8. Prompt para push
+    // 7. Prompt para push
     const { push } = await inquirer.prompt([
       {
         type: "confirm",

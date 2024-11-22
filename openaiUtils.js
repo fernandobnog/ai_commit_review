@@ -50,7 +50,18 @@ function generatePrompt(files, promptType, config) {
           - Avoid copying and pasting large portions of the file content.
           - Do not include personal or sensitive information in the commit.
 
-        ${languageInstruction}`,
+        ${languageInstruction}
+
+        Please respond with the title followed by the description, each on a separate line, exactly like this:
+
+        Title
+        Description
+
+        Example:
+
+        🚀 Add user authentication
+        Implemented user login and registration functionality using JWT tokens.
+        `,
   };
 
   if (!promptMap[promptType]) {
