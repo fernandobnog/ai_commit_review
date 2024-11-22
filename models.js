@@ -31,3 +31,8 @@ export const SupportedLanguages = Object.freeze({
   PT_BR: { code: "pt-BR", name: "Portuguese (Brazil)" },
   PT_PT: { code: "pt-PT", name: "Portuguese (Portugal)" },
 });
+
+export const PromptType = Object.freeze({
+  ANALYZE: "analyze",
+  CREATE: "create",
+});

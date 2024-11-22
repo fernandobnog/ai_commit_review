@@ -13,6 +13,7 @@ import {
   getStagedFiles, // Importando a nova função
 } from "./gitUtils.js";
 import { analyzeUpdatedCode } from "./openaiUtils.js";
+import { PromptType } from "./models.js"; 
 
 /**
  * Confirms the current branch or allows switching to another.
@@ -128,7 +129,7 @@ export async function createCommit() {
       if (messageOption === "ai") {
         // Generate commit message using AI
         console.log(chalk.blue("📤 Generating commit message with AI..."));
-        commitMessage = await analyzeUpdatedCode(stagedFiles); // Pass the stagedFiles
+        commitMessage = await analyzeUpdatedCode(stagedFiles, PromptType.CREATE); // Pass the stagedFiles
       }
 
       if (messageOption === "manual") {

@@ -2,6 +2,7 @@ import chalk from "chalk";
 import inquirer from "inquirer";
 import { getCommits, getModifiedFiles, getFileDiff } from "./gitUtils.js";
 import { analyzeUpdatedCode } from "./openaiUtils.js";
+import { PromptType } from "./models.js";
 
 /**
  * Handles the user's selection of commits, including dynamic loading.
@@ -134,7 +135,7 @@ const analyzeCommit = async (sha) => {
       return;
     }
 
-    const analysis = await analyzeUpdatedCode(files);
+    const analysis = await analyzeUpdatedCode(files, PromptType.ANALYZE);
     console.log(
       chalk.magentaBright(`\n📊 Code analysis result for commit ${sha}:\n`),
       chalk.magenta(analysis)
