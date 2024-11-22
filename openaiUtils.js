@@ -1,91 +1,50 @@
-// openaiUtils.js
-
 import chalk from "chalk";
-import { SupportedLanguages } from "./models.js"; // Import SupportedLanguages
 import { validateConfiguration } from "./configManager.js";
 import { OpenAI } from "openai";
 
 /**
- * Helper function to get the language name from the code.
- * @param {string} langcode - The language code (e.g., "en-US").
- * @returns {string} - The readable name of the language (e.g., "English (US)").
- * @throws {Error} - If the language code is not found.
+ * Generates the language instruction for OpenAI prompts.
  */
-function getLanguageName(langcode) {
-  const languageEntry = Object.values(SupportedLanguages).find(
-    (lang) => lang.code === langcode
-  );
-  if (!languageEntry) {
-    throw new Error(
-      `The language code is not supported. Please check the "OPENAI_RESPONSE_LANGUAGE" setting.`
-    );
-  }
-  return languageEntry.name;
+function generateLanguageInstruction(langcode) {
+  const languageMap = {
+    "en-US": "English",
+    "pt-BR": "Portuguese",
+  };
+  const language = languageMap[langcode] || "English";
+  return `Please respond in ${language}.`;
 }
 
 /**
- * Helper function to generate the prompt for OpenAI
- * @param {Array} files - Array of file objects containing filename and diff content.
- * @param {object} config - Configuration object containing API key, model, and language.
- * @returns {string} - The generated prompt.
- * @throws {Error} - If the language code is not supported.
+ * Generates the prompt for analyzing code changes.
  */
 function generatePrompt(files, config) {
-  const languageName = getLanguageName(config.OPENAI_RESPONSE_LANGUAGE); // May throw an error here
-  const languageInstruction = `Please respond in ${languageName}.`;
+  const languageInstruction = generateLanguageInstruction(config.OPENAI_RESPONSE_LANGUAGE);
 
   return files
-    .map(
-      (file) => `Analyze the following changes in the file ${file.filename}:
-  \`\`\`diff
-  ${file.content}
-  \`\`\`
-
-  ${languageInstruction}
-
-  Please respond:
-  1. Briefly describe what was changed.
-  2. Check for any obvious errors or bugs in the code.
-  3. Suggest improvements and additional recommendations to enhance the code, only if necessary.`
-    )
+    .map((file) => `Analyze changes in file ${file.filename}:\n${file.content}\n\n${languageInstruction}`)
     .join("\n\n");
 }
 
 /**
- * Function to analyze the code using the OpenAI API
- * @param {Array} files - Array of file objects containing filename and diff content.
- * @returns {string} - The result of the OpenAI analysis.
- * @throws {Error} - If there is a failure in the analysis or language mapping.
+ * Analyzes updated code using OpenAI.
  */
 export async function analyzeUpdatedCode(files) {
   const config = validateConfiguration();
 
   const openai = new OpenAI({ apiKey: config.OPENAI_API_KEY });
-  let prompt;
-  try {
-    prompt = generatePrompt(files, config); // Passes the entire config
-  } catch (error) {
-    console.error(chalk.red(`❌ Error generating prompt: ${error.message}`));
-    throw error; // Propagates the error to prevent prompt execution
-  }
+  const prompt = generatePrompt(files, config);
 
-  console.log(chalk.blue("📤 Sending analysis request to OpenAI..."));
   try {
+    console.log(chalk.blue("📤 Sending request to OpenAI..."));
     const response = await openai.chat.completions.create({
       model: config.OPENAI_API_MODEL,
       messages: [{ role: "user", content: prompt }],
       max_tokens: 2000,
     });
-
-    console.log(chalk.green("✅ Response received from OpenAI."));
+    console.log(chalk.green("✅ Response received."));
     return response.choices[0].message.content.trim();
   } catch (error) {
-    console.error(
-      chalk.red(
-        "❌ Error analyzing the code:",
-        error.response?.data || error.message
-      )
-    );
+    console.error(chalk.red("❌ Error analyzing updated code:", error.message));
     throw error;
   }
 }

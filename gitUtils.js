@@ -1,5 +1,7 @@
+// gitUtils.js
 import { execSync } from "child_process";
 import chalk from "chalk";
+import fs from "fs";
 
 /**
  * Executes a Git command synchronously.
@@ -77,13 +79,21 @@ function truncateString(str, maxLength) {
  * @returns {Array<{status: string, file: string}>} - An array of objects containing the status and file name.
  */
 export function getModifiedFiles(sha) {
-  const output = executeGitCommand(
-    `git diff-tree --no-commit-id --name-status -r ${sha}`
-  );
-  return output.split("\n").map((line) => {
-    const [status, file] = line.trim().split("\t");
-    return { status, file };
-  });
+  try {
+    const output = executeGitCommand(
+      `git diff-tree --no-commit-id --name-status -r ${sha}`
+    );
+    return output.split("\n").map((line) => {
+      const [status, file] = line.trim().split("\t");
+      return { status, file };
+    });
+  } catch (error) {
+    console.error(
+      chalk.red("❌ Error retrieving modified files:"),
+      error.message
+    );
+    return [];
+  }
 }
 
 /**
@@ -93,5 +103,146 @@ export function getModifiedFiles(sha) {
  * @returns {string} - The diff content of the file.
  */
 export function getFileDiff(sha, file) {
-  return executeGitCommand(`git diff ${sha}~1 ${sha} -- ${file} || true`);
+  try {
+    return executeGitCommand(`git diff ${sha}~1 ${sha} -- ${file} || true`);
+  } catch (error) {
+    console.error(
+      chalk.red(`❌ Error retrieving file diff for '${file}':`),
+      error.message
+    );
+    return "";
+  }
+}
+
+/**
+ * Clears the staging area to ensure all changes are reviewed.
+ */
+export function clearStage() {
+  try {
+    executeGitCommand("git reset");
+    console.log(chalk.green("✔ Stage cleared. All changes unstaged."));
+  } catch (error) {
+    console.error(chalk.red("❌ Error clearing stage:"), error.message);
+  }
+}
+
+/**
+ * Gets the current branch of the repository.
+ * @returns {string} - Current branch name.
+ */
+export function getCurrentBranch() {
+  try {
+    return executeGitCommand("git branch --show-current");
+  } catch (error) {
+    console.error(
+      chalk.red("❌ Error retrieving current branch:"),
+      error.message
+    );
+    return "unknown";
+  }
+}
+
+/**
+ * Lists all branches in the repository.
+ * @returns {Array<string>} - List of branch names.
+ */
+export function listBranches() {
+  try {
+    return executeGitCommand("git branch --list")
+      .split("\n")
+      .map((branch) => branch.trim().replace("* ", ""));
+  } catch (error) {
+    console.error(chalk.red("❌ Error listing branches:"), error.message);
+    return [];
+  }
+}
+
+/**
+ * Switches to the specified branch.
+ * @param {string} branch - Name of the branch to switch to.
+ */
+export function switchBranch(branch) {
+  try {
+    executeGitCommand(`git checkout ${branch}`);
+    console.log(chalk.green(`✔ Switched to branch '${branch}' successfully.`));
+  } catch (error) {
+    console.error(
+      chalk.red(`❌ Error switching to branch '${branch}':`),
+      error.message
+    );
+    throw error;
+  }
+}
+
+/**
+ * Checks for conflicts in the repository.
+ * @returns {Array<string>} - List of files with conflicts.
+ */
+export function checkConflicts() {
+  try {
+    const status = executeGitCommand("git status --short");
+    return status
+      .split("\n")
+      .filter((line) => line.startsWith("UU"))
+      .map((line) => line.replace("UU ", "").trim());
+  } catch (error) {
+    console.error(chalk.red("❌ Error checking conflicts:"), error.message);
+    return [];
+  }
+}
+
+/**
+ * Retrieves the diff of the repository.
+ * @returns {string} - The full diff output.
+ */
+export function getRepositoryDiff() {
+  try {
+    return executeGitCommand("git diff");
+  } catch (error) {
+    console.error(
+      chalk.red("❌ Error retrieving repository diff:"),
+      error.message
+    );
+    return "";
+  }
+}
+
+/**
+ * Stages all changes using 'git add .'.
+ */
+export function stageAllChanges() {
+  try {
+    executeGitCommand("git add .");
+    console.log(chalk.green("✔ All changes have been staged."));
+  } catch (error) {
+    console.error(chalk.red("❌ Error staging all changes:"), error.message);
+    throw error;
+  }
+}
+
+/**
+ * Commits changes using the Git editor.
+ * @param {string} message - Commit message to pre-fill.
+ */
+export function commitChangesWithEditor(message) {
+  try {
+    const tempFile = "/tmp/commit_message.txt";
+    fs.writeFileSync(tempFile, message, { encoding: "utf-8" });
+    executeGitCommand(`git commit --edit --file="${tempFile}"`);
+    console.log(chalk.green("✔ Commit completed successfully!"));
+  } catch (error) {
+    console.error(chalk.red("❌ Error committing changes:"), error.message);
+  }
+}
+
+/**
+ * Pushes changes to the remote repository.
+ */
+export function pushChanges() {
+  try {
+    executeGitCommand("git push");
+    console.log(chalk.green("✔ Changes pushed to remote successfully!"));
+  } catch (error) {
+    console.error(chalk.red("❌ Error pushing changes:"), error.message);
+  }
 }

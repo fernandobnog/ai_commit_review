@@ -2,23 +2,38 @@
 
 import chalk from "chalk";
 import { program } from "commander";
+import inquirer from "inquirer";
 import { showHelp } from "./helpers.js";
 import { updateConfigFromString } from "./configManager.js";
-import { analyzeCommits } from "./analyzeCommit.js"; // Updated import
+import { analyzeCommits } from "./analyzeCommit.js"; // Analyze commits
+import { createCommit } from "./createCommit.js"; // Create commits
 
-// Replaces the default help function with the custom one
+// Custom help information
 program.helpInformation = showHelp;
 
 program
   .name("acr")
   .description(
-    "A tool to analyze commits with AI from the local Git repository"
-  )
+    "A tool to analyze commits and create new ones with AI assistance"
+  );
+
+// Command to analyze commits
+program
+  .command("analyze")
+  .description("Analyze commits from the local Git repository")
   .action(async () => {
     await analyzeCommits();
   });
 
-// Command to update configuration
+// Command to create a new commit
+program
+  .command("create")
+  .description("Create a new commit with AI assistance")
+  .action(async () => {
+    await createCommit();
+  });
+
+// Command to update configurations
 program
   .command("set_config <keyValue>")
   .description(
@@ -34,4 +49,28 @@ program
     }
   });
 
-program.parse(process.argv);
+// Guide user if no command is passed
+if (!process.argv.slice(2).length) {
+  console.log(chalk.yellow("⚠️ No command provided."));
+  (async () => {
+    const { command } = await inquirer.prompt([
+      {
+        type: "list",
+        name: "command",
+        message: "What do you want to do?",
+        choices: [
+          { name: "Analyze commits", value: "analyze" },
+          { name: "Create a new commit", value: "create" },
+        ],
+      },
+    ]);
+
+    if (command === "analyze") {
+      await analyzeCommits();
+    } else if (command === "create") {
+      await createCommit();
+    }
+  })();
+} else {
+  program.parse(process.argv);
+}

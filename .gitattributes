@@ -1,0 +1,16 @@
+# Definir o comportamento padrão para normalizar terminações de linha
+* text=auto
+
+# Especificamente para arquivos .sh, forçar terminações de linha LF
+*.sh text eol=lf
+
+# Exceções para arquivos binários que não devem ter suas terminações de linha alteradas
+*.png binary
+*.jpg binary
+*.gif binary
+*.svg binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.exe binary
+*.dll binary
