@@ -16,20 +16,20 @@ import { analyzeUpdatedCode } from "./openaiUtils.js";
 import { PromptType } from "./models.js";
 import fs from "fs";
 import path from "path";
-import os from "os"; 
+import os from "os";
 
 /**
- * Confirma o branch atual ou permite a troca para outro.
+ * Confirms the current branch or allows switching to another.
  */
 async function confirmOrSwitchBranch() {
   const currentBranch = getCurrentBranch();
-  console.log(chalk.blue(`Você está atualmente no branch: ${currentBranch}`));
+  console.log(chalk.blue(`You are currently on the branch: ${currentBranch}`));
 
   const { continueOnBranch } = await inquirer.prompt([
     {
       type: "confirm",
       name: "continueOnBranch",
-      message: "Deseja continuar trabalhando neste branch?",
+      message: "Do you want to continue working on this branch?",
       default: true,
     },
   ]);
@@ -40,7 +40,7 @@ async function confirmOrSwitchBranch() {
       {
         type: "list",
         name: "selectedBranch",
-        message: "Selecione o branch para alternar:",
+        message: "Select the branch to switch to:",
         choices: branches,
       },
     ]);
@@ -50,13 +50,13 @@ async function confirmOrSwitchBranch() {
 }
 
 /**
- * Verifica conflitos e permite que o usuário prossiga ou cancele.
+ * Checks for conflicts and allows the user to proceed or cancel.
  */
 async function verifyConflicts() {
   const conflicts = checkConflicts();
 
   if (conflicts.length > 0) {
-    console.log(chalk.red("❌ Conflitos detectados nos seguintes arquivos:"));
+    console.log(chalk.red("❌ Conflicts detected in the following files:"));
     conflicts.forEach((file, index) => {
       console.log(`${index + 1}. ${file}`);
     });
@@ -65,65 +65,62 @@ async function verifyConflicts() {
       {
         type: "confirm",
         name: "continueWithConflicts",
-        message: "Deseja continuar mesmo com conflitos?",
+        message: "Do you want to continue even with conflicts?",
         default: false,
       },
     ]);
 
     if (!continueWithConflicts) {
-      console.log(chalk.red("❌ Resolva os conflitos antes de prosseguir."));
+      console.log(chalk.red("❌ Resolve the conflicts before proceeding."));
       process.exit(1);
     } else {
-      console.log(chalk.yellow("⚠️ Continuando com conflitos."));
+      console.log(chalk.yellow("⚠️ Continuing with conflicts."));
     }
   } else {
-    console.log(chalk.green("✔ Nenhum conflito detectado."));
+    console.log(chalk.green("✔ No conflicts detected."));
   }
 }
 
 /**
- * Função auxiliar para ler a mensagem de commit do arquivo temporário.
- * @param {string} tempFile - Caminho para o arquivo temporário.
- * @returns {string} - Mensagem de commit atualizada.
+ * Helper function to read the commit message from the temporary file.
+ * @param {string} tempFile - Path to the temporary file.
+ * @returns {string} - Updated commit message.
  */
 function readCommitMessage(tempFile) {
   try {
     return fs.readFileSync(tempFile, { encoding: "utf-8" }).trim();
   } catch (error) {
-    console.error(
-      chalk.red("❌ Erro ao ler a mensagem de commit:"),
-      error.message
-    );
+    console.error(chalk.red("❌ Error reading commit message:"), error.message);
     return "";
   }
 }
 
 /**
- * Fluxo principal para criar um commit.
+ * Main flow to create a commit.
  */
 export async function createCommit() {
   try {
-    // 1. Confirmar ou trocar de branch
+    // 1. Confirm or switch branch
     await confirmOrSwitchBranch();
 
-    // 2. Limpar o stage
+    // 2. Clear the stage
     clearStage();
 
-    // 3. Verificar conflitos
+    // 3. Check for conflicts
     await verifyConflicts();
 
-    // 4. Adicionar todas as mudanças ao stage
+    // 4. Stage all changes
     stageAllChanges();
 
-    // 5. Obter a lista de diffs dos arquivos staged
+    // 5. Get the list of diffs for staged files
     const stagedFiles = getStagedFilesDiffs();
 
     if (stagedFiles.length === 0) {
-      console.log(chalk.yellow("⚠️ Nenhuma alteração staged para commit."));
+      console.log(chalk.yellow("⚠️ No staged changes to commit."));
       process.exit(0);
     }
 
-    // 6. Perguntar como proceder com a mensagem de commit
+    // 6. Ask how to proceed with the commit message
     let commitMessage = "";
     let finalMessageGenerated = false;
 
@@ -132,27 +129,27 @@ export async function createCommit() {
         {
           type: "list",
           name: "messageOption",
-          message: "Como você gostaria de proceder com a mensagem de commit?",
+          message: "How would you like to proceed with the commit message?",
           choices: [
-            { name: "Gerar com IA e editar", value: "ai" },
-            { name: "Escrever a minha própria", value: "manual" },
-            { name: "Cancelar", value: "cancel" },
+            { name: "Generate with AI and edit", value: "ai" },
+            { name: "Write my own", value: "manual" },
+            { name: "Cancel", value: "cancel" },
           ],
         },
       ]);
 
       if (messageOption === "cancel") {
-        console.log(chalk.yellow("⚠️ Processo de commit cancelado."));
+        console.log(chalk.yellow("⚠️ Commit process canceled."));
         process.exit(0);
       }
 
       if (messageOption === "ai") {
-        // Gerar mensagem de commit usando IA
-        console.log(chalk.blue("📤 Gerando mensagem de commit com IA..."));
+        // Generate commit message using AI
+        console.log(chalk.blue("📤 Generating commit message with AI..."));
         commitMessage = await analyzeUpdatedCode(
           stagedFiles,
           PromptType.CREATE
-        ); // Passa os diffs
+        ); // Pass the diffs
       }
 
       if (messageOption === "manual") {
@@ -160,45 +157,45 @@ export async function createCommit() {
           {
             type: "input",
             name: "manualMessage",
-            message: "Digite sua mensagem de commit:",
+            message: "Enter your commit message:",
             validate: (input) =>
               input.trim() === ""
-                ? "A mensagem de commit não pode estar vazia."
+                ? "The commit message cannot be empty."
                 : true,
           },
         ]);
         commitMessage = manualMessage;
       }
 
-      // Caminho para o arquivo temporário
+      // Path to the temporary file
       const tempFile = path.join(os.tmpdir(), "commit_message.txt");
 
-      // Escrever a mensagem inicial no arquivo temporário
+      // Write the initial message to the temporary file
       fs.writeFileSync(tempFile, commitMessage, { encoding: "utf-8" });
 
-      // Abrir editor para finalizar a mensagem de commit
+      // Open editor to finalize the commit message
       commitChangesWithEditor(tempFile);
 
-      // Ler a mensagem de commit atualizada após a edição
+      // Read the updated commit message after editing
       const updatedCommitMessage = readCommitMessage(tempFile);
 
-      // Remover o arquivo temporário após a leitura
+      // Remove the temporary file after reading
       fs.unlinkSync(tempFile);
 
-      // Verificar se a mensagem de commit não está vazia
+      // Check if the commit message is not empty
       if (!updatedCommitMessage) {
-        console.log(chalk.red("❌ A mensagem de commit está vazia."));
+        console.log(chalk.red("❌ The commit message is empty."));
       } else {
         commitMessage = updatedCommitMessage;
-        finalMessageGenerated = true; // Sair do loop se a mensagem não estiver vazia
+        finalMessageGenerated = true; // Exit the loop if the message is not empty
       }
     }
-    // 7. Prompt para push
+    // 7. Prompt to push
     const { push } = await inquirer.prompt([
       {
         type: "confirm",
         name: "push",
-        message: "Deseja fazer push para o repositório remoto?",
+        message: "Do you want to push to the remote repository?",
         default: true,
       },
     ]);
@@ -206,11 +203,11 @@ export async function createCommit() {
     if (push) {
       pushChanges();
     } else {
-      console.log(chalk.yellow("⚠️ Push não realizado."));
+      console.log(chalk.yellow("⚠️ Push not performed."));
     }
   } catch (error) {
     console.error(
-      chalk.red("❌ Erro durante o processo de criação do commit:"),
+      chalk.red("❌ Error during the commit creation process:"),
       error.message
     );
   }
