@@ -27,7 +27,7 @@ function generatePrompt(files, promptType, config) {
     [PromptType.ANALYZE]: (file) =>
       `Please analyze the changes in this commit. Provide an overview of the modifications made to the files. Check for any apparent errors or bugs in the changes and point out potential improvements or optimizations that could be implemented. Additionally, suggest best practices that could be applied to improve code quality.
         ${file.filename}:\n${file.content}\n\n${languageInstruction}`,
-    
+
     [PromptType.CREATE]: (file) =>
       `Analyze the content of the file ${file.filename} below and create a title and a commit message that follow best practices for version control, respecting the language of the file's content:
 
@@ -36,6 +36,7 @@ function generatePrompt(files, promptType, config) {
         Instructions:
 
         - For the Commit Title:
+          - Starts with an emoji (e.g., "🚀", "🔧", "📝").
           - Use a maximum of 50 characters.
           - Start with an imperative verb (e.g., "Add", "Fix", "Remove").
           - Be specific and direct about the change made.
