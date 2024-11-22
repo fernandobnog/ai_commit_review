@@ -45,12 +45,14 @@ function generatePrompt(files, promptType, config) {
         Formato da Resposta:
 
         [Título do Commit]
-
         [Descrição detalhada das alterações, incluindo o porquê da mudança e qualquer informação relevante.]
 
         Restrições:
         - Não invente informações que não estejam no conteúdo do arquivo.
         - Use apenas os dados presentes no arquivo como base para criar o título e a mensagem.
+        - Não inclua informações pessoais ou sensíveis no commit.
+        - Evite copiar e colar trechos inteiros do arquivo no commit.
+        - Não use expressões como **Mensagem do Commit:** ou **Título do Commit:** no texto.
 
         ${languageInstruction}`,
   };
