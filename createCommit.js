@@ -10,6 +10,7 @@ import {
   stageAllChanges, // Importing the new function
   commitChangesWithEditor,
   pushChanges,
+  getStagedFiles, // Importando a nova função
 } from "./gitUtils.js";
 import { analyzeUpdatedCode } from "./openaiUtils.js";
 
@@ -93,8 +94,13 @@ export async function createCommit() {
     // 4. Stage all changes
     stageAllChanges();
 
-    // 5. Remove the redundant message
-    // Removed: console.log(chalk.green("✔ All changes have been staged and are ready to commit."));
+    // 5. Obter a lista de arquivos staged
+    const stagedFiles = getStagedFiles();
+
+    if (stagedFiles.length === 0) {
+      console.log(chalk.yellow("⚠️ No changes staged for commit."));
+      process.exit(0);
+    }
 
     // 6. Ask how to proceed with the commit message
     let commitMessage = "";
@@ -122,7 +128,7 @@ export async function createCommit() {
       if (messageOption === "ai") {
         // Generate commit message using AI
         console.log(chalk.blue("📤 Generating commit message with AI..."));
-        commitMessage = await analyzeUpdatedCode(); // Adjusted to not require parameters
+        commitMessage = await analyzeUpdatedCode(stagedFiles); // Pass the stagedFiles
       }
 
       if (messageOption === "manual") {

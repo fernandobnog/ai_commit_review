@@ -221,6 +221,31 @@ export function stageAllChanges() {
 }
 
 /**
+ * Retrieves the list of staged files with their contents.
+ * @returns {Array<{filename: string, content: string}>} - List of staged files and their contents.
+ */
+export function getStagedFiles() {
+  try {
+    // Obter a lista de arquivos staged
+    const files = executeGitCommand("git diff --cached --name-only")
+      .split("\n")
+      .filter((line) => line);
+
+    // Obter o conteúdo de cada arquivo staged
+    return files.map((file) => ({
+      filename: file,
+      content: executeGitCommand(`git show :${file}`),
+    }));
+  } catch (error) {
+    console.error(
+      chalk.red("❌ Error retrieving staged files:"),
+      error.message
+    );
+    return [];
+  }
+}
+
+/**
  * Commits changes using the Git editor.
  * @param {string} message - Commit message to pre-fill.
  */
