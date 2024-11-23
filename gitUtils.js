@@ -1,6 +1,9 @@
 // gitUtils.js
 import { execSync } from "child_process";
 import chalk from "chalk";
+import fs from "fs";
+import path from "path";
+import os from "os";
 
 /**
  * Executes a Git command synchronously.
@@ -286,5 +289,70 @@ export function pushChanges() {
     );
   } catch (error) {
     console.error(chalk.red("❌ Error pushing changes:"), error.message);
+  }
+}
+
+/**
+ * Retrieves the diff for conflicts in a file.
+ * @param {string} file - File name with conflicts.
+ * @returns {string} - Diff content showing conflicts.
+ */
+export function getConflictDiff(file) {
+  try {
+    return executeGitCommand(`git diff ${file}`);
+  } catch (error) {
+    console.error(
+      chalk.red(`❌ Error retrieving conflict diff for file '${file}':`),
+      error.message
+    );
+    return "";
+  }
+}
+
+/**
+ * Writes the conflict diff to a temporary file.
+ * @param {string} file - File name with conflicts.
+ * @param {string} diff - Conflict diff.
+ * @returns {string} - Path to the temporary file.
+ */
+export function writeConflictToTempFile(file, diff) {
+  const tempFilePath = path.join(
+    os.tmpdir(),
+    `${path.basename(file)}_conflict.txt`
+  );
+  fs.writeFileSync(tempFilePath, diff, { encoding: "utf-8" });
+  return tempFilePath;
+}
+
+/**
+ * Opens a temporary file in the default editor for manual conflict resolution.
+ * @param {string} tempFilePath - Path to the temporary file.
+ */
+export function openFileInEditor(tempFilePath) {
+  const editor = process.env.EDITOR || "vim";
+  try {
+    execSync(`${editor} "${tempFilePath}"`, { stdio: "inherit" });
+    console.log(chalk.green(`✔ Resolved file saved: ${tempFilePath}`));
+  } catch (error) {
+    console.error(chalk.red("❌ Error opening file in editor:"), error.message);
+  }
+}
+
+/**
+ * Updates the repository file with the resolved content from the temporary file.
+ * @param {string} file - Path to the repository file.
+ * @param {string} tempFilePath - Path to the temporary file with resolved content.
+ */
+export function updateFileFromTemp(file, tempFilePath) {
+  try {
+    const resolvedContent = fs.readFileSync(tempFilePath, "utf-8");
+    fs.writeFileSync(file, resolvedContent);
+    executeGitCommand(`git add "${file}"`);
+    console.log(chalk.green(`✔ Conflict resolved and staged for: ${file}`));
+  } catch (error) {
+    console.error(
+      chalk.red("❌ Error updating file from temp:"),
+      error.message
+    );
   }
 }

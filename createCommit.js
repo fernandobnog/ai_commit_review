@@ -11,6 +11,10 @@ import {
   commitChangesWithEditor,
   getStagedFilesDiffs,
   pushChanges,
+  getConflictDiff,
+  writeConflictToTempFile,
+  openFileInEditor,
+  updateFileFromTemp,
 } from "./gitUtils.js";
 import { analyzeUpdatedCode } from "./openaiUtils.js";
 import { PromptType } from "./models.js";
@@ -50,7 +54,81 @@ async function confirmOrSwitchBranch() {
 }
 
 /**
- * Checks for conflicts and allows the user to proceed or cancel.
+ * Allows manual conflict resolution in an editor.
+ */
+async function resolveConflictsManually(conflicts) {
+  for (const file of conflicts) {
+    console.log(chalk.yellow(`Resolving conflict for: ${file}`));
+    const diff = getConflictDiff(file);
+
+    if (!diff) {
+      console.log(chalk.red(`❌ Unable to get diff for: ${file}`));
+      continue;
+    }
+
+    const tempFilePath = writeConflictToTempFile(file, diff);
+    openFileInEditor(tempFilePath);
+
+    const { confirmResolution } = await inquirer.prompt([
+      {
+        type: "confirm",
+        name: "confirmResolution",
+        message: `Have you resolved the conflict for: ${file}?`,
+        default: true,
+      },
+    ]);
+
+    if (confirmResolution) {
+      updateFileFromTemp(file, tempFilePath);
+      fs.unlinkSync(tempFilePath); // Clean up temp file
+    } else {
+      console.log(chalk.red(`❌ Conflict not resolved for: ${file}`));
+    }
+  }
+}
+
+/**
+ * Allows Automatically conflict resolution in an editor.
+ */
+async function resolveConflictsAutomatically(conflicts) {
+  try {
+    console.log(chalk.blue("⚙️ Launching mergetool to resolve conflicts..."));
+    conflicts.forEach((file) => {
+      console.log(chalk.yellow(`Resolving conflict for: ${file}`));
+      executeGitCommand(`git mergetool --no-prompt -- ${file}`);
+    });
+    console.log(chalk.green("✔ Conflicts resolved using mergetool."));
+
+    const { stageChanges } = await inquirer.prompt([
+      {
+        type: "confirm",
+        name: "stageChanges",
+        message: "Would you like to stage the resolved files?",
+        default: true,
+      },
+    ]);
+
+    if (stageChanges) {
+      executeGitCommand("git add .");
+      console.log(chalk.green("✔ Resolved files staged."));
+    } else {
+      console.log(
+        chalk.yellow(
+          "⚠️ Files not staged. Resolve remaining conflicts before proceeding."
+        )
+      );
+    }
+  } catch (error) {
+    console.error(
+      chalk.red("❌ Error resolving conflicts automatically:"),
+      error.message
+    );
+    process.exit(1);
+  }
+}
+
+/**
+ * Checks for conflicts and allows the user to proceed or resolve them manually.
  */
 async function verifyConflicts() {
   const conflicts = checkConflicts();
@@ -61,20 +139,26 @@ async function verifyConflicts() {
       console.log(`${index + 1}. ${file}`);
     });
 
-    const { continueWithConflicts } = await inquirer.prompt([
+    const { resolutionOption } = await inquirer.prompt([
       {
-        type: "confirm",
-        name: "continueWithConflicts",
-        message: "Do you want to continue even with conflicts?",
-        default: false,
+        type: "list",
+        name: "resolutionOption",
+        message: "How would you like to resolve the conflicts?",
+        choices: [
+          { name: "Resolve manually in an editor", value: "manual" },
+          { name: "Resolve automatically using mergetool", value: "automatic" },
+          { name: "Cancel and resolve later", value: "cancel" },
+        ],
       },
     ]);
 
-    if (!continueWithConflicts) {
+    if (resolutionOption === "manual") {
+      await resolveConflictsManually(conflicts);
+    } else if (resolutionOption === "automatic") {
+      await resolveConflictsAutomatically(conflicts);
+    } else if (resolutionOption === "cancel") {
       console.log(chalk.red("❌ Resolve the conflicts before proceeding."));
       process.exit(1);
-    } else {
-      console.log(chalk.yellow("⚠️ Continuing with conflicts."));
     }
   } else {
     console.log(chalk.green("✔ No conflicts detected."));
@@ -114,7 +198,7 @@ export async function createCommit() {
 
     // 5. Get the list of diffs for staged files
     const stagedFiles = getStagedFilesDiffs();
-    
+
     if (stagedFiles.length === 0) {
       console.log(chalk.yellow("⚠️ No staged changes to commit."));
       process.exit(0);
