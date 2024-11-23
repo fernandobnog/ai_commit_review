@@ -19,55 +19,67 @@ function generateLanguageInstruction(langcode) {
  * Generates the prompt for analyzing code changes.
  */
 function generatePrompt(files, promptType, config) {
-  const languageInstruction = generateLanguageInstruction(
-    config.OPENAI_RESPONSE_LANGUAGE
-  );
 
-  const promptMap = {
-    [PromptType.ANALYZE]: (file) =>
-      `Please analyze the changes in this commit. Provide an overview of the modifications made to the files. Check for any apparent errors or bugs in the changes and point out potential improvements or optimizations that could be implemented. Additionally, suggest best practices that could be applied to improve code quality.
-        ${file.filename}:\n${file.content}\n\n${languageInstruction}`,
+  const diffs = files
+    .map(
+      (file) => `
+          **${file.filename}:**
+          \`\`\`
+          ${file.diff}
+          \`\`\``
+    )
+    .join("\n");
+  
+  const languageInstruction = generateLanguageInstruction(config.OPENAI_RESPONSE_LANGUAGE);
 
-    [PromptType.CREATE]: (file) =>
-      `Analyze the content of the file ${file.filename} below and create a title and a commit message that follow best practices for version control, respecting the language of the file's content:
+  if (promptType === PromptType.ANALYZE) {
+    return `Please analyze the changes in this commit. Provide an overview of the modifications made to the following files. 
+            Check for any apparent errors or bugs in the changes and point out potential improvements or optimizations that could be implemented.
+            Additionally, suggest best practices that could be applied to improve code quality.\n
 
-        ${file.content}
+            ${diffs}\n
 
-        Instructions:
-
-        - For the Commit Title:
-          - Starts with an emoji (e.g., "🚀", "🔧", "📝").
-          - Use a maximum of 50 characters.
-          - Start with an imperative verb (e.g., "Add", "Fix", "Remove").
-          - Be specific and direct about the change made.
-        - For the Commit Message:
-          - Describe in detail the changes made.
-          - Explain the reason for the change and how it impacts the project.
-          - Use lists or short paragraphs to organize the explanation.
-        - Restrictions:
-          - Strictly base your response on the information provided in the file content.
-          - Do not invent information not present in the file content.
-          - Avoid copying and pasting large portions of the file content.
-          - Do not include personal or sensitive information in the commit.
-
-        ${languageInstruction}
-
-        Please respond with the title followed by the description, each on a separate line, exactly like this:
-
-        Title
-        Description
-
-        Example:
-
-        🚀 Add user authentication
-        Implemented user login and registration functionality using JWT tokens.
-        `,
-  };
-
-  if (!promptMap[promptType]) {
-    throw new Error(`Invalid prompt type: ${promptType}`);
+            ${languageInstruction}`;
   }
-  return files.map(promptMap[promptType]).join("\n\n");
+
+  if (promptType === PromptType.CREATE) {
+    return `Analyze the diffs of the following files and create a commit title and message that follow best practices for version control, respecting the language of the files' content:\n
+
+            ${diffs}\n
+
+            Instructions:\n
+
+            - **For the Commit Title:**\n
+              - Starts with an emoji (e.g., "🚀", "🔧", "📝").\n
+              - Use a maximum of 50 characters.\n\
+              - Start with an imperative verb (e.g., "Add", "Fix", "Remove").\n
+              - Be specific and direct about the change made.\n
+              
+            - **For the Commit Message:**\n
+              - Describe in detail the changes made.\n
+              - Explain the reason for the change and how it impacts the project.\n
+              - Use lists or short paragraphs to organize the explanation.\n
+              
+            - **Restrictions:**\n
+              - Strictly base your response on the information provided in the diffs.\n
+              - Do not invent information not present in the diffs.\n
+              - Avoid copying and pasting large portions of the diffs.\n
+              - Do not include personal or sensitive information in the commit.\n
+
+            ${languageInstruction}\n
+
+            Please respond with the title followed by the description, each on a separate line, exactly like this:\n
+
+            Title\n
+            Description\n
+
+            Example:\n
+
+            🚀 Add user authentication\n
+            Implemented user login and registration functionality using JWT tokens.`;
+  }
+
+  throw new Error(`Invalid prompt type: ${promptType}`);
 }
 
 /**

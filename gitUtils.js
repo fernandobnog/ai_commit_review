@@ -1,9 +1,6 @@
 // gitUtils.js
 import { execSync } from "child_process";
 import chalk from "chalk";
-import fs from "fs";
-import os from "os";
-import path from "path";
 
 /**
  * Executes a Git command synchronously.
@@ -13,6 +10,7 @@ import path from "path";
  */
 export function executeGitCommand(command) {
   try {
+    console.log(command);
     return execSync(command, { encoding: "utf-8" }).trim();
   } catch (error) {
     console.error(
@@ -216,7 +214,7 @@ export function getRepositoryDiff() {
  */
 export function getStagedFileDiff(file) {
   try {
-    return executeGitCommand(`git diff --cached -- ${file}`);
+    return executeGitCommand(`git diff --cached ${file}`);
   } catch (error) {
     console.error(
       chalk.red(`❌ Error getting diff for file '${file}':`),
@@ -253,7 +251,7 @@ export function getStagedFilesDiffs() {
     // Get the diff for each staged file
     return files.map((file) => ({
       filename: file,
-      diff: getStagedFileDiff(file), // Using 'diff' instead of 'content'
+      diff: getStagedFileDiff(file),
     }));
   } catch (error) {
     console.error(

@@ -114,7 +114,7 @@ export async function createCommit() {
 
     // 5. Get the list of diffs for staged files
     const stagedFiles = getStagedFilesDiffs();
-
+    
     if (stagedFiles.length === 0) {
       console.log(chalk.yellow("⚠️ No staged changes to commit."));
       process.exit(0);

@@ -165,7 +165,7 @@ const processModifiedFiles = async (sha, modifiedFiles) => {
           );
           return null;
         }
-        return { filename: file, content: diff, status };
+        return { filename: file, diff: diff, status };
       } catch (error) {
         console.error(
           chalk.red(`❌ Error processing differences for file ${file}:`),
