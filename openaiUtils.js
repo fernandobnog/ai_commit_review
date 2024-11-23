@@ -12,6 +12,7 @@ function generateLanguageInstruction(langcode) {
     return map;
   }, {});
   const language = languageMap[langcode];
+  console.log(language);
   return `Please respond entirely in ${language}.`;
 }
 
