@@ -12,7 +12,7 @@ function generateLanguageInstruction(langcode) {
     return map;
   }, {});
   const language = languageMap[langcode];
-  return `Please always respond entirely in ${language}.`;
+  return `Please respond entirely in ${language}.`;
 }
 
 /**
