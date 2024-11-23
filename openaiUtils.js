@@ -12,14 +12,13 @@ function generateLanguageInstruction(langcode) {
     return map;
   }, {});
   const language = languageMap[langcode];
-  return `Please respond in ${language}.`;
+  return `Please always respond entirely in ${language}.`;
 }
 
 /**
  * Generates the prompt for analyzing code changes.
  */
 function generatePrompt(files, promptType, config) {
-
   const diffs = files
     .map(
       (file) => `
@@ -29,8 +28,10 @@ function generatePrompt(files, promptType, config) {
           \`\`\``
     )
     .join("\n");
-  
-  const languageInstruction = generateLanguageInstruction(config.OPENAI_RESPONSE_LANGUAGE);
+
+  const languageInstruction = generateLanguageInstruction(
+    config.OPENAI_RESPONSE_LANGUAGE
+  );
 
   if (promptType === PromptType.ANALYZE) {
     return `Please analyze the changes in this commit. Provide an overview of the modifications made to the following files. 
@@ -48,6 +49,8 @@ function generatePrompt(files, promptType, config) {
             ${diffs}\n
 
             Instructions:\n
+            
+            ${languageInstruction}\n
 
             - **For the Commit Title:**\n
               - Starts with an emoji (e.g., "🚀", "🔧", "📝").\n
@@ -65,8 +68,6 @@ function generatePrompt(files, promptType, config) {
               - Do not invent information not present in the diffs.\n
               - Avoid copying and pasting large portions of the diffs.\n
               - Do not include personal or sensitive information in the commit.\n
-
-            ${languageInstruction}\n
 
             Please respond with the title followed by the description, each on a separate line, exactly like this:\n
 
