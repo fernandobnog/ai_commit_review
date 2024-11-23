@@ -1,7 +1,6 @@
-
 # AI Commit Report
 
-A command-line tool for analyzing Git commits and code, powered by AI from your local Git repository.
+A command-line tool powered by AI for creating or analyzing Git commits and code directly from your local Git repository.
 
 ## Table of Contents
 
@@ -14,6 +13,7 @@ A command-line tool for analyzing Git commits and code, powered by AI from your 
   - [Set the Response Language](#set-the-response-language)
 - [Usage](#usage)
   - [Analyze Commits](#analyze-commits)
+  - [Create a Commit](#create-a-commit)
   - [Show Help](#show-help)
 - [Examples](#examples)
 - [Dependencies](#dependencies)
@@ -26,7 +26,7 @@ A command-line tool for analyzing Git commits and code, powered by AI from your 
 
 ## Introduction
 
-**AI Commit Report** is a tool that uses the OpenAI API to analyze code changes in Git commits. It provides insights into the changes made, checks best practices, and suggests improvements to help maintain code quality and development efficiency.
+**AI Commit Report** is a robust tool that utilizes the OpenAI API to assist with creating commits and analyzing code changes in Git repositories. It delivers detailed insights into modifications, evaluates adherence to best practices, and offers suggestions for improving code quality. By enhancing development efficiency, this tool also supports AI-driven commit creation, simplifying and optimizing your Git workflow.
 
 ## Installation
 
@@ -34,35 +34,33 @@ A command-line tool for analyzing Git commits and code, powered by AI from your 
 
 To globally install the tool on your system, follow these steps:
 
-1. **Fork the repository:**
+1. **Fork the Repository:**
 
    Navigate to the GitHub repository and click the "Fork" button to create your fork.
 
-2. **Clone your fork:**
+2. **Clone Your Fork:**
 
    ```bash
    git clone https://github.com/<your-username>/ai-commit-report.git
    ```
 
-3. **Navigate to the project directory:**
+3. **Navigate to the Project Directory:**
 
    ```bash
    cd ai-commit-report
    ```
 
-4. **Install dependencies:**
+4. **Install Dependencies:**
 
    ```bash
    npm install
    ```
 
-5. **Install the package globally:**
+5. **Install the Package Globally:**
 
    ```bash
    npm install -g .
    ```
-
-   **Note:** If you encounter permission issues, you may need to adjust permissions or use `sudo`. It is recommended to configure your environment to avoid the need for `sudo` with npm.
 
 ## Getting Started
 
@@ -124,12 +122,32 @@ acr set_config OPENAI_RESPONSE_LANGUAGE=en-US
 To analyze commits, navigate to the repository directory and run:
 
 ```bash
-acr
+acr analyze
 ```
 
-The tool will list the last 15 commits and prompt you to select the commits to be analyzed. Follow the instructions displayed:
+The tool will list the last 5 commits and prompt you to select the commits to be analyzed. Follow the instructions displayed:
 
 - **Controls:** Press `<space>` to select, `<a>` to toggle all, `<i>` to invert selection, and `<enter>` to proceed.
+
+### Create a Commit
+
+To create a new commit with AI assistance, use:
+
+```bash
+acr create
+```
+
+**Workflow:**
+
+1. **Confirm or Switch Branch:** Ensures you are on the correct branch before making changes.
+2. **Clear the Stage:** Clears the staging area to start fresh.
+3. **Check for Conflicts:** Verifies there are no merge conflicts.
+4. **Stage All Changes:** Stages all modified files.
+5. **Generate Commit Message:**
+   - **AI Assistance:** Generates a commit message based on the staged changes.
+   - **Manual Entry:** Allows you to write your own commit message.
+6. **Edit Commit Message:** Opens your default editor to finalize the commit message.
+7. **Push to Remote:** Optionally pushes the commit to the remote repository.
 
 ### Show Help
 
@@ -141,27 +159,35 @@ acr help
 
 ## Examples
 
-- **Analyze specific commits:**
+- **Analyze Commits:**
 
   ```bash
-  acr
+  acr analyze
   ```
 
   Follow the instructions to select commits for analysis.
 
-- **Set the OpenAI API key:**
+- **Create a New Commit with AI Assistance:**
+
+  ```bash
+  acr create
+  ```
+
+  Follow the interactive prompts to generate or write your commit message.
+
+- **Set the OpenAI API Key:**
 
   ```bash
   acr set_config OPENAI_API_KEY=your-key
   ```
 
-- **Set the OpenAI model:**
+- **Set the OpenAI Model:**
 
   ```bash
   acr set_config OPENAI_API_MODEL=gpt-4o-mini
   ```
 
-- **Set the response language:**
+- **Set the Response Language:**
 
   ```bash
   acr set_config OPENAI_RESPONSE_LANGUAGE=en-US
@@ -178,27 +204,27 @@ Contributions are welcome! Feel free to open issues and pull requests in the rep
 
 ### How to Contribute
 
-1. **Fork the project.**
-2. **Create a new branch:**
+1. **Fork the Project.**
+2. **Create a New Branch:**
 
    ```bash
    git checkout -b my-feature
    ```
 
-3. **Make your changes.**
-4. **Commit your changes:**
+3. **Make Your Changes.**
+4. **Commit Your Changes:**
 
    ```bash
    git commit -m 'My new feature'
    ```
 
-5. **Push to the remote branch:**
+5. **Push to the Remote Branch:**
 
    ```bash
    git push origin my-feature
    ```
 
-6. **Open a pull request.**
+6. **Open a Pull Request.**
 
    Navigate to your fork on GitHub and click the "Compare & pull request" button to submit your changes for review.
 
@@ -250,5 +276,3 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 - **Russian** - `ru`
 - **Portuguese (Brazil)** - `pt-BR`
 - **Portuguese (Portugal)** - `pt-PT`
-
----

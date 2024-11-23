@@ -3,6 +3,7 @@
 
 # Especificamente para arquivos .sh, forçar terminações de linha LF
 *.sh text eol=lf
+*.md text eol=lf
 
 # Exceções para arquivos binários que não devem ter suas terminações de linha alteradas
 *.png binary
