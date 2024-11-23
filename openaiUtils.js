@@ -35,9 +35,11 @@ function generatePrompt(files, promptType, config) {
   );
 
   if (promptType === PromptType.ANALYZE) {
-    return `Please analyze the changes in this commit. Provide an overview of the modifications made to the following files. 
-            Check for any apparent errors or bugs in the changes and point out potential improvements or optimizations that could be implemented.
-            Additionally, suggest best practices that could be applied to improve code quality.\n
+    return `Please analyze the changes in this commit and provide a concise summary of the modifications made to the following files. 
+            Identify any potential errors or bugs, suggest improvements or optimizations, and recommend best practices to enhance code quality.
+            Ensure your response is brief and objective.
+
+.\n
 
             ${diffs}\n
 
@@ -45,7 +47,9 @@ function generatePrompt(files, promptType, config) {
   }
 
   if (promptType === PromptType.CREATE) {
-    return `Analyze the diffs of the following files and create a commit title and message that follow best practices for version control, respecting the language of the files' content:\n
+    return `Analyze the diffs of the following files and create a commit title and message 
+            that follow best practices for version control, 
+            respecting the language of the files' content:\n
 
             ${diffs}\n
 
@@ -95,6 +99,7 @@ export async function analyzeUpdatedCode(
 
   const openai = new OpenAI({ apiKey: config.OPENAI_API_KEY });
   const prompt = generatePrompt(files, promptType, config);
+  console.log(chalk.blue(prompt));
   try {
     console.log(chalk.blue("📤 Sending request to OpenAI..."));
     const response = await openai.chat.completions.create({
