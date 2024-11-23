@@ -50,16 +50,16 @@ function generatePrompt(files, promptType, config) {
             ${diffs}\n
 
             Instructions:\n
-            
-            ${languageInstruction}\n
 
             - **For the Commit Title:**\n
+              - ${languageInstruction}\n
               - Starts with an emoji (e.g., "🚀", "🔧", "📝").\n
               - Use a maximum of 50 characters.\n\
-              - Start with an imperative verb (e.g., "Add", "Fix", "Remove").\n
+              - Start with an imperative verb.\n
               - Be specific and direct about the change made.\n
               
             - **For the Commit Message:**\n
+              - ${languageInstruction}\n
               - Describe in detail the changes made.\n
               - Explain the reason for the change and how it impacts the project.\n
               - Use lists or short paragraphs to organize the explanation.\n
