@@ -10,7 +10,6 @@ import chalk from "chalk";
  */
 export function executeGitCommand(command) {
   try {
-    console.log(command);
     return execSync(command, { encoding: "utf-8" }).trim();
   } catch (error) {
     console.error(
