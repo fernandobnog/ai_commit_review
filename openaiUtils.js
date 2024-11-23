@@ -12,7 +12,6 @@ function generateLanguageInstruction(langcode) {
     return map;
   }, {});
   const language = languageMap[langcode];
-  console.log(language);
   return `Please respond entirely in ${language}.`;
 }
 
@@ -37,9 +36,7 @@ function generatePrompt(files, promptType, config) {
   if (promptType === PromptType.ANALYZE) {
     return `Please analyze the changes in this commit and provide a concise summary of the modifications made to the following files. 
             Identify any potential errors or bugs, suggest improvements or optimizations, and recommend best practices to enhance code quality.
-            Ensure your response is brief and objective.
-
-.\n
+            Ensure your response is brief and objective.\n
 
             ${diffs}\n
 
@@ -99,7 +96,6 @@ export async function analyzeUpdatedCode(
 
   const openai = new OpenAI({ apiKey: config.OPENAI_API_KEY });
   const prompt = generatePrompt(files, promptType, config);
-  console.log(chalk.blue(prompt));
   try {
     console.log(chalk.blue("📤 Sending request to OpenAI..."));
     const response = await openai.chat.completions.create({
