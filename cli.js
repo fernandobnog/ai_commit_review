@@ -20,7 +20,7 @@ program
 // Command to analyze commits
 program
   .command("analyze")
-  .description("Analyze commits from the local Git repository")
+  .description("Analyze commits individuals or in groups from the local Git repository")
   .action(async () => {
     await analyzeCommits();
   });
