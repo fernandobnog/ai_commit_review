@@ -2,6 +2,7 @@
 import chalk from "chalk";
 import inquirer from "inquirer";
 import {
+  pullChanges,
   clearStage,
   checkConflicts,
   getCurrentBranch,
@@ -187,16 +188,19 @@ export async function createCommit() {
     // 1. Confirm or switch branch
     await confirmOrSwitchBranch();
 
-    // 2. Clear the stage
+    // 2 .Pull the latest changes from the remote repository
+    pullChanges();
+
+    // 3. Clear the stage
     clearStage();
 
-    // 3. Check for conflicts
+    // 4. Check for conflicts
     await verifyConflicts();
 
-    // 4. Stage all changes
+    // 5. Stage all changes
     stageAllChanges();
 
-    // 5. Get the list of diffs for staged files
+    // 6. Get the list of diffs for staged files
     const stagedFiles = getStagedFilesDiffs();
 
     if (stagedFiles.length === 0) {
@@ -204,7 +208,7 @@ export async function createCommit() {
       process.exit(0);
     }
 
-    // 6. Ask how to proceed with the commit message
+    // 7. Ask how to proceed with the commit message
     let commitMessage = "";
     let finalMessageGenerated = false;
 

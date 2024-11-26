@@ -289,6 +289,19 @@ export function commitChangesWithEditor(tempFilePath) {
 }
 
 /**
+ * Puxa as últimas alterações do repositório remoto para o branch atual.
+ */
+export function pullChanges() {
+  try {
+    executeGitCommand("git pull");
+    console.log(chalk.green("✔ Successfully pulled the latest changes from the remote repository."));
+  } catch (error) {
+    console.error(chalk.red("❌ Error pulling changes:"), error.message);
+    throw error;
+  }
+}
+
+/**
  * Pushes the changes to the remote repository.
  */
 export function pushChanges() {
