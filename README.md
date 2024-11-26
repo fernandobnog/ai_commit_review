@@ -1,4 +1,3 @@
-
 # AI Commit Report
 
 A command-line tool powered by AI for creating or analyzing Git commits and code directly from your local Git repository.
@@ -139,14 +138,15 @@ acr create
 **Workflow:**
 
 1. **Confirm or Switch Branch:** Ensures you are on the correct branch before making changes.
-2. **Clear the Stage:** Clears the staging area to start fresh.
-3. **Check for Conflicts:** Verifies there are no merge conflicts.
-4. **Stage All Changes:** Stages all modified files.
-5. **Generate Commit Message:**
+2. **Pull:** Pull the latest changes from the remote repository.
+3. **Clear the Stage:** Clears the staging area to start fresh.
+4. **Check for Conflicts:** Verifies there are no merge conflicts.
+5. **Stage All Changes:** Stages all modified files.
+6. **Generate Commit Message:**
    - **AI Assistance:** Generates a commit message based on the staged changes.
    - **Manual Entry:** Allows you to write your own commit message.
-6. **Edit Commit Message:** Opens your default editor to finalize the commit message.
-7. **Push to Remote:** Optionally pushes the commit to the remote repository.
+7. **Edit Commit Message:** Opens your default editor to finalize the commit message.
+8. **Push to Remote:** Optionally pushes the commit to the remote repository.
 
 ### Show Help
 
