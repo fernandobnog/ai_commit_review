@@ -216,12 +216,22 @@ export function getRepositoryDiff() {
  */
 export function getStagedFileDiff(file) {
   try {
-    return executeGitCommand(`git diff --cached ${file}`);
+    // Use '--' to avoid ambiguity between file paths and revisions
+    return executeGitCommand(`git diff --cached -- "${file}"`);
   } catch (error) {
     console.error(
       chalk.red(`❌ Error getting diff for file '${file}':`),
       error.message
     );
+
+    // Handle deleted files gracefully
+    const isDeletedFile =
+      executeGitCommand(`git ls-files --deleted -- "${file}"`).length > 0;
+    if (isDeletedFile) {
+      console.warn(chalk.yellow(`⚠️ File '${file}' was deleted.`));
+      return `File deleted: ${file}`;
+    }
+
     return "";
   }
 }
@@ -251,10 +261,10 @@ export function getStagedFilesDiffs() {
       .filter((line) => line);
 
     // Get the diff for each staged file
-    return files.map((file) => ({
-      filename: file,
-      diff: getStagedFileDiff(file),
-    }));
+    return files.map((file) => {
+      const diff = getStagedFileDiff(file);
+      return { filename: file, diff };
+    });
   } catch (error) {
     console.error(
       chalk.red("❌ Error retrieving diffs for staged files:"),
