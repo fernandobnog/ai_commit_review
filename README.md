@@ -1,3 +1,4 @@
+
 # AI Commit Report
 
 A command-line tool powered by AI for creating or analyzing Git commits and code directly from your local Git repository.
@@ -7,6 +8,8 @@ A command-line tool powered by AI for creating or analyzing Git commits and code
 - [Introduction](#introduction)
 - [Installation](#installation)
   - [Global Installation](#global-installation)
+  - [Update](#update)
+  - [Uninstallation](#uninstallation)
 - [Getting Started](#getting-started)
   - [Set the API Key](#set-the-api-key)
   - [Set the OpenAI Model](#set-the-openai-model)
@@ -32,35 +35,31 @@ A command-line tool powered by AI for creating or analyzing Git commits and code
 
 ### Global Installation
 
-To globally install the tool on your system, follow these steps:
+To install the tool globally on your system, use the following command:
 
-1. **Fork the Repository:**
+```bash
+npm install -g ai-commit-review
+```
 
-   Navigate to the GitHub repository and click the "Fork" button to create your fork.
+This method simplifies the installation, eliminating the need to clone the repository and manually install dependencies.
 
-2. **Clone Your Fork:**
+### Update
 
-   ```bash
-   git clone https://github.com/<your-username>/ai-commit-report.git
-   ```
+To update the tool to the latest version, use the command:
 
-3. **Navigate to the Project Directory:**
+```bash
+npm update -g ai-commit-review
+```
 
-   ```bash
-   cd ai-commit-report
-   ```
+This ensures that you are using the latest features and bug fixes available.
 
-4. **Install Dependencies:**
+### Uninstallation
 
-   ```bash
-   npm install
-   ```
+To uninstall the tool globally, use the command:
 
-5. **Install the Package Globally:**
-
-   ```bash
-   npm install -g .
-   ```
+```bash
+npm uninstall -g ai-commit-review
+```
 
 ## Getting Started
 
@@ -192,6 +191,14 @@ acr help
   ```bash
   acr set_config OPENAI_RESPONSE_LANGUAGE=en-US
   ```
+
+- **Update AI Commit Report:**
+
+  ```bash
+  npm update -g ai-commit-review
+  ```
+
+  Updates the tool to the latest available version on npm.
 
 ## Dependencies
 
