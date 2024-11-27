@@ -290,6 +290,7 @@ export async function createCommit() {
       },
     ]);
 
+    //If the user wants to abort the commit, undo the last commit and return the changes to unstaged
     if (abortCommit) {
       try {
         // Undo the last commit and return the changes to unstaged
