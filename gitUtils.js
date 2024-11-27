@@ -5,6 +5,7 @@ import fs from "fs";
 import path from "path";
 import os from "os";
 
+//teste
 export function undoLastCommitSoft() {
   try {
     console.log(
@@ -312,7 +313,11 @@ export function commitChangesWithEditor(tempFilePath) {
 export function pullChanges() {
   try {
     executeGitCommand("git pull");
-    console.log(chalk.green("✔ Successfully pulled the latest changes from the remote repository."));
+    console.log(
+      chalk.green(
+        "✔ Successfully pulled the latest changes from the remote repository."
+      )
+    );
   } catch (error) {
     console.error(chalk.red("❌ Error pulling changes:"), error.message);
     throw error;
