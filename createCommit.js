@@ -16,6 +16,7 @@ import {
   writeConflictToTempFile,
   openFileInEditor,
   updateFileFromTemp,
+  undoLastCommitSoft,
 } from "./gitUtils.js";
 import { analyzeUpdatedCode } from "./openaiUtils.js";
 import { PromptType } from "./models.js";
@@ -278,7 +279,7 @@ export async function createCommit() {
         finalMessageGenerated = true; // Exit the loop if the message is not empty
       }
     }
-    
+
     // **New section added: Ask if the user wants to abort the commit**
     const { abortCommit } = await inquirer.prompt([
       {
