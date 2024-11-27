@@ -5,8 +5,8 @@ import fs from "fs-extra";
 import os from "os";
 
 /**
- * Função para obter o diretório de configuração apropriado com base no sistema operacional.
- * @returns {string} Caminho para o diretório de configuração.
+ * Function to get the appropriate configuration directory based on the operating system.
+ * @returns {string} Path to the configuration directory.
  */
 function getConfigDirectory() {
   const homeDir = os.homedir();
@@ -29,60 +29,55 @@ function getConfigDirectory() {
     configDir = path.join(xdgConfigHome, "ai-commit-review");
   }
 
-  console.log(`Sistema Operacional: ${process.platform}`);
-  console.log(`Diretório de Configuração: ${configDir}`);
-
   return configDir;
 }
 
-// Diretório de configuração persistente
+// Persistent configuration directory
 const configDirectory = getConfigDirectory();
 
-// Assegurar que o diretório de configuração exista
+// Ensure that the configuration directory exists
 try {
   fs.ensureDirSync(configDirectory);
-  console.log(`Diretório de configuração assegurado: ${configDirectory}`);
 } catch (error) {
   console.error(
-    `Erro ao criar o diretório de configuração em ${configDirectory}:`,
+    `Error creating the configuration directory at ${configDirectory}:`,
     error
   );
 }
 
-// Caminho completo para o arquivo de configuração
+// Full path to the configuration file
 const configFilePath = path.join(configDirectory, ".config.json");
-console.log(`Caminho completo do arquivo de configuração: ${configFilePath}`);
 
 /**
- * Carrega as configurações do arquivo .config.json.
- * @returns {Object} Objeto de configuração ou objeto vazio se o arquivo não existir ou ocorrer um erro.
+ * Loads configurations from the .config.json file.
+ * @returns {Object} Configuration object or an empty object if the file does not exist or an error occurs.
  */
 export function loadConfig() {
   try {
     if (fs.existsSync(configFilePath)) {
-      console.log(`Carregando configurações de: ${configFilePath}`);
+      console.log(`Loading configurations from: ${configFilePath}`);
       return fs.readJsonSync(configFilePath);
     } else {
       console.log(
-        `Arquivo de configuração não encontrado em: ${configFilePath}. Utilizando configurações padrão.`
+        `Configuration file not found at: ${configFilePath}. Using default settings.`
       );
     }
   } catch (error) {
-    console.error("Erro ao carregar as configurações:", error);
+    console.error("Error loading configurations:", error);
   }
   return {};
 }
 
 /**
- * Salva as configurações no arquivo .config.json.
- * @param {Object} config - Objeto de configuração a ser salvo.
+ * Saves the configurations to the .config.json file.
+ * @param {Object} config - Configuration object to be saved.
  */
 export function saveConfig(config) {
   try {
     fs.writeJsonSync(configFilePath, config, { spaces: 2 });
-    console.log(`Configurações salvas com sucesso em: ${configFilePath}`);
+    console.log(`Configurations successfully saved to: ${configFilePath}`);
   } catch (error) {
-    console.error("Erro ao salvar as configurações:", error);
+    console.error("Error saving configurations:", error);
   }
 }
 

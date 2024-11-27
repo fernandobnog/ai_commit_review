@@ -146,7 +146,8 @@ acr create
    - **AI Assistance:** Generates a commit message based on the staged changes.
    - **Manual Entry:** Allows you to write your own commit message.
 7. **Edit Commit Message:** Opens your default editor to finalize the commit message.
-8. **Push to Remote:** Optionally pushes the commit to the remote repository.
+8. **Cancel Commit:** Ask if you want to cancel the commit and perform a soft reset.
+9. **Push to Remote:** Optionally pushes the commit to the remote repository.
 
 ### Show Help
 
