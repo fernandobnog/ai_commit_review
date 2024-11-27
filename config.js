@@ -1,54 +1,71 @@
 // config.js
 
 import path from "path";
-import { fileURLToPath } from "url";
 import fs from "fs-extra";
 import os from "os";
 
-// Função para obter o diretório de configuração apropriado com base no sistema operacional
+/**
+ * Função para obter o diretório de configuração apropriado com base no sistema operacional.
+ * @returns {string} Caminho para o diretório de configuração.
+ */
 function getConfigDirectory() {
   const homeDir = os.homedir();
+  let configDir;
 
-  // Determinar o diretório de configuração com base no SO
-  switch (process.platform) {
-    case "win32":
-      return path.join(
-        process.env.APPDATA || path.join(homeDir, "AppData", "Roaming"),
-        "ai-commit-review"
-      );
-    case "darwin":
-      return path.join(
-        homeDir,
-        "Library",
-        "Application Support",
-        "ai-commit-review"
-      );
-    default: // Linux e outros
-      // Seguir a especificação XDG para diretórios de configuração
-      return path.join(
-        process.env.XDG_CONFIG_HOME || path.join(homeDir, ".config"),
-        "ai-commit-review"
-      );
+  if (process.platform === "win32") {
+    const appData =
+      process.env.APPDATA || path.join(homeDir, "AppData", "Roaming");
+    configDir = path.join(appData, "ai-commit-review");
+  } else if (process.platform === "darwin") {
+    configDir = path.join(
+      homeDir,
+      "Library",
+      "Application Support",
+      "ai-commit-review"
+    );
+  } else {
+    const xdgConfigHome =
+      process.env.XDG_CONFIG_HOME || path.join(homeDir, ".config");
+    configDir = path.join(xdgConfigHome, "ai-commit-review");
   }
+
+  console.log(`Sistema Operacional: ${process.platform}`);
+  console.log(`Diretório de Configuração: ${configDir}`);
+
+  return configDir;
 }
 
 // Diretório de configuração persistente
 const configDirectory = getConfigDirectory();
 
 // Assegurar que o diretório de configuração exista
-fs.ensureDirSync(configDirectory);
+try {
+  fs.ensureDirSync(configDirectory);
+  console.log(`Diretório de configuração assegurado: ${configDirectory}`);
+} catch (error) {
+  console.error(
+    `Erro ao criar o diretório de configuração em ${configDirectory}:`,
+    error
+  );
+}
 
 // Caminho completo para o arquivo de configuração
-const configFilePath = path.resolve(configDirectory, ".config.json");
+const configFilePath = path.join(configDirectory, ".config.json");
+console.log(`Caminho completo do arquivo de configuração: ${configFilePath}`);
 
 /**
  * Carrega as configurações do arquivo .config.json.
- * @returns {Object} Objeto de configuração ou objeto vazio se o arquivo não existir.
+ * @returns {Object} Objeto de configuração ou objeto vazio se o arquivo não existir ou ocorrer um erro.
  */
 export function loadConfig() {
   try {
     if (fs.existsSync(configFilePath)) {
+      console.log(`Carregando configurações de: ${configFilePath}`);
       return fs.readJsonSync(configFilePath);
+    } else {
+      console.log(
+        `Arquivo de configuração não encontrado em: ${configFilePath}. Utilizando configurações padrão.`
+      );
     }
   } catch (error) {
     console.error("Erro ao carregar as configurações:", error);
@@ -63,6 +80,7 @@ export function loadConfig() {
 export function saveConfig(config) {
   try {
     fs.writeJsonSync(configFilePath, config, { spaces: 2 });
+    console.log(`Configurações salvas com sucesso em: ${configFilePath}`);
   } catch (error) {
     console.error("Erro ao salvar as configurações:", error);
   }
