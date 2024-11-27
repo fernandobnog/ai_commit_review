@@ -5,6 +5,24 @@ import fs from "fs";
 import path from "path";
 import os from "os";
 
+export function undoLastCommitSoft() {
+  try {
+    console.log(
+      chalk.blue("🔄 Undoing the last commit without altering the changes...")
+    );
+    executeGitCommand("git reset --soft HEAD~1");
+    console.log(
+      chalk.green("✔ Last commit undone. The changes remain staged.")
+    );
+  } catch (error) {
+    console.error(
+      chalk.red("❌ Failed to undo the last commit:"),
+      error.message
+    );
+    throw error;
+  }
+}
+
 /**
  * Executes a Git command synchronously.
  * @param {string} command - The Git command to execute.

@@ -278,6 +278,36 @@ export async function createCommit() {
         finalMessageGenerated = true; // Exit the loop if the message is not empty
       }
     }
+    
+    // **New section added: Ask if the user wants to abort the commit**
+    const { abortCommit } = await inquirer.prompt([
+      {
+        type: "confirm",
+        name: "abortCommit",
+        message: "Do you want to abort the commit and undo all changes?",
+        default: false,
+      },
+    ]);
+
+    if (abortCommit) {
+      try {
+        // Undo the last commit and return the changes to unstaged
+        undoLastCommitSoft();
+        console.log(
+          chalk.yellow(
+            "⚠️ Commit aborted. The changes have been returned to unstaged."
+          )
+        );
+        process.exit(0); // Exit the process after aborting
+      } catch (error) {
+        console.error(
+          chalk.red("❌ Error aborting the commit:"),
+          error.message
+        );
+        process.exit(1);
+      }
+    }
+
     // 7. Prompt to push
     const { push } = await inquirer.prompt([
       {
