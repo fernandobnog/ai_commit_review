@@ -42,5 +42,52 @@
   "errors": {
     "invalid_command": "❌ Invalid command:",
     "missing_key_value": "❌ Missing keyValue argument for set_config command."
+  },
+
+  "messagesAnalyzeCommits": {
+    "noAdditionalCommits": "⚠️ No additional commits to load. All available commits are displayed.",
+    "selectCommitsPrompt": "Select commits to analyze (Press Enter to finalize):",
+    "loadMoreCommits": "⬇️  Load more commits",
+    "exit": "🚪 Exit",
+    "processTerminated": "👋 Process terminated by the user.",
+    "noCommitsSelected": "⚠️ You did not select any commits for analysis.",
+    "errorDuringExecution": "❌ Error during execution:",
+    "analyzingCommit": "📂 Analyzing commit {{sha}}...",
+    "noModifiedFiles": "⚠️ No modified files found in the commit.",
+    "noValidDifferences": "⚠️ No valid differences found for analysis.",
+    "codeAnalysisResult": "📊 Code analysis result for commit {{sha}}:",
+    "analyzedFilesHeader": "Analyzed files:",
+    "fileItem": "- {{filename}}",
+    "errorAnalyzingCommit": "❌ Error analyzing commit:",
+    "noDifferencesForFile": "⚠️ No differences found for file {{file}}.",
+    "errorProcessingFile": "❌ Error processing differences for file {{file}}:"
+  },
+  "inquirerAnalyzeCommits": {
+    "checkbox": {
+      "type": "checkbox",
+      "name": "selectedShas",
+      "message": "Select commits to analyze (Press Enter to finalize):",
+      "pageSize": 100,
+      "loop": false
+    }
+  },
+  "buttonsAnalyzeCommits": {
+    "loadMore": "⬇️  Load more commits",
+    "exit": "🚪 Exit"
+  },
+  "statusesAnalyzeCommits": {
+    "warningNoCommits": "⚠️ No additional commits to load. All available commits are displayed.",
+    "warningNoFiles": "⚠️ No modified files found in the commit.",
+    "warningNoDifferences": "⚠️ No valid differences found for analysis.",
+    "warningNoDifferencesFile": "⚠️ No differences found for file {{file}}.",
+    "infoProcessTerminated": "👋 Process terminated by the user.",
+    "infoAnalyzingCommit": "📂 Analyzing commit {{sha}}...",
+    "infoCodeAnalysisResult": "📊 Code analysis result for commit {{sha}}:",
+    "infoAnalyzedFiles": "Analyzed files:"
+  },
+  "errorsAnalyzeCommits": {
+    "execution": "❌ Error during execution:",
+    "analyzingCommit": "❌ Error analyzing commit:",
+    "processingFile": "❌ Error processing differences for file {{file}}:"
   }
 }

@@ -1,5 +1,6 @@
 import chalk from "chalk";
 import inquirer from "inquirer";
+import i18n from "./i18n.js"; // Importe o i18n configurado
 import { getCommits, getModifiedFiles, getFileDiff } from "./gitUtils.js";
 import { analyzeUpdatedCode } from "./openaiUtils.js";
 import { PromptType } from "./models.js";
@@ -20,9 +21,7 @@ const selectCommits = async () => {
       const newCommits = getCommits(skip, limit);
       if (!newCommits.length) {
         console.log(
-          chalk.yellow(
-            "⚠️ No additional commits to load. All available commits are displayed."
-          )
+          chalk.yellow(i18n.__("statusesAnalyzeCommits.warningNoCommits"))
         );
         reachedEnd = true;
       } else {
@@ -40,17 +39,23 @@ const selectCommits = async () => {
     choices.push(new inquirer.Separator());
 
     if (!reachedEnd) {
-      choices.push({ name: "⬇️  Load more commits", value: "load_more" });
+      choices.push({
+        name: i18n.__("buttonsAnalyzeCommits.loadMore"),
+        value: "load_more",
+      });
     }
 
     // Add the "Exit" option
-    choices.push({ name: "🚪 Exit", value: "exit" });
+    choices.push({
+      name: i18n.__("buttonsAnalyzeCommits.exit"),
+      value: "exit",
+    });
 
     const answers = await inquirer.prompt([
       {
         type: "checkbox",
         name: "selectedShas",
-        message: "Select commits to analyze (Press Enter to finalize):",
+        message: i18n.__("messagesAnalyzeCommits.selectCommitsPrompt"),
         choices,
         pageSize: 100,
         loop: false,
@@ -65,7 +70,9 @@ const selectCommits = async () => {
     );
 
     if (exitSelected) {
-      console.log(chalk.blue("👋 Process terminated by the user."));
+      console.log(
+        chalk.blue(i18n.__("statusesAnalyzeCommits.infoProcessTerminated"))
+      );
       process.exit(0); // Immediately terminates the process
     }
 
@@ -75,9 +82,7 @@ const selectCommits = async () => {
       const newCommits = getCommits(skip, limit);
       if (!newCommits.length) {
         console.log(
-          chalk.yellow(
-            "⚠️ No additional commits to load. All available commits are displayed."
-          )
+          chalk.yellow(i18n.__("statusesAnalyzeCommits.warningNoCommits"))
         );
         reachedEnd = true;
       } else {
@@ -102,7 +107,7 @@ export const analyzeCommits = async () => {
 
     if (!selectedShas.length) {
       console.log(
-        chalk.yellow("⚠️ You did not select any commits for analysis.")
+        chalk.yellow(i18n.__("messagesAnalyzeCommits.noCommitsSelected"))
       );
       return;
     }
@@ -111,7 +116,9 @@ export const analyzeCommits = async () => {
       await analyzeCommit(sha);
     }
   } catch (error) {
-    console.error(chalk.red("❌ Error during execution:"), error.message);
+    console.error(
+      chalk.red(`${i18n.__("errorsAnalyzeCommits.execution")} ${error.message}`)
+    );
   }
 };
 
@@ -121,30 +128,54 @@ export const analyzeCommits = async () => {
  */
 const analyzeCommit = async (sha) => {
   try {
-    console.log(chalk.blueBright(`\n📂 Analyzing commit ${sha}...`));
+    console.log(
+      chalk.blueBright(
+        i18n.__("statusesAnalyzeCommits.infoAnalyzingCommit", { sha })
+      )
+    );
     const modifiedFiles = getModifiedFiles(sha);
 
     if (!modifiedFiles.length) {
-      console.log(chalk.yellow("⚠️ No modified files found in the commit."));
+      console.log(
+        chalk.yellow(i18n.__("statusesAnalyzeCommits.warningNoFiles"))
+      );
       return;
     }
 
     const files = await processModifiedFiles(sha, modifiedFiles);
     if (!files.length) {
-      console.log(chalk.yellow("⚠️ No valid differences found for analysis."));
+      console.log(
+        chalk.yellow(i18n.__("statusesAnalyzeCommits.warningNoDifferences"))
+      );
       return;
     }
 
     const analysis = await analyzeUpdatedCode(files, PromptType.ANALYZE);
     console.log(
-      chalk.magentaBright(`\n📊 Code analysis result for commit ${sha}:\n`),
+      chalk.magentaBright(
+        i18n.__("statusesAnalyzeCommits.infoCodeAnalysisResult", { sha })
+      ),
       chalk.magenta(analysis)
     );
 
-    console.log(chalk.green("\nAnalyzed files:"));
-    files.forEach((file) => console.log(chalk.green(`- ${file.filename}`)));
+    console.log(
+      chalk.green(i18n.__("statusesAnalyzeCommits.infoAnalyzedFiles"))
+    );
+    files.forEach((file) =>
+      console.log(
+        chalk.green(
+          i18n.__("messagesAnalyzeCommits.fileItem", {
+            filename: file.filename,
+          })
+        )
+      )
+    );
   } catch (error) {
-    console.error(chalk.red("❌ Error analyzing commit:"), error.message);
+    console.error(
+      chalk.red(
+        `${i18n.__("errorsAnalyzeCommits.analyzingCommit")} ${error.message}`
+      )
+    );
   }
 };
 
@@ -161,15 +192,20 @@ const processModifiedFiles = async (sha, modifiedFiles) => {
         const diff = getFileDiff(sha, file);
         if (!diff) {
           console.warn(
-            chalk.yellow(`⚠️ No differences found for file ${file}.`)
+            chalk.yellow(
+              i18n.__("messagesAnalyzeCommits.noDifferencesForFile", { file })
+            )
           );
           return null;
         }
         return { filename: file, diff: diff, status };
       } catch (error) {
         console.error(
-          chalk.red(`❌ Error processing differences for file ${file}:`),
-          error.message
+          chalk.red(
+            `${i18n.__("errorsAnalyzeCommits.processingFile", { file })} ${
+              error.message
+            }`
+          )
         );
         return null;
       }

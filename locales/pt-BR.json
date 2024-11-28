@@ -6,7 +6,7 @@
   "commands": {
     "analyze": {
       "name": "analyze",
-      "description": "Analise commits individualmente ou em grupos a partir do repositório Git local"
+      "description": "Analise commits individualmente ou em grupos do repositório Git local"
     },
     "create": {
       "name": "create",
@@ -14,8 +14,8 @@
     },
     "set_config": {
       "name": "set_config",
-      "description": "Atualiza configurações no formato KEY=VALUE (por exemplo, OPENAI_API_KEY=<value>)",
-      "usage_example": "Atualiza configurações no formato KEY=VALUE (por exemplo, OPENAI_API_KEY=<value>)"
+      "description": "Atualiza configurações no formato KEY=VALUE (por exemplo, OPENAI_API_KEY=<valor>)",
+      "usage_example": "Atualiza configurações no formato KEY=VALUE (por exemplo, OPENAI_API_KEY=<valor>)"
     }
   },
   "messages": {
@@ -26,21 +26,67 @@
       "analyze": "Analisar commits",
       "create": "Criar um novo commit"
     },
-    "error_updating_config": "❌ Erro ao atualizar a configuração:",
+    "error_updating_config": "❌ Erro ao atualizar configuração:",
     "help": {
       "header": "Uso: acr [opções] [comando]",
       "options": {
         "help": "Exibir ajuda para o comando"
       },
       "commands": {
-        "analyze": "Analise commits individualmente ou em grupos a partir do repositório Git local",
+        "analyze": "Analise commits individualmente ou em grupos do repositório Git local",
         "create": "Crie um novo commit com assistência de IA",
-        "set_config": "Atualiza configurações no formato KEY=VALUE (por exemplo, OPENAI_API_KEY=<value>)"
+        "set_config": "Atualiza configurações no formato KEY=VALUE (por exemplo, OPENAI_API_KEY=<valor>)"
       }
     }
   },
   "errors": {
     "invalid_command": "❌ Comando inválido:",
     "missing_key_value": "❌ Argumento keyValue ausente para o comando set_config."
+  },
+  "messagesAnalyzeCommits": {
+    "noAdditionalCommits": "⚠️ Nenhum commit adicional para carregar. Todos os commits disponíveis estão exibidos.",
+    "selectCommitsPrompt": "Selecione commits para analisar (Pressione Enter para finalizar):",
+    "loadMoreCommits": "⬇️  Carregar mais commits",
+    "exit": "🚪 Sair",
+    "processTerminated": "👋 Processo encerrado pelo usuário.",
+    "noCommitsSelected": "⚠️ Você não selecionou nenhum commit para análise.",
+    "errorDuringExecution": "❌ Erro durante a execução:",
+    "analyzingCommit": "📂 Analisando commit {{sha}}...",
+    "noModifiedFiles": "⚠️ Nenhum arquivo modificado encontrado no commit.",
+    "noValidDifferences": "⚠️ Nenhuma diferença válida encontrada para análise.",
+    "codeAnalysisResult": "📊 Resultado da análise de código para o commit {{sha}}:",
+    "analyzedFilesHeader": "Arquivos analisados:",
+    "fileItem": "- {{filename}}",
+    "errorAnalyzingCommit": "❌ Erro ao analisar o commit:",
+    "noDifferencesForFile": "⚠️ Nenhuma diferença encontrada para o arquivo {{file}}.",
+    "errorProcessingFile": "❌ Erro ao processar diferenças para o arquivo {{file}}:"
+  },
+  "inquirerAnalyzeCommits": {
+    "checkbox": {
+      "type": "checkbox",
+      "name": "selectedShas",
+      "message": "Selecione commits para analisar (Pressione Enter para finalizar):",
+      "pageSize": 100,
+      "loop": false
+    }
+  },
+  "buttonsAnalyzeCommits": {
+    "loadMore": "⬇️  Carregar mais commits",
+    "exit": "🚪 Sair"
+  },
+  "statusesAnalyzeCommits": {
+    "warningNoCommits": "⚠️ Nenhum commit adicional para carregar. Todos os commits disponíveis estão exibidos.",
+    "warningNoFiles": "⚠️ Nenhum arquivo modificado encontrado no commit.",
+    "warningNoDifferences": "⚠️ Nenhuma diferença válida encontrada para análise.",
+    "warningNoDifferencesFile": "⚠️ Nenhuma diferença encontrada para o arquivo {{file}}.",
+    "infoProcessTerminated": "👋 Processo encerrado pelo usuário.",
+    "infoAnalyzingCommit": "📂 Analisando commit {{sha}}...",
+    "infoCodeAnalysisResult": "📊 Resultado da análise de código para o commit {{sha}}:",
+    "infoAnalyzedFiles": "Arquivos analisados:"
+  },
+  "errorsAnalyzeCommits": {
+    "execution": "❌ Erro durante a execução:",
+    "analyzingCommit": "❌ Erro ao analisar o commit:",
+    "processingFile": "❌ Erro ao processar diferenças para o arquivo {{file}}:"
   }
 }

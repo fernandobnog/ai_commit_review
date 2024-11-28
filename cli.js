@@ -2,30 +2,10 @@ import chalk from "chalk";
 import { program } from "commander";
 import inquirer from "inquirer";
 import { showHelp } from "./helpers.js";
-import { loadConfig } from "./config.js";
 import { updateConfigFromString } from "./configManager.js";
 import { analyzeCommits } from "./analyzeCommit.js"; // Analyze commits
 import { createCommit } from "./createCommit.js"; // Create commits
-import i18n from "i18n";
-import path from "path";
-import { ConfigKeys } from "./models.js";
-
-const config = loadConfig();
-function setLanguageArray() {
-  return Object.values(ConfigKeys.OPENAI_RESPONSE_LANGUAGE).map(
-    (lang) => lang.code
-  );
-}
-
-i18n.configure({
-  locales: setLanguageArray(),
-  directory: path.join(process.cwd(), "locales"),
-  defaultLocale: config[ConfigKeys.OPENAI_RESPONSE_LANGUAGE] || "en",
-  objectNotation: true,
-});
-
-// Middleware para usar globalmente
-global.__ = i18n.__;
+import i18n from "./i18n.js";
 
 // Custom help information
 program.helpInformation = showHelp;
