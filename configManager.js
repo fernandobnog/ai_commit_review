@@ -1,8 +1,9 @@
-//configManager.js
+// configManager.js
 
 import chalk from "chalk";
 import { loadConfig, saveConfig } from "./config.js";
 import { OpenAIModels, ConfigKeys, SupportedLanguages } from "./models.js";
+import i18n from "./i18n.js"; // Importe a configuração do i18n
 
 /**
  * Sets the default OpenAI model to 'gpt-4o-mini' if not already set.
@@ -15,7 +16,10 @@ function setDefaultModel(config) {
     saveConfig(config);
     console.log(
       chalk.green(
-        `✅ OPENAI_API_MODEL not set. Defaulting to '${OpenAIModels.GPT_4O_MINI}'.`
+        i18n.__(
+          "configManager.setDefaultModel.defaulting",
+          OpenAIModels.GPT_4O_MINI
+        )
       )
     );
   }
@@ -29,11 +33,16 @@ function setDefaultModel(config) {
  */
 function setDefaultLanguage(config) {
   if (!config[ConfigKeys.OPENAI_RESPONSE_LANGUAGE]) {
-    config[ConfigKeys.OPENAI_RESPONSE_LANGUAGE] = SupportedLanguages.EN_US.code;
+    const defaultLanguage = SupportedLanguages.EN_US;
+    config[ConfigKeys.OPENAI_RESPONSE_LANGUAGE] = defaultLanguage.code;
     saveConfig(config);
     console.log(
       chalk.green(
-        `✅ OPENAI_RESPONSE_LANGUAGE not set. Defaulting to '${SupportedLanguages.EN_US.code}: ${SupportedLanguages.EN_US.name}'.`
+        i18n.__(
+          "configManager.setDefaultLanguage.defaulting",
+          defaultLanguage.code,
+          defaultLanguage.name
+        )
       )
     );
   }
@@ -56,7 +65,7 @@ export function validateConfiguration() {
 
   if (!config.OPENAI_API_KEY) {
     throw new Error(
-      "OpenAI API key not configured.\n\nUse 'acr set_config OPENAI_API_KEY=your-key' to configure it."
+      i18n.__("configManager.validateConfiguration.errorMissingApiKey")
     );
   }
 
@@ -71,24 +80,30 @@ export function validateConfiguration() {
 export function updateConfigFromString(configString) {
   const index = configString.indexOf("=");
   if (index === -1) {
-    throw new Error("Invalid format.\n\nUse 'acr set_config KEY=VALUE'");
+    throw new Error(
+      i18n.__("configManager.updateConfigFromString.errorInvalidFormat")
+    );
   }
 
   const key = configString.substring(0, index).trim().toUpperCase();
   const value = configString.substring(index + 1).trim();
 
   if (!key || !value) {
-    throw new Error("Invalid format.\n\nUse 'acr set_config KEY=VALUE'");
+    throw new Error(
+      i18n.__("configManager.updateConfigFromString.errorInvalidFormat")
+    );
   }
 
   // Validate the configuration key
   const validKeys = Object.values(ConfigKeys);
   if (!validKeys.includes(key)) {
+    const availableKeys = validKeys.map((k) => `  - ${k}`).join("\n");
     throw new Error(
-      `Invalid configuration key "${key}".\n\n` +
-        `Available keys:\n` +
-        validKeys.map((k) => `  - ${k}`).join("\n") +
-        `\n\nUse one of the listed keys.`
+      i18n.__(
+        "configManager.updateConfigFromString.errorInvalidKey",
+        key,
+        availableKeys
+      )
     );
   }
 
@@ -96,11 +111,14 @@ export function updateConfigFromString(configString) {
   if (key === ConfigKeys.OPENAI_API_MODEL) {
     const validModels = Object.values(OpenAIModels);
     if (!validModels.includes(value)) {
+      const availableModels = validModels
+        .map((model) => `  - ${model}`)
+        .join("\n");
       throw new Error(
-        `❌ Invalid AI model provided.\n\n` +
-          `Available models:\n` +
-          validModels.map((model) => `  - ${model}`).join("\n") +
-          `\n\nUse one of the listed models.`
+        i18n.__(
+          "configManager.updateConfigFromString.errorInvalidModel",
+          availableModels
+        )
       );
     }
   }
@@ -108,23 +126,32 @@ export function updateConfigFromString(configString) {
   // Validate the language if the key is OPENAI_RESPONSE_LANGUAGE
   if (key === ConfigKeys.OPENAI_RESPONSE_LANGUAGE) {
     const validLanguages = Object.values(SupportedLanguages).map(
-      (lang) => lang.code
+      (lang) => `${lang.code}: ${lang.name}`
     );
-    if (!validLanguages.includes(value)) {
+    const availableLanguages = Object.values(SupportedLanguages)
+      .map((lang) => `  - ${lang.code}: ${lang.name}`)
+      .join("\n");
+    if (
+      !Object.values(SupportedLanguages).some((lang) => lang.code === value)
+    ) {
       throw new Error(
-        `❌ Invalid language code "${value}" provided.\n\n` +
-          `Supported languages:\n` +
-          Object.values(SupportedLanguages)
-            .map((lang) => `  - ${lang.code}: ${lang.name}`)
-            .join("\n") +
-          `\n\nUse one of the listed language codes.`
+        i18n.__(
+          "configManager.updateConfigFromString.errorInvalidLanguage",
+          value,
+          availableLanguages
+        )
       );
     }
   }
+
   // Save the configuration
   const config = loadConfig();
   config[key] = value;
   saveConfig(config);
 
-  console.log(chalk.green(`\n✅ Configuration "${key}" updated.`));
+  console.log(
+    chalk.green(
+      i18n.__("configManager.updateConfigFromString.successUpdate", key)
+    )
+  );
 }

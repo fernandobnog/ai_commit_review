@@ -42,7 +42,6 @@
     "invalid_command": "❌ Invalid command:",
     "missing_key_value": "❌ Missing keyValue argument for set_config command."
   },
-
   "messagesAnalyzeCommits": {
     "noAdditionalCommits": "⚠️ No additional commits to load. All available commits are displayed.",
     "selectCommitsPrompt": "Select commits to analyze (Press Enter to finalize):",
@@ -88,5 +87,202 @@
     "execution": "❌ Error during execution:",
     "analyzingCommit": "❌ Error analyzing commit:",
     "processingFile": "❌ Error processing differences for file {{file}}:"
+  },
+  "configConfig": {
+    "errorCreatingDirectory": "Error creating the configuration directory at {{configDirectory}}:",
+    "loadingConfigurations": "Loading configurations from: {{configFilePath}}",
+    "configFileNotFound": "Configuration file not found at: {{configFilePath}}. Using default settings.",
+    "errorLoadingConfigurations": "Error loading configurations:",
+    "saveSuccess": "Configurations successfully saved to: {{configFilePath}}",
+    "errorSavingConfigurations": "Error saving configurations:"
+  },
+  "configManager": {
+    "setDefaultModel": {
+      "defaulting": "✅ OPENAI_API_MODEL not set. Defaulting to '%s'."
+    },
+    "setDefaultLanguage": {
+      "defaulting": "✅ OPENAI_RESPONSE_LANGUAGE not set. Defaulting to '%s: %s'."
+    },
+    "validateConfiguration": {
+      "errorMissingApiKey": "OpenAI API key not configured.\n\nUse 'acr set_config OPENAI_API_KEY=your-key' to configure it."
+    },
+    "updateConfigFromString": {
+      "errorInvalidFormat": "Invalid format.\n\nUse 'acr set_config KEY=VALUE'",
+      "errorInvalidKey": "Invalid configuration key \"%s\".\n\nAvailable keys:\n%s\n\nUse one of the listed keys.",
+      "errorInvalidModel": "❌ Invalid AI model provided.\n\nAvailable models:\n%s\n\nUse one of the listed models.",
+      "errorInvalidLanguage": "❌ Invalid language code \"%s\" provided.\n\nSupported languages:\n%s\n\nUse one of the listed language codes.",
+      "successUpdate": "\n✅ Configuration \"%s\" updated."
+    }
+  },
+  "config": {
+    "loadingConfigurations": "config.loadingConfigurations",
+    "saveSuccess": "config.saveSuccess"
+  },
+  "createCommits": {
+    "branch": {
+      "current": "You are currently on the branch: {{branch}}",
+      "continuePrompt": "Do you want to continue working on this branch?",
+      "selectPrompt": "Select the branch to switch to:"
+    },
+    "conflict": {
+      "detected": "❌ Conflicts detected in the following files:",
+      "resolving": "Resolving conflict for: {{file}}",
+      "unableGetDiff": "❌ Unable to get diff for: {{file}}",
+      "confirmResolution": "Have you resolved the conflict for: {{file}}?",
+      "notResolved": "❌ Conflict not resolved for: {{file}}",
+      "launchMergeTool": "⚙️ Launching mergetool to resolve conflicts...",
+      "resolvedUsingMergetool": "✔ Conflicts resolved using mergetool.",
+      "stageChangesPrompt": "Would you like to stage the resolved files?",
+      "resolvedFilesStaged": "✔ Resolved files staged.",
+      "filesNotStagedWarning": "⚠️ Files not staged. Resolve remaining conflicts before proceeding.",
+      "errorResolvingAutomatically": "❌ Error resolving conflicts automatically:",
+      "resolutionOptionPrompt": "How would you like to resolve the conflicts?",
+      "resolutionOptions": {
+        "manual": "Resolve manually in an editor",
+        "automatic": "Resolve automatically using mergetool",
+        "cancel": "Cancel and resolve later"
+      },
+      "resolveBeforeProceeding": "❌ Resolve the conflicts before proceeding."
+    },
+    "commit": {
+      "noStagedChanges": "⚠️ No staged changes to commit.",
+      "messageOptionPrompt": "How would you like to proceed with the commit message?",
+      "options": {
+        "ai": "Generate with AI and edit",
+        "manual": "Write my own",
+        "cancel": "Cancel"
+      },
+      "processCanceled": "⚠️ Commit process canceled.",
+      "generatingAI": "📤 Generating commit message with AI...",
+      "enterManualMessage": "Enter your commit message:",
+      "emptyMessageError": "❌ The commit message cannot be empty.",
+      "abortPrompt": "Do you want to abort the commit and undo all changes?",
+      "commitAborted": "⚠️ Commit aborted. The changes have been returned to unstaged.",
+      "errorAborting": "❌ Error aborting the commit:"
+    },
+    "push": {
+      "pushPrompt": "Do you want to push to the remote repository?",
+      "pushNotPerformed": "⚠️ Push not performed."
+    },
+    "general": {
+      "noConflicts": "✔ No conflicts detected.",
+      "errorReadingCommitMessage": "❌ Error reading commit message:",
+      "errorDuringCommitProcess": "❌ Error during the commit creation process:"
+    }
+  },
+  "gitUtils": {
+    "undoLastCommitSoft": {
+      "undoing": "🔄 Undoing the last commit without altering the changes...",
+      "undone": "✔ Last commit undone. The changes remain staged."
+    },
+    "executeGitCommand": {
+      "error": "❌ Error executing Git command '{{command}}': {{errorMessage}}"
+    },
+    "getCommits": {
+      "errorFetching": "❌ Error fetching commits:"
+    },
+    "getModifiedFiles": {
+      "errorRetrieving": "❌ Error retrieving modified files:"
+    },
+    "getFileDiff": {
+      "errorRetrievingDiff": "❌ Error retrieving diff for file '{{file}}':"
+    },
+    "clearStage": {
+      "cleared": "✔ Stage cleared. All changes unstaged."
+    },
+    "getCurrentBranch": {
+      "error": "❌ Error retrieving current branch:"
+    },
+    "listBranches": {
+      "error": "❌ Error listing branches:"
+    },
+    "switchBranch": {
+      "switched": "✔ Switched to branch '{{branch}}' successfully.",
+      "errorSwitching": "❌ Error switching to branch '{{branch}}':"
+    },
+    "checkConflicts": {
+      "error": "❌ Error checking for conflicts:"
+    },
+    "getRepositoryDiff": {
+      "error": "❌ Error retrieving repository diff:"
+    },
+    "getStagedFileDiff": {
+      "errorGettingDiff": "❌ Error getting diff for file '{{file}}':",
+      "fileDeleted": "⚠️ File '{{file}}' was deleted."
+    },
+    "stageAllChanges": {
+      "allStaged": "✔ All changes have been staged.",
+      "errorStaging": "❌ Error staging all changes:"
+    },
+    "getStagedFilesDiffs": {
+      "errorRetrievingDiffs": "❌ Error retrieving diffs for staged files:"
+    },
+    "commitChangesWithEditor": {
+      "commitMade": "✔ Commit successfully made!",
+      "errorMakingCommit": "❌ Error making commit:"
+    },
+    "pullChanges": {
+      "pulled": "✔ Successfully pulled the latest changes from the remote repository.",
+      "errorPulling": "❌ Error pulling changes:"
+    },
+    "pushChanges": {
+      "pushed": "✔ Changes successfully pushed to the remote repository!",
+      "errorPushing": "❌ Error pushing changes:"
+    },
+    "getConflictDiff": {
+      "errorRetrievingConflictDiff": "❌ Error retrieving conflict diff for file '{{file}}':"
+    },
+    "openFileInEditor": {
+      "resolvedFileSaved": "✔ Resolved file saved: {{tempFilePath}}",
+      "errorOpeningEditor": "❌ Error opening file in editor:"
+    },
+    "updateFileFromTemp": {
+      "conflictResolved": "✔ Conflict resolved and staged for: {{file}}",
+      "errorUpdatingFile": "❌ Error updating file from temp:"
+    }
+  },
+  "openaiUtils": {
+    "analyzeUpdatedCode": {
+      "sendingRequest": "📤 Sending request to OpenAI...",
+      "responseReceived": "✅ Response received.",
+      "errorAnalyzing": "❌ Error analyzing updated code: {{errorMessage}}"
+    }
+  },
+  "helpers": {
+    "showHelp": {
+      "usage": "Usage:",
+      "commandExample": "acr [commands]",
+      "description": "Description:",
+      "descriptionText": "A tool to analyze and create commits and code with AI assistance directly from the local Git repository.",
+      "requiredVariables": "Required Variables:",
+      "variables": {
+        "OPENAI_API_KEY": "OPENAI_API_KEY: Your OpenAI API key.",
+        "OPENAI_API_MODEL": "OPENAI_API_MODEL: The AI model used for analysis (e.g., gpt-4, gpt-4-turbo).",
+        "OPENAI_RESPONSE_LANGUAGE": "OPENAI_RESPONSE_LANGUAGE: The language for AI responses (e.g., pt-BR, en-US)."
+      },
+      "commands": "Commands:",
+      "commandList": {
+        "analyze": "acr analyze                  Lists and analyzes the latest commits.",
+        "create": "acr create                   Creates a new commit with AI assistance.",
+        "setConfig": "acr set_config <key=value> Updates configurations (e.g., OPENAI_API_KEY, OPENAI_API_MODEL, OPENAI_RESPONSE_LANGUAGE).",
+        "help": "acr help                     Displays this detailed help."
+      },
+      "examples": "Examples:",
+      "exampleList": {
+        "analyzeSpecific": "- Analyze a specific commit:\n  acr 123456",
+        "configureApiKey": "- Configure the OpenAI API key:\n  acr set_config OPENAI_API_KEY=sk-your-key",
+        "configureModel": "- Configure the AI model:\n  acr set_config OPENAI_API_MODEL=gpt-4",
+        "configureLanguage": "- Configure the response language:\n  acr set_config OPENAI_RESPONSE_LANGUAGE=en-US",
+        "analyzeLatest": "- Analyze the latest commits:\n  acr analyze",
+        "createCommit": "- Create a commit with AI assistance:\n  acr create"
+      },
+      "tips": "Tips:",
+      "tipsList": {
+        "setConfig": "- Use acr set_config to set your preferences before using the tool.",
+        "secureApiKey": "- Ensure your API key (OPENAI_API_KEY) is kept secure.",
+        "analyzeRecent": "- Analyze only the most recent commits to improve accuracy and save API resources.",
+        "documentation": "- Refer to the documentation or open an issue on GitHub if you encounter problems."
+      }
+    }
   }
 }

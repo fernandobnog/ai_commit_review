@@ -1,7 +1,9 @@
+// openaiUtils.js
 import chalk from "chalk";
 import { validateConfiguration } from "./configManager.js";
 import { OpenAI } from "openai";
 import { PromptType, SupportedLanguages } from "./models.js";
+import i18n from "./i18n.js"; // Importa o i18n
 
 /**
  * Generates the language instruction for OpenAI prompts.
@@ -12,7 +14,7 @@ function generateLanguageInstruction(langcode) {
     return map;
   }, {});
   const language = languageMap[langcode];
-  return `Please respond entirely in ${language}.`;
+  return `Please respond entirely in ${language}.`; // Mantido estático, pois não aparece no console
 }
 
 /**
@@ -97,17 +99,27 @@ export async function analyzeUpdatedCode(
   const openai = new OpenAI({ apiKey: config.OPENAI_API_KEY });
   const prompt = generatePrompt(files, promptType, config);
   try {
-    console.log(chalk.blue("📤 Sending request to OpenAI..."));
+    console.log(
+      chalk.blue(i18n.__("openaiUtils.analyzeUpdatedCode.sendingRequest"))
+    );
     const response = await openai.chat.completions.create({
       model: config.OPENAI_API_MODEL,
       messages: [{ role: "user", content: prompt }],
       max_tokens: 2000,
     });
-    console.log(chalk.green("✅ Response received."));
+    console.log(
+      chalk.green(i18n.__("openaiUtils.analyzeUpdatedCode.responseReceived"))
+    );
 
     return response.choices[0].message.content.trim();
   } catch (error) {
-    console.error(chalk.red("❌ Error analyzing updated code:", error.message));
+    console.error(
+      chalk.red(
+        i18n.__("openaiUtils.analyzeUpdatedCode.errorAnalyzing", {
+          errorMessage: error.message,
+        })
+      )
+    );
     throw error;
   }
 }

@@ -23,19 +23,24 @@ import { PromptType } from "./models.js";
 import fs from "fs";
 import path from "path";
 import os from "os";
+import i18n from "./i18n.js"; // Importa o i18n
 
 /**
  * Confirms the current branch or allows switching to another.
  */
 async function confirmOrSwitchBranch() {
   const currentBranch = getCurrentBranch();
-  console.log(chalk.blue(`You are currently on the branch: ${currentBranch}`));
+  console.log(
+    chalk.blue(
+      i18n.__("createCommits.branch.current", { branch: currentBranch })
+    )
+  );
 
   const { continueOnBranch } = await inquirer.prompt([
     {
       type: "confirm",
       name: "continueOnBranch",
-      message: "Do you want to continue working on this branch?",
+      message: i18n.__("createCommits.branch.continuePrompt"),
       default: true,
     },
   ]);
@@ -46,7 +51,7 @@ async function confirmOrSwitchBranch() {
       {
         type: "list",
         name: "selectedBranch",
-        message: "Select the branch to switch to:",
+        message: i18n.__("createCommits.branch.selectPrompt"),
         choices: branches,
       },
     ]);
@@ -60,11 +65,15 @@ async function confirmOrSwitchBranch() {
  */
 async function resolveConflictsManually(conflicts) {
   for (const file of conflicts) {
-    console.log(chalk.yellow(`Resolving conflict for: ${file}`));
+    console.log(
+      chalk.yellow(i18n.__("createCommits.conflict.resolving", { file }))
+    );
     const diff = getConflictDiff(file);
 
     if (!diff) {
-      console.log(chalk.red(`❌ Unable to get diff for: ${file}`));
+      console.log(
+        chalk.red(i18n.__("createCommits.conflict.unableGetDiff", { file }))
+      );
       continue;
     }
 
@@ -75,7 +84,7 @@ async function resolveConflictsManually(conflicts) {
       {
         type: "confirm",
         name: "confirmResolution",
-        message: `Have you resolved the conflict for: ${file}?`,
+        message: i18n.__("createCommits.conflict.confirmResolution", { file }),
         default: true,
       },
     ]);
@@ -84,7 +93,9 @@ async function resolveConflictsManually(conflicts) {
       updateFileFromTemp(file, tempFilePath);
       fs.unlinkSync(tempFilePath); // Clean up temp file
     } else {
-      console.log(chalk.red(`❌ Conflict not resolved for: ${file}`));
+      console.log(
+        chalk.red(i18n.__("createCommits.conflict.notResolved", { file }))
+      );
     }
   }
 }
@@ -94,35 +105,39 @@ async function resolveConflictsManually(conflicts) {
  */
 async function resolveConflictsAutomatically(conflicts) {
   try {
-    console.log(chalk.blue("⚙️ Launching mergetool to resolve conflicts..."));
+    console.log(chalk.blue(i18n.__("createCommits.conflict.launchMergeTool")));
     conflicts.forEach((file) => {
-      console.log(chalk.yellow(`Resolving conflict for: ${file}`));
+      console.log(
+        chalk.yellow(i18n.__("createCommits.conflict.resolving", { file }))
+      );
       executeGitCommand(`git mergetool --no-prompt -- ${file}`);
     });
-    console.log(chalk.green("✔ Conflicts resolved using mergetool."));
+    console.log(
+      chalk.green(i18n.__("createCommits.conflict.resolvedUsingMergetool"))
+    );
 
     const { stageChanges } = await inquirer.prompt([
       {
         type: "confirm",
         name: "stageChanges",
-        message: "Would you like to stage the resolved files?",
+        message: i18n.__("createCommits.conflict.stageChangesPrompt"),
         default: true,
       },
     ]);
 
     if (stageChanges) {
       executeGitCommand("git add .");
-      console.log(chalk.green("✔ Resolved files staged."));
+      console.log(
+        chalk.green(i18n.__("createCommits.conflict.resolvedFilesStaged"))
+      );
     } else {
       console.log(
-        chalk.yellow(
-          "⚠️ Files not staged. Resolve remaining conflicts before proceeding."
-        )
+        chalk.yellow(i18n.__("createCommits.conflict.filesNotStagedWarning"))
       );
     }
   } catch (error) {
     console.error(
-      chalk.red("❌ Error resolving conflicts automatically:"),
+      chalk.red(i18n.__("createCommits.conflict.errorResolvingAutomatically")),
       error.message
     );
     process.exit(1);
@@ -136,7 +151,7 @@ async function verifyConflicts() {
   const conflicts = checkConflicts();
 
   if (conflicts.length > 0) {
-    console.log(chalk.red("❌ Conflicts detected in the following files:"));
+    console.log(chalk.red(i18n.__("createCommits.conflict.detected")));
     conflicts.forEach((file, index) => {
       console.log(`${index + 1}. ${file}`);
     });
@@ -145,11 +160,20 @@ async function verifyConflicts() {
       {
         type: "list",
         name: "resolutionOption",
-        message: "How would you like to resolve the conflicts?",
+        message: i18n.__("createCommits.conflict.resolutionOptionPrompt"),
         choices: [
-          { name: "Resolve manually in an editor", value: "manual" },
-          { name: "Resolve automatically using mergetool", value: "automatic" },
-          { name: "Cancel and resolve later", value: "cancel" },
+          {
+            name: i18n.__("createCommits.conflict.resolutionOptions.manual"),
+            value: "manual",
+          },
+          {
+            name: i18n.__("createCommits.conflict.resolutionOptions.automatic"),
+            value: "automatic",
+          },
+          {
+            name: i18n.__("createCommits.conflict.resolutionOptions.cancel"),
+            value: "cancel",
+          },
         ],
       },
     ]);
@@ -159,11 +183,13 @@ async function verifyConflicts() {
     } else if (resolutionOption === "automatic") {
       await resolveConflictsAutomatically(conflicts);
     } else if (resolutionOption === "cancel") {
-      console.log(chalk.red("❌ Resolve the conflicts before proceeding."));
+      console.log(
+        chalk.red(i18n.__("createCommits.conflict.resolveBeforeProceeding"))
+      );
       process.exit(1);
     }
   } else {
-    console.log(chalk.green("✔ No conflicts detected."));
+    console.log(chalk.green(i18n.__("createCommits.general.noConflicts")));
   }
 }
 
@@ -176,7 +202,10 @@ function readCommitMessage(tempFile) {
   try {
     return fs.readFileSync(tempFile, { encoding: "utf-8" }).trim();
   } catch (error) {
-    console.error(chalk.red("❌ Error reading commit message:"), error.message);
+    console.error(
+      chalk.red(i18n.__("createCommits.general.errorReadingCommitMessage")),
+      error.message
+    );
     return "";
   }
 }
@@ -205,7 +234,9 @@ export async function createCommit() {
     const stagedFiles = getStagedFilesDiffs();
 
     if (stagedFiles.length === 0) {
-      console.log(chalk.yellow("⚠️ No staged changes to commit."));
+      console.log(
+        chalk.yellow(i18n.__("createCommits.commit.noStagedChanges"))
+      );
       process.exit(0);
     }
 
@@ -218,23 +249,31 @@ export async function createCommit() {
         {
           type: "list",
           name: "messageOption",
-          message: "How would you like to proceed with the commit message?",
+          message: i18n.__("createCommits.commit.messageOptionPrompt"),
           choices: [
-            { name: "Generate with AI and edit", value: "ai" },
-            { name: "Write my own", value: "manual" },
-            { name: "Cancel", value: "cancel" },
+            { name: i18n.__("createCommits.commit.options.ai"), value: "ai" },
+            {
+              name: i18n.__("createCommits.commit.options.manual"),
+              value: "manual",
+            },
+            {
+              name: i18n.__("createCommits.commit.options.cancel"),
+              value: "cancel",
+            },
           ],
         },
       ]);
 
       if (messageOption === "cancel") {
-        console.log(chalk.yellow("⚠️ Commit process canceled."));
+        console.log(
+          chalk.yellow(i18n.__("createCommits.commit.processCanceled"))
+        );
         process.exit(0);
       }
 
       if (messageOption === "ai") {
         // Generate commit message using AI
-        console.log(chalk.blue("📤 Generating commit message with AI..."));
+        console.log(chalk.blue(i18n.__("createCommits.commit.generatingAI")));
         commitMessage = await analyzeUpdatedCode(
           stagedFiles,
           PromptType.CREATE
@@ -246,10 +285,10 @@ export async function createCommit() {
           {
             type: "input",
             name: "manualMessage",
-            message: "Enter your commit message:",
+            message: i18n.__("createCommits.commit.enterManualMessage"),
             validate: (input) =>
               input.trim() === ""
-                ? "The commit message cannot be empty."
+                ? i18n.__("createCommits.commit.emptyMessageError")
                 : true,
           },
         ]);
@@ -273,7 +312,9 @@ export async function createCommit() {
 
       // Check if the commit message is not empty
       if (!updatedCommitMessage) {
-        console.log(chalk.red("❌ The commit message is empty."));
+        console.log(
+          chalk.red(i18n.__("createCommits.commit.emptyMessageError"))
+        );
       } else {
         commitMessage = updatedCommitMessage;
         finalMessageGenerated = true; // Exit the loop if the message is not empty
@@ -285,25 +326,23 @@ export async function createCommit() {
       {
         type: "confirm",
         name: "abortCommit",
-        message: "Do you want to abort the commit and undo all changes?",
+        message: i18n.__("createCommits.commit.abortPrompt"),
         default: false,
       },
     ]);
 
-    //If the user wants to abort the commit, undo the last commit and return the changes to unstaged
+    // If the user wants to abort the commit, undo the last commit and return the changes to unstaged
     if (abortCommit) {
       try {
         // Undo the last commit and return the changes to unstaged
         undoLastCommitSoft();
         console.log(
-          chalk.yellow(
-            "⚠️ Commit aborted. The changes have been returned to unstaged."
-          )
+          chalk.yellow(i18n.__("createCommits.commit.commitAborted"))
         );
         process.exit(0); // Exit the process after aborting
       } catch (error) {
         console.error(
-          chalk.red("❌ Error aborting the commit:"),
+          chalk.red(i18n.__("createCommits.commit.errorAborting")),
           error.message
         );
         process.exit(1);
@@ -315,7 +354,7 @@ export async function createCommit() {
       {
         type: "confirm",
         name: "push",
-        message: "Do you want to push to the remote repository?",
+        message: i18n.__("createCommits.push.pushPrompt"),
         default: true,
       },
     ]);
@@ -323,11 +362,11 @@ export async function createCommit() {
     if (push) {
       pushChanges();
     } else {
-      console.log(chalk.yellow("⚠️ Push not performed."));
+      console.log(chalk.yellow(i18n.__("createCommits.push.pushNotPerformed")));
     }
   } catch (error) {
     console.error(
-      chalk.red("❌ Error during the commit creation process:"),
+      chalk.red(i18n.__("createCommits.general.errorDuringCommitProcess")),
       error.message
     );
   }

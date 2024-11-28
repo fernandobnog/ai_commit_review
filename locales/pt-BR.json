@@ -6,11 +6,11 @@
   "commands": {
     "analyze": {
       "name": "analyze",
-      "description": "Analise commits individualmente ou em grupos do repositório Git local"
+      "description": "Analisa commits individualmente ou em grupos a partir do repositório Git local"
     },
     "create": {
       "name": "create",
-      "description": "Crie um novo commit com assistência de IA"
+      "description": "Cria um novo commit com assistência de IA"
     },
     "set_config": {
       "name": "set_config",
@@ -25,15 +25,15 @@
       "analyze": "Analisar commits",
       "create": "Criar um novo commit"
     },
-    "error_updating_config": "❌ Erro ao atualizar configuração:",
+    "error_updating_config": "❌ Erro ao atualizar a configuração:",
     "help": {
       "header": "Uso: acr [opções] [comando]",
       "options": {
         "help": "Exibir ajuda para o comando"
       },
       "commands": {
-        "analyze": "Analise commits individualmente ou em grupos do repositório Git local",
-        "create": "Crie um novo commit com assistência de IA",
+        "analyze": "Analisa commits individualmente ou em grupos a partir do repositório Git local",
+        "create": "Cria um novo commit com assistência de IA",
         "set_config": "Atualiza configurações no formato KEY=VALUE (por exemplo, OPENAI_API_KEY=<valor>)"
       }
     }
@@ -44,13 +44,13 @@
   },
   "messagesAnalyzeCommits": {
     "noAdditionalCommits": "⚠️ Nenhum commit adicional para carregar. Todos os commits disponíveis estão exibidos.",
-    "selectCommitsPrompt": "Selecione commits para analisar (Pressione Enter para finalizar):",
+    "selectCommitsPrompt": "Selecione os commits para analisar (Pressione Enter para finalizar):",
     "loadMoreCommits": "⬇️  Carregar mais commits",
     "exit": "🚪 Sair",
-    "processTerminated": "👋 Processo encerrado pelo usuário.",
+    "processTerminated": "👋 Processo terminado pelo usuário.",
     "noCommitsSelected": "⚠️ Você não selecionou nenhum commit para análise.",
     "errorDuringExecution": "❌ Erro durante a execução:",
-    "analyzingCommit": "📂 Analisando commit {{sha}}...",
+    "analyzingCommit": "📂 Analisando o commit {{sha}}...",
     "noModifiedFiles": "⚠️ Nenhum arquivo modificado encontrado no commit.",
     "noValidDifferences": "⚠️ Nenhuma diferença válida encontrada para análise.",
     "codeAnalysisResult": "📊 Resultado da análise de código para o commit {{sha}}:",
@@ -58,13 +58,13 @@
     "fileItem": "- {{filename}}",
     "errorAnalyzingCommit": "❌ Erro ao analisar o commit:",
     "noDifferencesForFile": "⚠️ Nenhuma diferença encontrada para o arquivo {{file}}.",
-    "errorProcessingFile": "❌ Erro ao processar diferenças para o arquivo {{file}}:"
+    "errorProcessingFile": "❌ Erro ao processar as diferenças para o arquivo {{file}}:"
   },
   "inquirerAnalyzeCommits": {
     "checkbox": {
       "type": "checkbox",
       "name": "selectedShas",
-      "message": "Selecione commits para analisar (Pressione Enter para finalizar):",
+      "message": "Selecione os commits para analisar (Pressione Enter para finalizar):",
       "pageSize": 100,
       "loop": false
     }
@@ -78,14 +78,211 @@
     "warningNoFiles": "⚠️ Nenhum arquivo modificado encontrado no commit.",
     "warningNoDifferences": "⚠️ Nenhuma diferença válida encontrada para análise.",
     "warningNoDifferencesFile": "⚠️ Nenhuma diferença encontrada para o arquivo {{file}}.",
-    "infoProcessTerminated": "👋 Processo encerrado pelo usuário.",
-    "infoAnalyzingCommit": "📂 Analisando commit {{sha}}...",
+    "infoProcessTerminated": "👋 Processo terminado pelo usuário.",
+    "infoAnalyzingCommit": "📂 Analisando o commit {{sha}}...",
     "infoCodeAnalysisResult": "📊 Resultado da análise de código para o commit {{sha}}:",
     "infoAnalyzedFiles": "Arquivos analisados:"
   },
   "errorsAnalyzeCommits": {
     "execution": "❌ Erro durante a execução:",
     "analyzingCommit": "❌ Erro ao analisar o commit:",
-    "processingFile": "❌ Erro ao processar diferenças para o arquivo {{file}}:"
+    "processingFile": "❌ Erro ao processar as diferenças para o arquivo {{file}}:"
+  },
+  "configConfig": {
+    "errorCreatingDirectory": "Erro ao criar o diretório de configuração em {{configDirectory}}:",
+    "loadingConfigurations": "Carregando configurações de: {{configFilePath}}",
+    "configFileNotFound": "Arquivo de configuração não encontrado em: {{configFilePath}}. Usando configurações padrão.",
+    "errorLoadingConfigurations": "Erro ao carregar as configurações:",
+    "saveSuccess": "Configurações salvas com sucesso em: {{configFilePath}}",
+    "errorSavingConfigurations": "Erro ao salvar as configurações:"
+  },
+  "configManager": {
+    "setDefaultModel": {
+      "defaulting": "✅ OPENAI_API_MODEL não configurado. Usando o padrão '%s'."
+    },
+    "setDefaultLanguage": {
+      "defaulting": "✅ OPENAI_RESPONSE_LANGUAGE não configurado. Usando o padrão '%s: %s'."
+    },
+    "validateConfiguration": {
+      "errorMissingApiKey": "Chave da API OpenAI não configurada.\n\nUse 'acr set_config OPENAI_API_KEY=sua-chave' para configurá-la."
+    },
+    "updateConfigFromString": {
+      "errorInvalidFormat": "Formato inválido.\n\nUse 'acr set_config KEY=VALUE'",
+      "errorInvalidKey": "Chave de configuração inválida \"%s\".\n\nChaves disponíveis:\n%s\n\nUse uma das chaves listadas.",
+      "errorInvalidModel": "❌ Modelo de IA inválido fornecido.\n\nModelos disponíveis:\n%s\n\nUse um dos modelos listados.",
+      "errorInvalidLanguage": "❌ Código de idioma inválido \"%s\" fornecido.\n\nIdiomas suportados:\n%s\n\nUse um dos códigos de idioma listados.",
+      "successUpdate": "\n✅ Configuração \"%s\" atualizada."
+    }
+  },
+  "config": {
+    "loadingConfigurations": "Carregando configurações de: {{configFilePath}}",
+    "saveSuccess": "Configurações salvas com sucesso em: {{configFilePath}}"
+  },
+  "createCommits": {
+    "branch": {
+      "current": "Você está atualmente na branch: {{branch}}",
+      "continuePrompt": "Você deseja continuar trabalhando nesta branch?",
+      "selectPrompt": "Selecione a branch para alternar:"
+    },
+    "conflict": {
+      "detected": "❌ Conflitos detectados nos seguintes arquivos:",
+      "resolving": "Resolvendo conflito para: {{file}}",
+      "unableGetDiff": "❌ Não foi possível obter o diff para: {{file}}",
+      "confirmResolution": "Você resolveu o conflito para: {{file}}?",
+      "notResolved": "❌ Conflito não resolvido para: {{file}}",
+      "launchMergeTool": "⚙️ Iniciando a ferramenta de mesclagem para resolver conflitos...",
+      "resolvedUsingMergetool": "✔ Conflitos resolvidos usando a ferramenta de mesclagem.",
+      "stageChangesPrompt": "Você gostaria de adicionar os arquivos resolvidos?",
+      "resolvedFilesStaged": "✔ Arquivos resolvidos adicionados.",
+      "filesNotStagedWarning": "⚠️ Arquivos não adicionados. Resolva os conflitos restantes antes de prosseguir.",
+      "errorResolvingAutomatically": "❌ Erro ao resolver conflitos automaticamente:",
+      "resolutionOptionPrompt": "Como você gostaria de resolver os conflitos?",
+      "resolutionOptions": {
+        "manual": "Resolver manualmente em um editor",
+        "automatic": "Resolver automaticamente usando a ferramenta de mesclagem",
+        "cancel": "Cancelar e resolver depois"
+      },
+      "resolveBeforeProceeding": "❌ Resolva os conflitos antes de prosseguir."
+    },
+    "commit": {
+      "noStagedChanges": "⚠️ Nenhuma alteração adicionada para commit.",
+      "messageOptionPrompt": "Como você gostaria de proceder com a mensagem do commit?",
+      "options": {
+        "ai": "Gerar com IA e editar",
+        "manual": "Escrever a minha própria",
+        "cancel": "Cancelar"
+      },
+      "processCanceled": "⚠️ Processo de commit cancelado.",
+      "generatingAI": "📤 Gerando mensagem de commit com IA...",
+      "enterManualMessage": "Digite sua mensagem de commit:",
+      "emptyMessageError": "❌ A mensagem do commit não pode estar vazia.",
+      "abortPrompt": "Você deseja abortar o commit e desfazer todas as alterações?",
+      "commitAborted": "⚠️ Commit abortado. As alterações foram retornadas para não adicionadas.",
+      "errorAborting": "❌ Erro ao abortar o commit:"
+    },
+    "push": {
+      "pushPrompt": "Você deseja enviar para o repositório remoto?",
+      "pushNotPerformed": "⚠️ Envio não realizado."
+    },
+    "general": {
+      "noConflicts": "✔ Nenhum conflito detectado.",
+      "errorReadingCommitMessage": "❌ Erro ao ler a mensagem do commit:",
+      "errorDuringCommitProcess": "❌ Erro durante o processo de criação do commit:"
+    }
+  },
+  "gitUtils": {
+    "undoLastCommitSoft": {
+      "undoing": "🔄 Desfazendo o último commit sem alterar as alterações...",
+      "undone": "✔ Último commit desfeito. As alterações permanecem adicionadas."
+    },
+    "executeGitCommand": {
+      "error": "❌ Erro ao executar o comando Git '{{command}}': {{errorMessage}}"
+    },
+    "getCommits": {
+      "errorFetching": "❌ Erro ao buscar commits:"
+    },
+    "getModifiedFiles": {
+      "errorRetrieving": "❌ Erro ao recuperar arquivos modificados:"
+    },
+    "getFileDiff": {
+      "errorRetrievingDiff": "❌ Erro ao recuperar o diff para o arquivo '{{file}}':"
+    },
+    "clearStage": {
+      "cleared": "✔ Stage limpo. Todas as alterações foram removidas da área de staging."
+    },
+    "getCurrentBranch": {
+      "error": "❌ Erro ao recuperar a branch atual:"
+    },
+    "listBranches": {
+      "error": "❌ Erro ao listar as branches:"
+    },
+    "switchBranch": {
+      "switched": "✔ Mudou para a branch '{{branch}}' com sucesso.",
+      "errorSwitching": "❌ Erro ao mudar para a branch '{{branch}}':"
+    },
+    "checkConflicts": {
+      "error": "❌ Erro ao verificar conflitos:"
+    },
+    "getRepositoryDiff": {
+      "error": "❌ Erro ao recuperar o diff do repositório:"
+    },
+    "getStagedFileDiff": {
+      "errorGettingDiff": "❌ Erro ao obter o diff para o arquivo '{{file}}':",
+      "fileDeleted": "⚠️ O arquivo '{{file}}' foi deletado."
+    },
+    "stageAllChanges": {
+      "allStaged": "✔ Todas as alterações foram adicionadas ao stage.",
+      "errorStaging": "❌ Erro ao adicionar todas as alterações ao stage:"
+    },
+    "getStagedFilesDiffs": {
+      "errorRetrievingDiffs": "❌ Erro ao recuperar os diffs para os arquivos adicionados:"
+    },
+    "commitChangesWithEditor": {
+      "commitMade": "✔ Commit realizado com sucesso!",
+      "errorMakingCommit": "❌ Erro ao realizar o commit:"
+    },
+    "pullChanges": {
+      "pulled": "✔ Alterações mais recentes puxadas com sucesso do repositório remoto.",
+      "errorPulling": "❌ Erro ao puxar as alterações:"
+    },
+    "pushChanges": {
+      "pushed": "✔ Alterações enviadas com sucesso para o repositório remoto!",
+      "errorPushing": "❌ Erro ao enviar as alterações:"
+    },
+    "getConflictDiff": {
+      "errorRetrievingConflictDiff": "❌ Erro ao recuperar o diff de conflito para o arquivo '{{file}}':"
+    },
+    "openFileInEditor": {
+      "resolvedFileSaved": "✔ Arquivo resolvido salvo: {{tempFilePath}}",
+      "errorOpeningEditor": "❌ Erro ao abrir o arquivo no editor:"
+    },
+    "updateFileFromTemp": {
+      "conflictResolved": "✔ Conflito resolvido e adicionado ao stage para: {{file}}",
+      "errorUpdatingFile": "❌ Erro ao atualizar o arquivo a partir do temporário:"
+    }
+  },
+  "openaiUtils": {
+    "analyzeUpdatedCode": {
+      "sendingRequest": "📤 Enviando solicitação para o OpenAI...",
+      "responseReceived": "✅ Resposta recebida.",
+      "errorAnalyzing": "❌ Erro ao analisar o código atualizado: {{errorMessage}}"
+    }
+  },
+  "helpers": {
+    "showHelp": {
+      "usage": "Uso:",
+      "commandExample": "acr [comandos]",
+      "description": "Descrição:",
+      "descriptionText": "Uma ferramenta para analisar e criar commits e código com assistência de IA diretamente do repositório Git local.",
+      "requiredVariables": "Variáveis Necessárias:",
+      "variables": {
+        "OPENAI_API_KEY": "OPENAI_API_KEY: Sua chave de API do OpenAI.",
+        "OPENAI_API_MODEL": "OPENAI_API_MODEL: O modelo de IA usado para análise (por exemplo, gpt-4, gpt-4-turbo).",
+        "OPENAI_RESPONSE_LANGUAGE": "OPENAI_RESPONSE_LANGUAGE: O idioma para as respostas de IA (por exemplo, pt-BR, en-US)."
+      },
+      "commands": "Comandos:",
+      "commandList": {
+        "analyze": "acr analyze                  Lista e analisa os commits mais recentes.",
+        "create": "acr create                   Cria um novo commit com assistência de IA.",
+        "setConfig": "acr set_config <key=value> Atualiza configurações (por exemplo, OPENAI_API_KEY, OPENAI_API_MODEL, OPENAI_RESPONSE_LANGUAGE).",
+        "help": "acr help                     Exibe esta ajuda detalhada."
+      },
+      "examples": "Exemplos:",
+      "exampleList": {
+        "analyzeSpecific": "- Analisa um commit específico:\n  acr 123456",
+        "configureApiKey": "- Configura a chave de API do OpenAI:\n  acr set_config OPENAI_API_KEY=sk-sua-chave",
+        "configureModel": "- Configura o modelo de IA:\n  acr set_config OPENAI_API_MODEL=gpt-4",
+        "configureLanguage": "- Configura o idioma da resposta:\n  acr set_config OPENAI_RESPONSE_LANGUAGE=pt-BR",
+        "analyzeLatest": "- Analisa os commits mais recentes:\n  acr analyze",
+        "createCommit": "- Cria um commit com assistência de IA:\n  acr create"
+      },
+      "tips": "Dicas:",
+      "tipsList": {
+        "setConfig": "- Use acr set_config para definir suas preferências antes de usar a ferramenta.",
+        "secureApiKey": "- Assegure-se de que sua chave de API (OPENAI_API_KEY) esteja segura.",
+        "analyzeRecent": "- Analise apenas os commits mais recentes para melhorar a precisão e economizar recursos da API.",
+        "documentation": "- Consulte a documentação ou abra uma issue no GitHub se encontrar problemas."
+      }
+    }
   }
 }

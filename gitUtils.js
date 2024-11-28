@@ -4,21 +4,22 @@ import chalk from "chalk";
 import fs from "fs";
 import path from "path";
 import os from "os";
+import i18n from "./i18n.js"; // Importa o i18n
 
 //teste
 export function undoLastCommitSoft() {
   try {
-    console.log(
-      chalk.blue("🔄 Undoing the last commit without altering the changes...")
-    );
+    console.log(chalk.blue(i18n.__("gitUtils.undoLastCommitSoft.undoing")));
     executeGitCommand("git reset --soft HEAD~1");
-    console.log(
-      chalk.green("✔ Last commit undone. The changes remain staged.")
-    );
+    console.log(chalk.green(i18n.__("gitUtils.undoLastCommitSoft.undone")));
   } catch (error) {
     console.error(
-      chalk.red("❌ Failed to undo the last commit:"),
-      error.message
+      chalk.red(
+        i18n.__("gitUtils.executeGitCommand.error", {
+          command: "git reset --soft HEAD~1",
+          errorMessage: error.message,
+        })
+      )
     );
     throw error;
   }
@@ -35,7 +36,12 @@ export function executeGitCommand(command) {
     return execSync(command, { encoding: "utf-8" }).trim();
   } catch (error) {
     console.error(
-      chalk.red(`❌ Error executing Git command '${command}': ${error.message}`)
+      chalk.red(
+        i18n.__("gitUtils.executeGitCommand.error", {
+          command,
+          errorMessage: error.message,
+        })
+      )
     );
     throw error;
   }
@@ -62,7 +68,10 @@ export function getCommits(skip = 0, limit = 5) {
       };
     });
   } catch (error) {
-    console.error(chalk.red("❌ Error fetching commits:"), error.message);
+    console.error(
+      chalk.red(i18n.__("gitUtils.getCommits.errorFetching")),
+      error.message
+    );
     return [];
   }
 }
@@ -110,7 +119,7 @@ export function getModifiedFiles(sha) {
     });
   } catch (error) {
     console.error(
-      chalk.red("❌ Error retrieving modified files:"),
+      chalk.red(i18n.__("gitUtils.getModifiedFiles.errorRetrieving")),
       error.message
     );
     return [];
@@ -128,7 +137,7 @@ export function getFileDiff(sha, file) {
     return executeGitCommand(`git diff ${sha}~1 ${sha} -- ${file} || true`);
   } catch (error) {
     console.error(
-      chalk.red(`❌ Error retrieving diff for file '${file}':`),
+      chalk.red(i18n.__("gitUtils.getFileDiff.errorRetrievingDiff", { file })),
       error.message
     );
     return "";
@@ -141,9 +150,12 @@ export function getFileDiff(sha, file) {
 export function clearStage() {
   try {
     executeGitCommand("git reset");
-    console.log(chalk.green("✔ Stage cleared. All changes unstaged."));
+    console.log(chalk.green(i18n.__("gitUtils.clearStage.cleared")));
   } catch (error) {
-    console.error(chalk.red("❌ Error clearing stage:"), error.message);
+    console.error(
+      chalk.red(i18n.__("gitUtils.clearStage.error")),
+      error.message
+    );
   }
 }
 
@@ -156,7 +168,7 @@ export function getCurrentBranch() {
     return executeGitCommand("git branch --show-current");
   } catch (error) {
     console.error(
-      chalk.red("❌ Error retrieving current branch:"),
+      chalk.red(i18n.__("gitUtils.getCurrentBranch.error")),
       error.message
     );
     return "unknown";
@@ -173,7 +185,10 @@ export function listBranches() {
       .split("\n")
       .map((branch) => branch.trim().replace("* ", ""));
   } catch (error) {
-    console.error(chalk.red("❌ Error listing branches:"), error.message);
+    console.error(
+      chalk.red(i18n.__("gitUtils.listBranches.error")),
+      error.message
+    );
     return [];
   }
 }
@@ -185,10 +200,12 @@ export function listBranches() {
 export function switchBranch(branch) {
   try {
     executeGitCommand(`git checkout ${branch}`);
-    console.log(chalk.green(`✔ Switched to branch '${branch}' successfully.`));
+    console.log(
+      chalk.green(i18n.__("gitUtils.switchBranch.switched", { branch }))
+    );
   } catch (error) {
     console.error(
-      chalk.red(`❌ Error switching to branch '${branch}':`),
+      chalk.red(i18n.__("gitUtils.switchBranch.errorSwitching", { branch })),
       error.message
     );
     throw error;
@@ -207,7 +224,10 @@ export function checkConflicts() {
       .filter((line) => line.startsWith("UU"))
       .map((line) => line.replace("UU ", "").trim());
   } catch (error) {
-    console.error(chalk.red("❌ Error checking for conflicts:"), error.message);
+    console.error(
+      chalk.red(i18n.__("gitUtils.checkConflicts.error")),
+      error.message
+    );
     return [];
   }
 }
@@ -221,7 +241,7 @@ export function getRepositoryDiff() {
     return executeGitCommand("git diff");
   } catch (error) {
     console.error(
-      chalk.red("❌ Error retrieving repository diff:"),
+      chalk.red(i18n.__("gitUtils.getRepositoryDiff.error")),
       error.message
     );
     return "";
@@ -239,7 +259,9 @@ export function getStagedFileDiff(file) {
     return executeGitCommand(`git diff --cached -- "${file}"`);
   } catch (error) {
     console.error(
-      chalk.red(`❌ Error getting diff for file '${file}':`),
+      chalk.red(
+        i18n.__("gitUtils.getStagedFileDiff.errorGettingDiff", { file })
+      ),
       error.message
     );
 
@@ -247,7 +269,11 @@ export function getStagedFileDiff(file) {
     const isDeletedFile =
       executeGitCommand(`git ls-files --deleted -- "${file}"`).length > 0;
     if (isDeletedFile) {
-      console.warn(chalk.yellow(`⚠️ File '${file}' was deleted.`));
+      console.warn(
+        chalk.yellow(
+          i18n.__("gitUtils.getStagedFileDiff.fileDeleted", { file })
+        )
+      );
       return `File deleted: ${file}`;
     }
 
@@ -261,9 +287,12 @@ export function getStagedFileDiff(file) {
 export function stageAllChanges() {
   try {
     executeGitCommand("git add ."); // Executes the command directly
-    console.log(chalk.green("✔ All changes have been staged."));
+    console.log(chalk.green(i18n.__("gitUtils.stageAllChanges.allStaged")));
   } catch (error) {
-    console.error(chalk.red("❌ Error staging all changes:"), error.message);
+    console.error(
+      chalk.red(i18n.__("gitUtils.stageAllChanges.errorStaging")),
+      error.message
+    );
     throw error;
   }
 }
@@ -286,7 +315,7 @@ export function getStagedFilesDiffs() {
     });
   } catch (error) {
     console.error(
-      chalk.red("❌ Error retrieving diffs for staged files:"),
+      chalk.red(i18n.__("gitUtils.getStagedFilesDiffs.errorRetrievingDiffs")),
       error.message
     );
     return [];
@@ -300,26 +329,30 @@ export function getStagedFilesDiffs() {
 export function commitChangesWithEditor(tempFilePath) {
   try {
     executeGitCommand(`git commit --edit --file="${tempFilePath}"`);
-    console.log(chalk.green("✔ Commit successfully made!"));
+    console.log(
+      chalk.green(i18n.__("gitUtils.commitChangesWithEditor.commitMade"))
+    );
   } catch (error) {
-    console.error(chalk.red("❌ Error making commit:"), error.message);
+    console.error(
+      chalk.red(i18n.__("gitUtils.commitChangesWithEditor.errorMakingCommit")),
+      error.message
+    );
     throw error;
   }
 }
 
 /**
- * Puxa as últimas alterações do repositório remoto para o branch atual.
+ * Pulls the latest changes from the remote repository to the current branch.
  */
 export function pullChanges() {
   try {
     executeGitCommand("git pull");
-    console.log(
-      chalk.green(
-        "✔ Successfully pulled the latest changes from the remote repository."
-      )
-    );
+    console.log(chalk.green(i18n.__("gitUtils.pullChanges.pulled")));
   } catch (error) {
-    console.error(chalk.red("❌ Error pulling changes:"), error.message);
+    console.error(
+      chalk.red(i18n.__("gitUtils.pullChanges.errorPulling")),
+      error.message
+    );
     throw error;
   }
 }
@@ -330,11 +363,12 @@ export function pullChanges() {
 export function pushChanges() {
   try {
     executeGitCommand("git push");
-    console.log(
-      chalk.green("✔ Changes successfully pushed to the remote repository!")
-    );
+    console.log(chalk.green(i18n.__("gitUtils.pushChanges.pushed")));
   } catch (error) {
-    console.error(chalk.red("❌ Error pushing changes:"), error.message);
+    console.error(
+      chalk.red(i18n.__("gitUtils.pushChanges.errorPushing")),
+      error.message
+    );
   }
 }
 
@@ -348,7 +382,11 @@ export function getConflictDiff(file) {
     return executeGitCommand(`git diff ${file}`);
   } catch (error) {
     console.error(
-      chalk.red(`❌ Error retrieving conflict diff for file '${file}':`),
+      chalk.red(
+        i18n.__("gitUtils.getConflictDiff.errorRetrievingConflictDiff", {
+          file,
+        })
+      ),
       error.message
     );
     return "";
@@ -378,9 +416,16 @@ export function openFileInEditor(tempFilePath) {
   const editor = process.env.EDITOR || "vim";
   try {
     execSync(`${editor} "${tempFilePath}"`, { stdio: "inherit" });
-    console.log(chalk.green(`✔ Resolved file saved: ${tempFilePath}`));
+    console.log(
+      chalk.green(
+        i18n.__("gitUtils.openFileInEditor.resolvedFileSaved", { tempFilePath })
+      )
+    );
   } catch (error) {
-    console.error(chalk.red("❌ Error opening file in editor:"), error.message);
+    console.error(
+      chalk.red(i18n.__("gitUtils.openFileInEditor.errorOpeningEditor")),
+      error.message
+    );
   }
 }
 
@@ -394,10 +439,14 @@ export function updateFileFromTemp(file, tempFilePath) {
     const resolvedContent = fs.readFileSync(tempFilePath, "utf-8");
     fs.writeFileSync(file, resolvedContent);
     executeGitCommand(`git add "${file}"`);
-    console.log(chalk.green(`✔ Conflict resolved and staged for: ${file}`));
+    console.log(
+      chalk.green(
+        i18n.__("gitUtils.updateFileFromTemp.conflictResolved", { file })
+      )
+    );
   } catch (error) {
     console.error(
-      chalk.red("❌ Error updating file from temp:"),
+      chalk.red(i18n.__("gitUtils.updateFileFromTemp.errorUpdatingFile")),
       error.message
     );
   }

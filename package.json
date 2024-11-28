@@ -1,6 +1,6 @@
 {
   "name": "ai-commit-review",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "type": "module",
   "description": "AI-powered commit and code analysis from the local Git repository",
   "main": "cli.js",
