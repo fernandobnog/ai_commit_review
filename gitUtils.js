@@ -299,7 +299,7 @@ export function getStagedFilesDiffs() {
  */
 export function commitChangesWithEditor(tempFilePath) {
   try {
-    executeGitCommand(`git commit --edit --file="${tempFilePath}"`);
+    executeGitCommand(`git commit --edit --file="${tempFilePath}" --no-verify`);
     console.log(chalk.green("✔ Commit successfully made!"));
   } catch (error) {
     console.error(chalk.red("❌ Error making commit:"), error.message);
