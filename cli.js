@@ -49,7 +49,6 @@ program
 // Guide user if no command is passed
 if (!process.argv.slice(2).length) {
   console.log(chalk.yellow(i18n.__("messages.no_command_provided")));
-  console.log(chalk.yellow(i18n.__("messages.tested_on")));
   (async () => {
     const { command } = await inquirer.prompt([
       {

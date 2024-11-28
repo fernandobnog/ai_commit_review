@@ -20,7 +20,6 @@
   },
   "messages": {
     "no_command_provided": "⚠️ No command provided.",
-    "tested_on": "Tested on",
     "prompt": "What do you want to do?",
     "choices": {
       "analyze": "Analyze commits",
