@@ -1,0 +1,46 @@
+{
+  "program": {
+    "name": "acr",
+    "description": "A tool to analyze commits and create new ones with AI assistance"
+  },
+  "commands": {
+    "analyze": {
+      "name": "analyze",
+      "description": "Analyze commits individually or in groups from the local Git repository"
+    },
+    "create": {
+      "name": "create",
+      "description": "Create a new commit with AI assistance"
+    },
+    "set_config": {
+      "name": "set_config",
+      "description": "Updates configurations in the format KEY=VALUE (e.g., OPENAI_API_KEY=<value>)",
+      "usage_example": "Updates configurations in the format KEY=VALUE (e.g., OPENAI_API_KEY=<value>)"
+    }
+  },
+  "messages": {
+    "no_command_provided": "⚠️ No command provided.",
+    "tested_on": "Tested on",
+    "prompt": "What do you want to do?",
+    "choices": {
+      "analyze": "Analyze commits",
+      "create": "Create a new commit"
+    },
+    "error_updating_config": "❌ Error updating configuration:",
+    "help": {
+      "header": "Usage: acr [options] [command]",
+      "options": {
+        "help": "Display help for command"
+      },
+      "commands": {
+        "analyze": "Analyze commits individually or in groups from the local Git repository",
+        "create": "Create a new commit with AI assistance",
+        "set_config": "Updates configurations in the format KEY=VALUE (e.g., OPENAI_API_KEY=<value>)"
+      }
+    }
+  },
+  "errors": {
+    "invalid_command": "❌ Invalid command:",
+    "missing_key_value": "❌ Missing keyValue argument for set_config command."
+  }
+}

@@ -1,26 +1,43 @@
-#!/usr/bin/env node
-
 import chalk from "chalk";
 import { program } from "commander";
 import inquirer from "inquirer";
 import { showHelp } from "./helpers.js";
+import { loadConfig } from "./config.js";
 import { updateConfigFromString } from "./configManager.js";
 import { analyzeCommits } from "./analyzeCommit.js"; // Analyze commits
 import { createCommit } from "./createCommit.js"; // Create commits
+import i18n from "i18n";
+import path from "path";
+import { ConfigKeys } from "./models.js";
+
+const config = loadConfig();
+function setLanguageArray() {
+  return Object.values(ConfigKeys.OPENAI_RESPONSE_LANGUAGE).map(
+    (lang) => lang.code
+  );
+}
+
+i18n.configure({
+  locales: setLanguageArray(),
+  directory: path.join(process.cwd(), "locales"),
+  defaultLocale: config[ConfigKeys.OPENAI_RESPONSE_LANGUAGE] || "en",
+  objectNotation: true,
+});
+
+// Middleware para usar globalmente
+global.__ = i18n.__;
 
 // Custom help information
 program.helpInformation = showHelp;
 
 program
-  .name("acr")
-  .description(
-    "A tool to analyze commits and create new ones with AI assistance"
-  );
+  .name(i18n.__("program.name"))
+  .description(i18n.__("program.description"));
 
 // Command to analyze commits
 program
   .command("analyze")
-  .description("Analyze commits individuals or in groups from the local Git repository")
+  .description(i18n.__("commands.analyze.description"))
   .action(async () => {
     await analyzeCommits();
   });
@@ -28,7 +45,7 @@ program
 // Command to create a new commit
 program
   .command("create")
-  .description("Create a new commit with AI assistance")
+  .description(i18n.__("commands.create.description"))
   .action(async () => {
     await createCommit();
   });
@@ -36,31 +53,32 @@ program
 // Command to update configurations
 program
   .command("set_config <keyValue>")
-  .description(
-    "Updates configurations in the format KEY=VALUE (e.g., OPENAI_API_KEY=<value>)"
-  )
+  .description(i18n.__("commands.set_config.description"))
   .action((keyValue) => {
     try {
       updateConfigFromString(keyValue);
     } catch (error) {
       console.error(
-        chalk.red("❌ Error updating configuration:", error.message)
+        chalk.red(
+          `${i18n.__("messages.error_updating_config")} ${error.message}`
+        )
       );
     }
   });
 
 // Guide user if no command is passed
 if (!process.argv.slice(2).length) {
-  console.log(chalk.yellow("⚠️ No command provided."));
+  console.log(chalk.yellow(i18n.__("messages.no_command_provided")));
+  console.log(chalk.yellow(i18n.__("messages.tested_on")));
   (async () => {
     const { command } = await inquirer.prompt([
       {
         type: "list",
         name: "command",
-        message: "What do you want to do?",
+        message: i18n.__("messages.prompt"),
         choices: [
-          { name: "Analyze commits", value: "analyze" },
-          { name: "Create a new commit", value: "create" },
+          { name: i18n.__("messages.choices.analyze"), value: "analyze" },
+          { name: i18n.__("messages.choices.create"), value: "create" },
         ],
       },
     ]);
