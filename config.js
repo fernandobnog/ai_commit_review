@@ -29,9 +29,6 @@ function getConfigDirectory() {
     configDir = path.join(xdgConfigHome, "ai-commit-review");
   }
 
-  console.log(`Sistema Operacional: ${process.platform}`);
-  console.log(`Diretório de Configuração: ${configDir}`);
-
   return configDir;
 }
 
@@ -41,7 +38,7 @@ const configDirectory = getConfigDirectory();
 // Assegurar que o diretório de configuração exista
 try {
   fs.ensureDirSync(configDirectory);
-  console.log(`Diretório de configuração assegurado: ${configDirectory}`);
+  console.log(`Diretório de configuração: ${configDirectory}`);
 } catch (error) {
   console.error(
     `Erro ao criar o diretório de configuração em ${configDirectory}:`,
@@ -51,7 +48,6 @@ try {
 
 // Caminho completo para o arquivo de configuração
 const configFilePath = path.join(configDirectory, ".config.json");
-console.log(`Caminho completo do arquivo de configuração: ${configFilePath}`);
 
 /**
  * Carrega as configurações do arquivo .config.json.
