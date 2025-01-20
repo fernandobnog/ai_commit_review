@@ -4,9 +4,11 @@ import chalk from "chalk";
 import { program } from "commander";
 import inquirer from "inquirer";
 import { showHelp } from "./helpers.js";
-import { updateConfigFromString } from "./configManager.js";
+import { updateConfigFromString, ensureValidApiKey } from "./configManager.js";
 import { analyzeCommits } from "./analyzeCommit.js"; // Analyze commits
 import { createCommit } from "./createCommit.js"; // Create commits
+
+await ensureValidApiKey();
 
 // Custom help information
 program.helpInformation = showHelp;

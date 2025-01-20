@@ -3,6 +3,7 @@
 import chalk from "chalk";
 import { loadConfig, saveConfig } from "./config.js";
 import { OpenAIModels, ConfigKeys, SupportedLanguages } from "./models.js";
+import inquirer from "inquirer";
 
 /**
  * Sets the default OpenAI model to 'gpt-4o-mini' if not already set.
@@ -23,17 +24,17 @@ function setDefaultModel(config) {
 }
 
 /**
- * Sets the default language to English (US) if not already set.
+ * Sets the default language to Portuguese (PT-BR) if not already set.
  * @param {object} config - The current configuration object.
  * @returns {object} - The updated configuration object.
  */
 function setDefaultLanguage(config) {
   if (!config[ConfigKeys.OPENAI_RESPONSE_LANGUAGE]) {
-    config[ConfigKeys.OPENAI_RESPONSE_LANGUAGE] = SupportedLanguages.EN_US.code;
+    config[ConfigKeys.OPENAI_RESPONSE_LANGUAGE] = SupportedLanguages.PT_BR.code;
     saveConfig(config);
     console.log(
       chalk.green(
-        `✅ OPENAI_RESPONSE_LANGUAGE not set. Defaulting to '${SupportedLanguages.EN_US.code}: ${SupportedLanguages.EN_US.name}'.`
+        `✅ OPENAI_RESPONSE_LANGUAGE not set. Defaulting to '${SupportedLanguages.PT_BR.code}: ${SupportedLanguages.PT_BR.name}'.`
       )
     );
   }
@@ -61,6 +62,33 @@ export function validateConfiguration() {
   }
 
   return config;
+}
+
+export async function ensureValidApiKey() {
+  try {
+    // Tenta validar a configuração
+    validateConfiguration();
+  } catch (error) {
+      console.log(chalk.red("❌ ACR not configured."));
+      const { apiKey } = await inquirer.prompt([
+        {
+          type: "input",
+          name: "apiKey",
+          message: "Please enter your OpenAI API key:",
+        },
+      ]);
+
+      try {
+        updateConfigFromString(`OPENAI_API_KEY=${apiKey}`);
+        
+        validateConfiguration();
+      } catch (updateError) {
+        console.error(
+          chalk.red("❌ Failed to configure API key: " + updateError.message)
+        );
+        process.exit(1); // Sai se não for possível corrigir
+      }
+  }
 }
 
 /**

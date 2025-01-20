@@ -6,61 +6,61 @@ import chalk from "chalk";
  * Displays the help message to the user.
  */
 export function showHelp() {
-  const usage = `${chalk.bold("Uso:")}
-  ${chalk.cyan("acr [comandos]")}`;
+  const usage = `${chalk.bold("Usage:")}
+  ${chalk.cyan("acr [commands]")}`;
 
-  const description = `${chalk.bold("Descrição:")}
-  Uma ferramenta para analisar e criar commits e código com auxílio de IA diretamente do repositório Git local.`;
+  const description = `${chalk.bold("Description:")}
+  A tool to analyze and create commits and code with AI assistance directly from the local Git repository.`;
 
-  const requiredVariables = `${chalk.bold("Variáveis Obrigatórias:")}
-  - ${chalk.yellow("OPENAI_API_KEY")}: Sua chave de API da OpenAI.
+  const requiredVariables = `${chalk.bold("Required Variables:")}
+  - ${chalk.yellow("OPENAI_API_KEY")}: Your OpenAI API key.
   - ${chalk.yellow(
     "OPENAI_API_MODEL"
-  )}: O modelo de IA usado para análise (ex.: gpt-4, gpt-4-turbo).
+  )}: The AI model used for analysis (e.g., gpt-4, gpt-4-turbo).
   - ${chalk.yellow(
     "OPENAI_RESPONSE_LANGUAGE"
-  )}: O idioma para as respostas da IA (ex.: pt-BR, en-US).`;
+  )}: The language for AI responses (e.g., en-US, pt-BR).`;
 
-  const commands = `${chalk.bold("Comandos:")}
+  const commands = `${chalk.bold("Commands:")}
   ${chalk.cyan(
     "acr analyze"
-  )}                  Lista e analisa os últimos commits.
+  )}                  Lists and analyzes the latest commits.
   ${chalk.cyan(
     "acr create"
-  )}                   Cria um novo commit com assistência de IA.
+  )}                   Creates a new commit with AI assistance.
   ${chalk.cyan(
-    "acr set_config <chave=valor>"
-  )} Atualiza as configurações (ex.: OPENAI_API_KEY, OPENAI_API_MODEL, OPENAI_RESPONSE_LANGUAGE).
-  ${chalk.cyan("acr help")}                     Exibe esta ajuda detalhada.`;
+    "acr set_config <key=value>"
+  )} Updates the configurations (e.g., OPENAI_API_KEY, OPENAI_API_MODEL, OPENAI_RESPONSE_LANGUAGE).
+  ${chalk.cyan("acr help")}                     Displays this detailed help message.`;
 
-  const examples = `${chalk.bold("Exemplos:")}
-  - Analisar um commit específico:
+  const examples = `${chalk.bold("Examples:")}
+  - Analyze a specific commit:
     ${chalk.cyan("acr 123456")}
 
-  - Configurar a chave da API da OpenAI:
-    ${chalk.cyan("acr set_config OPENAI_API_KEY=sk-sua-chave")}
+  - Set the OpenAI API key:
+    ${chalk.cyan("acr set_config OPENAI_API_KEY=sk-your-key")}
 
-  - Configurar o modelo de IA:
+  - Set the AI model:
     ${chalk.cyan("acr set_config OPENAI_API_MODEL=gpt-4")}
 
-  - Configurar o idioma das respostas:
-    ${chalk.cyan("acr set_config OPENAI_RESPONSE_LANGUAGE=pt-BR")}
+  - Set the response language:
+    ${chalk.cyan("acr set_config OPENAI_RESPONSE_LANGUAGE=en-US")}
 
-  - Analisar os últimos commits:
+  - Analyze the latest commits:
     ${chalk.cyan("acr analyze")}
 
-  - Criar um commit com assistência de IA:
+  - Create a commit with AI assistance:
     ${chalk.cyan("acr create")}`;
 
-  const tips = `${chalk.bold("Dicas:")}
+  const tips = `${chalk.bold("Tips:")}
   - Use ${chalk.cyan(
     "acr set_config"
-  )} para configurar suas preferências antes de usar a ferramenta.
-  - Certifique-se de que sua chave de API (${chalk.yellow(
+  )} to configure your preferences before using the tool.
+  - Ensure your API key (${chalk.yellow(
     "OPENAI_API_KEY"
-  )}) seja mantida segura.
-  - Analise apenas os commits mais recentes para melhorar a precisão e economizar recursos da API.
-  - Consulte a documentação ou abra uma issue no GitHub se encontrar problemas.`;
+  )}) is kept secure.
+  - Analyze only the most recent commits to improve accuracy and save API resources.
+  - Refer to the documentation or open an issue on GitHub if you encounter problems.`;
 
   return `
 ${usage}
@@ -76,4 +76,3 @@ ${examples}
 ${tips}
   `;
 }
-
