@@ -1,5 +1,5 @@
 import chalk from "chalk";
-import { validateConfiguration } from "./configManager.js";
+import { validateConfiguration, updateValidApiKey } from "./configManager.js";
 import { OpenAI } from "openai";
 import { PromptType, SupportedLanguages } from "./models.js";
 
@@ -108,6 +108,11 @@ export async function analyzeUpdatedCode(
     return response.choices[0].message.content.trim();
   } catch (error) {
     console.error(chalk.red("❌ Error analyzing updated code:", error.message));
-    throw error;
+    if(error.message.includes("401")) {
+      await updateValidApiKey()
+      return analyzeUpdatedCode(files, promptType);
+    } else{
+      throw error;
+    }
   }
 }

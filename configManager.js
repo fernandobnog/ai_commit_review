@@ -70,24 +70,29 @@ export async function ensureValidApiKey() {
     validateConfiguration();
   } catch (error) {
       console.log(chalk.red("❌ ACR not configured."));
-      const { apiKey } = await inquirer.prompt([
-        {
-          type: "input",
-          name: "apiKey",
-          message: "Please enter your OpenAI API key:",
-        },
-      ]);
+      updateValidApiKey();
 
-      try {
-        updateConfigFromString(`OPENAI_API_KEY=${apiKey}`);
-        
-        validateConfiguration();
-      } catch (updateError) {
-        console.error(
-          chalk.red("❌ Failed to configure API key: " + updateError.message)
-        );
-        process.exit(1); // Sai se não for possível corrigir
-      }
+  }
+}
+
+export async function updateValidApiKey() {
+  const { apiKey } = await inquirer.prompt([
+    {
+      type: "input",
+      name: "apiKey",
+      message: "Please enter your OpenAI API key:",
+    },
+  ]);
+
+  try {
+    updateConfigFromString(`OPENAI_API_KEY=${apiKey}`);
+    
+    validateConfiguration();
+  } catch (updateError) {
+    console.error(
+      chalk.red("❌ Failed to configure API key: " + updateError.message)
+    );
+    process.exit(1); // Sai se não for possível corrigir
   }
 }
 
