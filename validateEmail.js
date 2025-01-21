@@ -65,8 +65,9 @@ function isFormatoEmailValido(email) {
 }
 
 function emailTemDominioNtapp(email) {
-  return email.endsWith("@ntapp.com.br");
+  return email.endsWith("@ntapp.com.br") || email.endsWith("@ntadvogados.com.br");
 }
+
 
 async function solicitarEmail() {
   const { inputEmail } = await inquirer.prompt([
@@ -85,7 +86,7 @@ async function confirmarNovaTentativa() {
       type: "confirm",
       name: "tentarNovamente",
       message:
-        "The email must be from the domain ntapp.com.br. Do you want to try again?",
+        "The email must be from the domain ntapp.com.br or ntadvogados.com.br. Do you want to try again?",
       default: true,
     },
   ]);

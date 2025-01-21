@@ -73,6 +73,7 @@ if (!process.argv.slice(2).length) {
         choices: [
           { name: "Analyze commits", value: "analyze" },
           { name: "Create a new commit", value: "create" },
+          { name: "Encrypt/Decrypt text", value: "crypt" }
         ],
       },
     ]);
@@ -81,6 +82,8 @@ if (!process.argv.slice(2).length) {
       await analyzeCommits();
     } else if (command === "create") {
       await createCommit();
+    } else if (command === "crypt") {
+      await criptografarcli();
     }
   })();
 } else {
