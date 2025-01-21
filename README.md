@@ -64,6 +64,9 @@ npm uninstall -g ai-commit-review
 
 Before using the tool, you must set your OpenAI API key, the desired model, and the response language.
 
+1. If you belong to the NTAPP domain, simply run `acr` and follow the prompts to validate your email.  
+2. Otherwise, set your OpenAI API key manually:
+
 ### Set the API Key
 
 Use the `set_config` command:
@@ -77,7 +80,7 @@ acr set_config OPENAI_API_KEY=sk-your-key
 Use the `set_config` command:
 
 ```bash
-acr set_config OPENAI_API_MODEL=gpt-4
+acr set_config OPENAI_API_MODEL=gpt-4o-mini
 ```
 
 **Available Models:**

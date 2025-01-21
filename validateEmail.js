@@ -34,7 +34,7 @@ async function enviarEmail(email, codigo) {
   const mailOptions = {
     from: DEFAULT_FROM_EMAIL,
     to: email,
-    subject: "Code Validation - NTapp",
+    subject: "Code Validation - ai-commit-review",
     text: `Your validation code is: ${codigo}. It expires in 10 minutes.`,
   };
 

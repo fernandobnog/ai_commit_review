@@ -69,7 +69,7 @@ function setDefaultLanguage(config) {
  * @returns {object} - The validated configuration object.
  * @throws Will throw an error if mandatory configurations are missing or invalid.
  */
-export function validateConfiguration() {
+export async function validateConfiguration() {
   const config = loadConfig();
 
   // Set default model if not set
@@ -79,9 +79,11 @@ export function validateConfiguration() {
   setDefaultLanguage(config);
 
   if (!config.OPENAI_API_KEY) {
-    throw new Error(
-      "OpenAI API key not configured.\n\nUse 'acr set_config OPENAI_API_KEY=your-key' to configure it."
-    );
+    const configurado = await configByNTAPPEmail();
+    if (!configurado) {
+      // Se updateValidApiKey for assíncrono, também use await
+      await updateValidApiKey();
+    }
   }
 
   return config;
@@ -90,15 +92,15 @@ export function validateConfiguration() {
 export async function ensureValidApiKey() {
   try {
     // Tenta validar a configuração
-    validateConfiguration();
+    await validateConfiguration();
   } catch (error) {
     console.log(chalk.red("❌ ACR not configured."));
 
     // Aguarda a conclusão de configByNTAPPEmail e verifica o resultado
     const configurado = await configByNTAPPEmail();
     if (!configurado) {
-      // Se updateValidApiKey for assíncrono, também use await
-      await updateValidApiKey();
+      chalk.red("❌ ACR not configured. Set configs manualy.");
+      process.exit(1); 
     }
   }
 }

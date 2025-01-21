@@ -92,7 +92,7 @@ export async function analyzeUpdatedCode(
   files,
   promptType = PromptType.ANALYZE
 ) {
-  const config = validateConfiguration();
+  const config = await validateConfiguration();
 
   const openai = new OpenAI({ apiKey: config.OPENAI_API_KEY });
   const prompt = generatePrompt(files, promptType, config);
