@@ -1,6 +1,6 @@
 {
   "name": "ai-commit-review",
-  "version": "1.2.3",
+  "version": "1.2.7",
   "type": "module",
   "description": "AI-powered commit and code analysis from the local Git repository",
   "main": "cli.js",
@@ -24,7 +24,8 @@
     "commander": "^13.0.0",
     "fs-extra": "^11.3.0",
     "inquirer": "^12.3.2",
-    "openai": "^4.79.1"
+    "nodemailer": "^6.9.16",
+    "openai": "^4.79.1",
+    "uuid": "^11.0.5"
   }
-
 }

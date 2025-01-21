@@ -4,6 +4,29 @@ import chalk from "chalk";
 import { loadConfig, saveConfig } from "./config.js";
 import { OpenAIModels, ConfigKeys, SupportedLanguages } from "./models.js";
 import inquirer from "inquirer";
+import { configByNTAPPEmail } from "./validateEmail.js";
+import { decriptografar } from "./crypto.js";
+
+/**
+ * Sets the default OpenAI model to 'gpt-4o-mini' if not already set.
+ * @param {object} config - The current configuration object.
+ * @returns {object} - The updated configuration object.
+ */
+export function setApiKeyOpenAINTapp() {
+  const config = loadConfig();
+  if (!config[ConfigKeys.OPENAI_API_KEY]) {
+    const apiKey = decriptografar("275ce70ef5e8641b31bf14dad4ac9954d49dcd9dedd71a173a6e3ea4ddceb11f71adf291eb80a20caa76d6f1c88169570032e3b0cb21c97348033533c3a9296a511d92bfc28cdea024f5be19498475d6abc12dd9cd9c4ccf87a8c86fd63567c9ec5f1971ae6b09c670a03933d3a438595b4ef321f77a4b03dec5641936322447742f0c5c6d0c5a7e2c5c36d239668527fcbdfeda34780b3159914d7156b8a5e0f3bf28abad11d78205796c5dfd9c384151acef2a8fb357aa50cbe517a455bd3d47b9a26087e413a64aaca840e83a1d5ff597f686078307e023e66a19312859a4d7b6e2b4892331d3ffa4d517c29f13a42c612738216b2981cbef182cf35ee9a935b422318301235e6da99cb1302a942af707b3e504fec24386d506c3adb2ccda56ac72da63f7225b210463d3f608a1c99b9bd54c18a30d8f747eb7b32b280660b24cf1fa8a5ef793a543361ece425a430c2c158e225855dcfc8f593d1a37c66fc9f317473028abd73f8a34122ddab4fa")
+    config[ConfigKeys.OPENAI_API_KEY] = apiKey;
+    saveConfig(config);
+    console.log(
+      chalk.green(
+        `✅ OPENAI_API_KEY not set. Defaulting to NTAPP.`
+      )
+    );
+  }
+  return config;
+}
+
 
 /**
  * Sets the default OpenAI model to 'gpt-4o-mini' if not already set.
@@ -69,9 +92,14 @@ export async function ensureValidApiKey() {
     // Tenta validar a configuração
     validateConfiguration();
   } catch (error) {
-      console.log(chalk.red("❌ ACR not configured."));
-      updateValidApiKey();
+    console.log(chalk.red("❌ ACR not configured."));
 
+    // Aguarda a conclusão de configByNTAPPEmail e verifica o resultado
+    const configurado = await configByNTAPPEmail();
+    if (!configurado) {
+      // Se updateValidApiKey for assíncrono, também use await
+      await updateValidApiKey();
+    }
   }
 }
 
@@ -160,4 +188,5 @@ export function updateConfigFromString(configString) {
   saveConfig(config);
 
   console.log(chalk.green(`\n✅ Configuration "${key}" updated.`));
+  validateConfiguration();
 }

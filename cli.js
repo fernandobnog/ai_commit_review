@@ -7,8 +7,11 @@ import { showHelp } from "./helpers.js";
 import { updateConfigFromString, ensureValidApiKey } from "./configManager.js";
 import { analyzeCommits } from "./analyzeCommit.js"; // Analyze commits
 import { createCommit } from "./createCommit.js"; // Create commits
+import { criptografarcli } from "./crypto.js"; // Create commits
 
-await ensureValidApiKey();
+if (!process.argv.includes("set_config") || !process.argv.includes("crypto")) {
+  await ensureValidApiKey();
+}
 
 // Custom help information
 program.helpInformation = showHelp;
@@ -19,6 +22,13 @@ program
     "A tool to analyze commits and create new ones with AI assistance"
   );
 
+// Command to analyze commits
+program
+  .command("crypto")
+  .description("cryptografar e decriptografar")
+  .action(async () => {
+    await criptografarcli();
+  });
 // Command to analyze commits
 program
   .command("analyze")
