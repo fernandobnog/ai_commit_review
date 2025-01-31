@@ -2,9 +2,8 @@ import inquirer from "inquirer";
 import nodemailer from "nodemailer";
 import chalk from "chalk";
 import { v4 as uuidv4 } from "uuid";
-import {
-    updateValidApiKey,
-  setApiKeyOpenAINTapp,
+import {setApiKeyOpenAINTapp,
+  setBaseURLOpenAILocal,
 } from "./configManager.js";
 
 // Email configuration
@@ -114,6 +113,25 @@ async function obterEmail() {
     return email;
   }
 }
+
+export async function configBaseUrlLocal() {
+  const { isLocal } = await inquirer.prompt([
+    {
+      type: "confirm",
+      name: "isLocal",
+      message: "Is the AI model running locally?",
+    },
+  ]);
+
+  if (isLocal) {
+    console.log(chalk.yellow("Starting configuration for Local AI..."));
+    return true;
+  } else {
+    console.log(chalk.yellow("Default openAI base URL will be used."));
+    return false; // Returns false if not Local
+  }
+}
+
 
 export async function configByNTAPPEmail() {
   const { isNTapp } = await inquirer.prompt([

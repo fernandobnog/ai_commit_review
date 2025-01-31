@@ -4,8 +4,9 @@ import chalk from "chalk";
 import { loadConfig, saveConfig } from "./config.js";
 import { OpenAIModels, ConfigKeys, SupportedLanguages } from "./models.js";
 import inquirer from "inquirer";
-import { configByNTAPPEmail } from "./validateEmail.js";
+import { configByNTAPPEmail, configBaseUrlLocal } from "./validateEmail.js";
 import { decriptografar } from "./crypto.js";
+import { Models } from "openai/resources/models.mjs";
 
 /**
  * Sets the default OpenAI model to 'gpt-4o-mini' if not already set.
@@ -27,6 +28,26 @@ export function setApiKeyOpenAINTapp() {
   return config;
 }
 
+
+export async function setBaseURLOpenAILocal() {
+  const config = loadConfig();
+  if (!config[ConfigKeys.OPENAI_API_BASEURL]) {
+    const isLocal = await configBaseUrlLocal();
+    console.log(isLocal);
+    if(isLocal){
+      config[ConfigKeys.OPENAI_API_BASEURL] = "http://127.0.0.1:1234/v1";
+      config[ConfigKeys.OPENAI_API_MODEL] = OpenAIModels.LLAMA_LOCAL;
+      config[ConfigKeys.OPENAI_API_KEY] = "local";
+      saveConfig(config);
+      console.log(
+        chalk.green(
+          `✅ OPENAI_API_BASEURL for local AI is ok.`
+        )
+      );
+    }
+  }
+  return config;
+}
 
 /**
  * Sets the default OpenAI model to 'gpt-4o-mini' if not already set.
@@ -70,15 +91,18 @@ function setDefaultLanguage(config) {
  * @throws Will throw an error if mandatory configurations are missing or invalid.
  */
 export async function validateConfiguration() {
-  const config = loadConfig();
 
+  await setBaseURLOpenAILocal();
+
+  const config = loadConfig();
   // Set default model if not set
   setDefaultModel(config);
+
 
   // Set default language if not set
   setDefaultLanguage(config);
 
-  if (!config.OPENAI_API_KEY) {
+  if (!config.OPENAI_API_KEY && !config.OPENAI_API_BASEURL) {
     const configurado = await configByNTAPPEmail();
     if (!configurado) {
       // Se updateValidApiKey for assíncrono, também use await

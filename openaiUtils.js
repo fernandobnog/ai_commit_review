@@ -93,11 +93,16 @@ export async function analyzeUpdatedCode(
   promptType = PromptType.ANALYZE
 ) {
   const config = await validateConfiguration();
-
-  const openai = new OpenAI({ apiKey: config.OPENAI_API_KEY });
+  let openai = null;
+  //TODO logica para acesso local ou remoto
+  if(config.OPENAI_API_BASEURL){
+    openai = new OpenAI({baseURL:config.OPENAI_API_BASEURL, apiKey: config.OPENAI_API_KEY });
+  }else{
+    openai = new OpenAI({ apiKey: config.OPENAI_API_KEY });
+  }
   const prompt = generatePrompt(files, promptType, config);
   try {
-    console.log(chalk.blue("📤 Sending request to OpenAI..."));
+    console.log(chalk.blue("📤 Sending request to AI..."));
     const response = await openai.chat.completions.create({
       model: config.OPENAI_API_MODEL,
       messages: [{ role: "user", content: prompt }],
