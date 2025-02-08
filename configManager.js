@@ -31,11 +31,9 @@ export function setApiKeyOpenAINTapp() {
 }
 
 
-export async function setBaseURLOpenAILocal() {
-  const config = loadConfig();
+export async function setBaseURLOpenAILocal(config) {
   if (!config[ConfigKeys.OPENAI_API_BASEURL]) {
     const isLocal = await configBaseUrlLocal();
-    console.log(isLocal);
     if(isLocal){
       config[ConfigKeys.OPENAI_API_BASEURL] = "http://127.0.0.1:1234/v1";
       config[ConfigKeys.OPENAI_API_MODEL] = OpenAIModels.DEEPSEEK_LOCAL;
@@ -93,16 +91,15 @@ function setDefaultLanguage(config) {
  * @throws Will throw an error if mandatory configurations are missing or invalid.
  */
 export async function validateConfiguration() {
+  let config = loadConfig();
 
-  await setBaseURLOpenAILocal();
+  config = await setBaseURLOpenAILocal(config);
 
-  const config = loadConfig();
   // Set default model if not set
-  setDefaultModel(config);
-
+  config = setDefaultModel(config);
 
   // Set default language if not set
-  setDefaultLanguage(config);
+  config = setDefaultLanguage(config);
 
   if (!config.OPENAI_API_KEY && !config.OPENAI_API_BASEURL) {
     const configurado = await configByNTAPPEmail();
