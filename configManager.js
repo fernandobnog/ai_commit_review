@@ -16,7 +16,8 @@ dotenv.config();
  * @returns {object} - The updated configuration object.
  */
 export function setApiKeyOpenAINTapp() {
-  const config = loadConfig(process.env.CRIPTO_OPENAI_KEY);
+  //TODO: Implementar a lógica para setar a chave de API da NTAPP não está funcionando.
+  const config = loadConfig();
   if (!config[ConfigKeys.OPENAI_API_KEY]) {
     const apiKey = decriptografar()
     config[ConfigKeys.OPENAI_API_KEY] = apiKey;
