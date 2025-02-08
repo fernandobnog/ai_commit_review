@@ -6,7 +6,9 @@ import { OpenAIModels, ConfigKeys, SupportedLanguages } from "./models.js";
 import inquirer from "inquirer";
 import { configByNTAPPEmail, configBaseUrlLocal } from "./validateEmail.js";
 import { decriptografar } from "./crypto.js";
-import { Models } from "openai/resources/models.mjs";
+
+import dotenv from "dotenv";
+dotenv.config();
 
 /**
  * Sets the default OpenAI model to 'gpt-4o-mini' if not already set.
@@ -14,9 +16,9 @@ import { Models } from "openai/resources/models.mjs";
  * @returns {object} - The updated configuration object.
  */
 export function setApiKeyOpenAINTapp() {
-  const config = loadConfig();
+  const config = loadConfig(process.env.CRIPTO_OPENAI_KEY);
   if (!config[ConfigKeys.OPENAI_API_KEY]) {
-    const apiKey = decriptografar("97964677f47a6e91d2b958b44603671e2eefb5c2a45459491d04fe4902d30f7137ad92b8b1722429d415fb18fbb9d11986e7dd3fcb45d684eecca82e5f1effb0a351266e3572df03769c91b83288fc34aace9633857200e321831ee58c3ca98ae9fd3820220d1f2c1d4a47b0df7e956d463db7ceaff04379355bc3b2bfa939acaace3169dd69d681951aa20459e990c566cfe271627d54a87cd52fc477f30a451b5e938e203b30cfee21d278c1fd2250f7dedc3dc0cd9b01fc412b0c6888289ebc2fe60b824402ff10754542fd1613b4c86b4c807a136f350aeadf87c67716ef3967e3c05a5396827483be67e2589e91c1346221bb431ddb4cf8dc0ef81098b4f1283c7a4675028685a32b5a6660e864fca431c05028f92d1280296accacf898ba5da2afa7c9343c56b5dbc315284edbdd12fa8ef94ffb625f80bc4d9b4fd1d1bd48046ca843917977e2d92a3345cf48a8ec40bb940ed0f5be3f6ca2c0ef59971de51fbc29b05db0d6326547213acb1b")
+    const apiKey = decriptografar()
     config[ConfigKeys.OPENAI_API_KEY] = apiKey;
     saveConfig(config);
     console.log(
@@ -36,7 +38,7 @@ export async function setBaseURLOpenAILocal() {
     console.log(isLocal);
     if(isLocal){
       config[ConfigKeys.OPENAI_API_BASEURL] = "http://127.0.0.1:1234/v1";
-      config[ConfigKeys.OPENAI_API_MODEL] = OpenAIModels.LLAMA_LOCAL;
+      config[ConfigKeys.OPENAI_API_MODEL] = OpenAIModels.DEEPSEEK_LOCAL;
       config[ConfigKeys.OPENAI_API_KEY] = "local";
       saveConfig(config);
       console.log(
