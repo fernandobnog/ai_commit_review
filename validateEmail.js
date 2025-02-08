@@ -177,8 +177,9 @@ export async function configByNTAPPEmail() {
     ]);
 
     if (validarCodigo(email, codigoUsuario)) {
-      console.log(chalk.green("✅ Code successfully validated!"));
+      //TODO Não está salvando as configs de IA NTAPP
       setApiKeyOpenAINTapp();
+      console.log(chalk.green("✅ Code successfully validated!"));
       return true; // Returns true to indicate success in configuration
     } else {
       console.log(chalk.red("❌ Invalid or expired code."));

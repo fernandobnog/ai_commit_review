@@ -16,10 +16,9 @@ dotenv.config();
  * @returns {object} - The updated configuration object.
  */
 export function setApiKeyOpenAINTapp() {
-  //TODO: Implementar a lógica para setar a chave de API da NTAPP não está funcionando.
   const config = loadConfig();
   if (!config[ConfigKeys.OPENAI_API_KEY]) {
-    const apiKey = decriptografar()
+    const apiKey = decriptografar(process.env.CRIPTO_OPENAI_KEY);
     config[ConfigKeys.OPENAI_API_KEY] = apiKey;
     saveConfig(config);
     console.log(
@@ -33,7 +32,7 @@ export function setApiKeyOpenAINTapp() {
 
 
 export async function setBaseURLOpenAILocal(config) {
-  if (!config[ConfigKeys.OPENAI_API_BASEURL]) {
+  if (!config[ConfigKeys.OPENAI_API_BASEURL] && !config[ConfigKeys.OPENAI_API_MODEL]) {
     const isLocal = await configBaseUrlLocal();
     if(isLocal){
       config[ConfigKeys.OPENAI_API_BASEURL] = "http://127.0.0.1:1234/v1";
@@ -95,10 +94,10 @@ export async function validateConfiguration() {
   let config = loadConfig();
 
   config = await setBaseURLOpenAILocal(config);
-
+  
   // Set default model if not set
   config = setDefaultModel(config);
-
+  
   // Set default language if not set
   config = setDefaultLanguage(config);
 
