@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+import dotenv from 'dotenv';
+dotenv.config();
 
 import chalk from "chalk";
 import { program } from "commander";
