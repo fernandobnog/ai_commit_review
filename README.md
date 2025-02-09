@@ -13,6 +13,7 @@ A command-line tool powered by AI for creating or analyzing Git commits and code
   - [Set the API Key](#set-the-api-key)
   - [Set the OpenAI Model](#set-the-openai-model)
   - [Set the Response Language](#set-the-response-language)
+  - [Configuração para IA local](#configuração-para-ia-local)
 - [Usage](#usage)
   - [Analyze Commits](#analyze-commits)
   - [Create a Commit](#create-a-commit)
@@ -115,6 +116,19 @@ acr set_config OPENAI_RESPONSE_LANGUAGE=en-US
 - `RU`: Russian
 - `PT_BR`: Portuguese (Brazil)
 - `PT_PT`: Portuguese (Portugal)
+
+### Configuração para IA local
+
+Se você utiliza um servidor de IA local, a ferramenta pode configurar automaticamente as opções para uso local.  
+Para configurar manualmente, execute os comandos:
+  
+```bash
+acr set_config OPENAI_API_BASEURL=http://127.0.0.1:1234/v1
+acr set_config OPENAI_API_MODEL=deepseek-r1-distill-llama-8b
+acr set_config OPENAI_API_KEY=local
+```
+
+Isso define o endereço base da API local, utiliza o modelo de IA local e define a chave como "local".
 
 ## Usage
 
