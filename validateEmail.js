@@ -4,8 +4,6 @@ import chalk from "chalk";
 import { v4 as uuidv4 } from "uuid";
 import {setApiKeyOpenAINTapp} from "./configManager.js";
 
-import dotenv from "dotenv";
-dotenv.config();
 
 // Update email configuration using environment variables
 const EMAIL_CONFIG = {

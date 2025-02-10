@@ -1,9 +1,6 @@
 import inquirer from "inquirer";
 import crypto from 'crypto';
 
-import dotenv from "dotenv";
-dotenv.config();
-
 const algoritmo = 'aes-256-cbc';
 const chave = crypto.scryptSync(process.env.PASSWORD_CRYPTO_KEY, 'sal', 32);
 const iv = Buffer.alloc(16, 0);

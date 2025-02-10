@@ -1,7 +1,3 @@
-#!/usr/bin/env node
-import dotenv from 'dotenv';
-dotenv.config();
-
 import chalk from "chalk";
 import { program } from "commander";
 import inquirer from "inquirer";
@@ -10,6 +6,8 @@ import { updateConfigFromString, ensureValidApiKey } from "./configManager.js";
 import { analyzeCommits } from "./analyzeCommit.js"; // Analyze commits
 import { createCommit } from "./createCommit.js"; // Create commits
 import { criptografarcli } from "./crypto.js"; // Encrypt/decrypt functionality
+
+process.noDeprecation = true;
 
 // Ensure a valid API key unless updating config or using the crypto command
 if (!process.argv.includes("set_config") || !process.argv.includes("crypto")) {

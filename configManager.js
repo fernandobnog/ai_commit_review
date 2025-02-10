@@ -1,14 +1,9 @@
-//configManager.js
-
 import chalk from "chalk";
 import { loadConfig, saveConfig } from "./config.js";
 import { OpenAIModels, ConfigKeys, SupportedLanguages } from "./models.js";
 import inquirer from "inquirer";
 import { configByNTAPPEmail, configBaseUrlLocal } from "./validateEmail.js";
 import { decriptografar } from "./crypto.js";
-
-import dotenv from "dotenv";
-dotenv.config();
 
 /**
  * Sets the default OpenAI model to 'gpt-4o-mini' if not already set.

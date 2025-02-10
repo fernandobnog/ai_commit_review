@@ -1,0 +1,10 @@
+
+npm login
+
+npm run build
+
+npm pack
+
+npm install -g ./ai-commit-review-1.2.16.tgz
+
+npm publish --access public

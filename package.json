@@ -1,11 +1,11 @@
 {
   "name": "ai-commit-review",
-  "version": "1.2.15",
+  "version": "1.2.16",
   "type": "module",
   "description": "AI-powered commit and code analysis from the local Git repository",
-  "main": "cli.js",
+  "main": "dist/bundle.cjs",
   "bin": {
-    "acr": "acr-wrapper.js"
+    "acr": "dist/bundle.cjs"
   },
   "scripts": {
     "start": "node cli.js",
@@ -29,5 +29,10 @@
     "nodemailer": "^6.9.16",
     "openai": "^4.79.1",
     "uuid": "^11.0.5"
+  },
+  "devDependencies": {
+    "dotenv-webpack": "^8.1.0",
+    "webpack": "^5.97.1",
+    "webpack-cli": "^6.0.1"
   }
 }
