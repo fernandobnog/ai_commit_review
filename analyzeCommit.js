@@ -5,8 +5,8 @@ import { analyzeUpdatedCode } from "./openaiUtils.js";
 import { PromptType } from "./models.js";
 
 /**
- * Handles the user's selection of commits, including dynamic loading.
- * @returns {Array<string>} - List of selected commit SHAs.
+ * Handles user's commit selection with dynamic loading.
+ * @returns {Array<string>} List of selected commit SHAs.
  */
 const selectCommits = async () => {
   let skip = 0;
@@ -94,7 +94,7 @@ const selectCommits = async () => {
 };
 
 /**
- * Main function for commit analysis.
+ * Main function to analyze commits.
  */
 export const analyzeCommits = async () => {
   try {
@@ -149,10 +149,10 @@ const analyzeCommit = async (sha) => {
 };
 
 /**
- * Processes modified files to extract differences.
+ * Extracts differences from modified files.
  * @param {string} sha - The commit SHA.
  * @param {Array<{status: string, file: string}>} modifiedFiles - List of modified files.
- * @returns {Array<{filename: string, content: string, status: string}>} - List of files with diffs.
+ * @returns {Array<{filename: string, diff: string, status: string}>} List of file diffs.
  */
 const processModifiedFiles = async (sha, modifiedFiles) => {
   const files = await Promise.all(

@@ -3,8 +3,7 @@
 // Enum for OpenAI models
 export const OpenAIModels = Object.freeze({
   GPT_4O_MINI: "gpt-4o-mini",
-  LLAMA_LOCAL: "meta-llama-3.1-8b-instruct@q4_k_m",
-  DEEPSEEK_LOCAL: "deepseek-r1-distill-qwen-7b",
+  DEEPSEEK_LOCAL: "deepseek-r1-distill-llama-8b",
 });
 
 // Enum for configuration keys

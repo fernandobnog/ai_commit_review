@@ -2,25 +2,24 @@ import inquirer from "inquirer";
 import nodemailer from "nodemailer";
 import chalk from "chalk";
 import { v4 as uuidv4 } from "uuid";
-import {setApiKeyOpenAINTapp,
-  setBaseURLOpenAILocal,
-} from "./configManager.js";
+import {setApiKeyOpenAINTapp} from "./configManager.js";
 
-// Email configuration
+
+// Update email configuration using environment variables
 const EMAIL_CONFIG = {
-  host: "smtp.office365.com",
-  port: 587,
+  host: process.env.SMTP_HOST,
+  port: process.env.SMTP_PORT,
   secure: false, // TLS is used, not direct SSL
   auth: {
-    user: "automacao@ntadvogados.com.br", // Your email
-    pass: "139706nT", // Your password
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS 
   },
   tls: {
     ciphers: "SSLv3",
   },
 };
 
-const DEFAULT_FROM_EMAIL = "no-reply@ntapp.com.br"; // Default sender
+const DEFAULT_FROM_EMAIL = process.env.FROM_EMAIL;
 
 // Map to store validation codes and their validity
 const codigoMap = new Map();
@@ -176,8 +175,9 @@ export async function configByNTAPPEmail() {
     ]);
 
     if (validarCodigo(email, codigoUsuario)) {
-      console.log(chalk.green("✅ Code successfully validated!"));
+      //TODO Não está salvando as configs de IA NTAPP
       setApiKeyOpenAINTapp();
+      console.log(chalk.green("✅ Code successfully validated!"));
       return true; // Returns true to indicate success in configuration
     } else {
       console.log(chalk.red("❌ Invalid or expired code."));
