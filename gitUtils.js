@@ -5,7 +5,12 @@ import fs from "fs";
 import path from "path";
 import os from "os";
 
-//teste
+async function mergeBranch(fromBranch, toBranch) {
+  await switchBranch(toBranch);
+  await executeGitCommand(`git merge ${fromBranch}`);
+  console.log(chalk.green(`Merge da branch ${fromBranch} para ${toBranch} realizado com sucesso.`));
+}
+
 export function undoLastCommitSoft() {
   try {
     console.log(

@@ -6,6 +6,7 @@ import { updateConfigFromString, ensureValidApiKey } from "./configManager.js";
 import { analyzeCommits } from "./analyzeCommit.js"; // Analyze commits
 import { createCommit } from "./createCommit.js"; // Create commits
 import { criptografarcli } from "./crypto.js"; // Encrypt/decrypt functionality
+import { updateServerToTest } from "./testServerUpdate.js"; // Script to Update Server to Test
 
 process.noDeprecation = true;
 
@@ -45,6 +46,15 @@ program
     await createCommit();
   });
 
+// Command to update server to test
+program
+  .command("updateTestServer")
+  .description("Update server to test")
+  .action(async () => {
+    await updateServerToTest();
+  });
+  
+
 // Command to update configurations
 program
   .command("set_config <keyValue>")
@@ -69,7 +79,8 @@ if (!process.argv.slice(2).length) {
         choices: [
           { name: "Analyze commits", value: "analyze" },
           { name: "Create a new commit", value: "create" },
-          { name: "Encrypt/Decrypt text", value: "crypto" }
+          { name: "Encrypt/Decrypt text", value: "crypto" },
+          { name: "Update server to test", value: "updateTestServer" }
         ],
       },
     ]);
@@ -80,6 +91,8 @@ if (!process.argv.slice(2).length) {
       await createCommit();
     } else if (command === "crypto") {
       await criptografarcli();
+    } else if (command === "updateTestServer") {
+      await updateServerToTest();
     }
   })();
 } else {

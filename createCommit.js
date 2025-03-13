@@ -17,6 +17,7 @@ import {
   openFileInEditor,
   updateFileFromTemp,
   undoLastCommitSoft,
+  executeGitCommand
 } from "./gitUtils.js";
 import { analyzeUpdatedCode } from "./openaiUtils.js";
 import { PromptType } from "./models.js";
