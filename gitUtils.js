@@ -183,14 +183,65 @@ export function listBranches() {
  * @param {string} branch - Name of the branch to switch to.
  */
 export function switchBranch(branch) {
+
+  // Validação do parâmetro
+  if (typeof branch !== 'string' || !branch.trim()) {
+    console.error(chalk.red("❌ O nome do branch é obrigatório e deve ser uma string não vazia."));
+    return;
+  }
+
+  // Captura o branch atual para possível rollback
+  const originalBranch = (
+    executeGitCommand("git rev-parse --abbrev-ref HEAD") || ""
+  ).toString().trim();
+
+  let hadStash = false;
+
   try {
-    executeGitCommand(`git checkout ${branch}`);
-    console.log(chalk.green(`✔ Switched to branch '${branch}' successfully.`));
+    // Verifica se há alterações não commitadas
+    const statusOutput = (executeGitCommand("git status --porcelain") || "")
+      .toString()
+      .trim();
+    if (statusOutput.length > 0) {
+      console.log(chalk.blue("ℹ️  Alterações detectadas. Salvando alterações com stash..."));
+      executeGitCommand("git stash");
+      hadStash = true;
+    }
+
+    // Tenta trocar para o branch desejado
+    executeGitCommand("git checkout " + branch);
+    console.log(chalk.green(`✔ Alterado para o branch '${branch}' com sucesso.`));
+
+    // Se houve stash, tenta reaplicar as alterações salvas
+    if (hadStash) {
+      console.log(chalk.blue("ℹ️  Reaplicando alterações do stash no novo branch..."));
+      try {
+        executeGitCommand("git stash pop");
+      } catch (stashError) {
+        console.error(chalk.red("❌ Conflitos detectados ao reaplicar o stash no branch destino."));
+        const conflictFiles = (
+          executeGitCommand("git diff --name-only --diff-filter=U") || ""
+        ).toString().trim() || "Nenhum arquivo identificado";
+        console.error(chalk.yellow(`Arquivos em conflito: ${conflictFiles}`));
+        console.error(chalk.yellow("Revertendo para o branch original e tentando aplicar o stash..."));
+
+        // Reverte para o branch original
+        executeGitCommand("git checkout " + originalBranch);
+
+        // Tenta aplicar o stash no branch original
+        try {
+          executeGitCommand("git stash pop");
+          console.log(chalk.green("✔ Alterações restabelecidas no branch original com sucesso."));
+        } catch (restoreError) {
+          console.error(chalk.red("❌ Houve problemas ao aplicar o stash no branch original."));
+          throw restoreError;
+        }
+        // Lança o erro original para notificar que houve conflito inicialmente
+        throw stashError;
+      }
+    }
   } catch (error) {
-    console.error(
-      chalk.red(`❌ Error switching to branch '${branch}':`),
-      error.message
-    );
+    console.error(chalk.red(`❌ Erro ao trocar para o branch '${branch}':`), error.message || error);
     throw error;
   }
 }

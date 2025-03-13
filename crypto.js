@@ -2,7 +2,7 @@ import inquirer from "inquirer";
 import crypto from 'crypto';
 
 const algoritmo = 'aes-256-cbc';
-const chave = crypto.scryptSync(process.env.PASSWORD_CRYPTO_KEY, 'sal', 32);
+const chave = crypto.scryptSync('9734yrv2qp98342yrt02146r12x4r9x2d0873456', 'sal', 32);
 const iv = Buffer.alloc(16, 0);
 
 function criptografarsimples(texto) {
