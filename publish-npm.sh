@@ -104,6 +104,8 @@ if [ "$versao_atual" == "$versao_ultima" ]; then
 
     git push origin "$branch_atual"
 
+    npm run build
+
     # Publica o pacote no npm
     npm publish --access public
 
