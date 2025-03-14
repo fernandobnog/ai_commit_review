@@ -14,7 +14,11 @@ if [ ! -f package.json ]; then
     echo "Arquivo package.json não encontrado no diretório atual."
     exit 1
 fi
-
+# Verifica se o usuário está logado no npm
+if ! npm whoami &>/dev/null; then
+    echo "Você não está logado no npm. Por favor, faça login usando 'npm login'."
+    exit 1
+fi
 # Utiliza Node.js para extrair os dados do package.json sem usar o jq
 current_version=$(node -p "require('./package.json').version")
 name=$(node -p "require('./package.json').name")
@@ -41,7 +45,7 @@ fi
 echo "Última versão via npm: $latest_version"
 
 # Verifica se o working directory do Git está limpo antes de prosseguir
-#check_git_clean
+check_git_clean
 
 # Se houver divergência entre a versão local e a versão do npm, atualiza a versão.
 # Note que o comando npm version patch incrementa a versão conforme semver, assim, se a versão local for maior que a do npm,
@@ -52,11 +56,8 @@ if [ "$current_version" == "$latest_version" ]; then
     npm version patch
     # Atualiza o package-lock.json com a nova versão
     npm install
-    # Se desejar, você pode descomentar as linhas abaixo para adicionar os arquivos modificados, comitar e realizar push:
-    # git add package.json package-lock.json
-    # nova_version=$(node -p "require('./package.json').version")
-    # git commit -m "chore: atualizar versão para $nova_version"
-    # git push --follow-tags
+    #Publicar no npm
+    npm publish --access public
 else
     echo "A versão já está atualizada no package.json: $current_version"
 fi
