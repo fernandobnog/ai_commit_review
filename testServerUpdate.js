@@ -37,13 +37,13 @@ async function mergeToTest(){
       }
 
       if (currentBranch === 'develop') {
-        await mergeBranch('develop', 'test');
+        await mergeBranch('develop', 'teste');
         return;
       }
 
       await mergeBranch(currentBranch, 'develop');
-      await mergeBranch('develop', 'test');
-      await switchBranch('test');
+      await mergeBranch('develop', 'teste');
+      await switchBranch('teste');
 }
 
 // Updated dockerCheck to English prompts and messages
