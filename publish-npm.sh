@@ -52,10 +52,10 @@ if [ "$current_version" == "$latest_version" ]; then
     echo "Versões identicas detectadas (local: $current_version, npm: $latest_version). Executando npm version patch..."
     #fazer o commit na branch atual e depois fazer o merge pra main e dar push, ficar na main (checkout main) e seguir com o script
     git add .
-    git commit -m "Atualização da versão para $current_version"
+    git commit -m "Atualização da versão npm"
     git push origin "$current_branch"
     git checkout master
-    git merge "$current_branch"
+    git merge "$current_branch" --no-edit
     git push origin master
 
     # Verifica se o working directory do Git está limpo antes de prosseguir
@@ -66,7 +66,7 @@ if [ "$current_version" == "$latest_version" ]; then
     # Atualiza o package-lock.json com a nova versão
     npm install
     # push da nova versão para o repositório remoto
-    git push origin "$current_branch"
+    git push origin master --tags
     #Publicar no npm
     npm publish --access public
 else
