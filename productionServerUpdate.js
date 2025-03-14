@@ -22,7 +22,7 @@ export async function updateServerToProduction() {
     console.log(chalk.blue("ℹ️  Verificando alterações não commitadas..."));
     const { stdout } = await executeGitCommand("git status --porcelain");
 
-    if (stdout.trim()) {
+    if (stdout) {
       console.error(
         chalk.red(
           "❌ Existem alterações não commitadas na branch. Por favor, faça commit das alterações e realize novos testes antes de colocar em produção."
