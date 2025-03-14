@@ -17,7 +17,7 @@ export async function updateServerToProduction() {
 
   try {
     console.log(chalk.blue(`ℹ️  Mudando para a branch ${branchOrigem}...`));
-    await executeGitCommand(`git checkout ${branchOrigem}`);
+    await executeGitCommand("git checkout " + branchOrigem);
 
     console.log(chalk.blue("ℹ️  Verificando alterações não commitadas..."));
     const { stdout } = await executeGitCommand("git status --porcelain");
