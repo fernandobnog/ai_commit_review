@@ -56,6 +56,8 @@ if [ "$current_version" == "$latest_version" ]; then
     npm version patch
     # Atualiza o package-lock.json com a nova versão
     npm install
+    # push da nova versão para o repositório remoto
+    git push origin "$current_branch"
     #Publicar no npm
     npm publish --access public
 else
