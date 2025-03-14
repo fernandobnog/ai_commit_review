@@ -74,6 +74,7 @@ if [ "$current_version" == "$latest_version" ]; then
 
     #Publicar no npm
     npm publish --access public
+    
 
     
 else
