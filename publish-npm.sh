@@ -54,9 +54,9 @@ if [ "$current_version" == "$latest_version" ]; then
     git add .
     git commit -m "Atualização da versão para $current_version"
     git push origin "$current_branch"
-    git checkout main
+    git checkout master
     git merge "$current_branch"
-    git push origin main
+    git push origin master
 
     # Verifica se o working directory do Git está limpo antes de prosseguir
     check_git_clean
