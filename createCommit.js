@@ -17,6 +17,7 @@ import {
   openFileInEditor,
   updateFileFromTemp,
   undoLastCommitSoft,
+  executeGitCommand
 } from "./gitUtils.js";
 import { analyzeUpdatedCode } from "./openaiUtils.js";
 import { PromptType } from "./models.js";
@@ -330,5 +331,6 @@ export async function createCommit() {
       chalk.red("❌ Error during the commit creation process:"),
       error.message
     );
+    process.exit(1);
   }
 }

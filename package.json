@@ -1,6 +1,6 @@
 {
   "name": "ai-commit-review",
-  "version": "1.2.16",
+  "version": "1.2.23",
   "type": "module",
   "description": "AI-powered commit and code analysis from the local Git repository",
   "main": "dist/bundle.cjs",
@@ -8,7 +8,7 @@
     "acr": "dist/bundle.cjs"
   },
   "scripts": {
-    "start": "node cli.js",
+    "start": "node -r dotenv/config cli.js",
     "build": "webpack --mode production"
   },
   "keywords": [

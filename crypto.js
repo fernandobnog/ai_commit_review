@@ -40,28 +40,28 @@ export function criptografarcli() {
         {
             type: 'list',
             name: 'acao',
-            message: 'O que deseja fazer?',
-            choices: ['Criptografar', 'Decriptografar']
+            message: 'What do you want to do?',
+            choices: ['Encrypt', 'Decrypt']
         },
         {
             type: 'input',
             name: 'texto',
-            message: 'Digite o texto:'
+            message: 'Enter the text:'
         }
     ]).then(({ acao, texto }) => {
-        if (acao === 'Criptografar') {
+        if (acao === 'Encrypt') {
             const resultadoCripto = criptografar(texto);
-            console.log('Texto criptografado:', resultadoCripto);
-        } else if (acao === 'Decriptografar') {
+            console.log('Encrypted text:', resultadoCripto);
+        } else if (acao === 'Decrypt') {
             try {
                 const resultadoDecripto = decriptografar(texto);
-                console.log('Texto decriptografado:', resultadoDecripto);
+                console.log('Decrypted text:', resultadoDecripto);
             } catch (e) {
-                console.error('Erro ao decriptografar. Verifique se o texto está correto e foi criptografado previamente.');
+                console.error('Error decrypting. Verify that the text is correct and has been previously encrypted.');
             }
         }
     }).catch(error => {
-        console.error('Ocorreu um erro:', error);
+        console.error('An error occurred:', error);
     });
     
 }
