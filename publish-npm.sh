@@ -44,14 +44,23 @@ fi
 
 echo "Última versão via npm: $latest_version"
 
-# Verifica se o working directory do Git está limpo antes de prosseguir
-check_git_clean
 
 # Se houver divergência entre a versão local e a versão do npm, atualiza a versão.
 # Note que o comando npm version patch incrementa a versão conforme semver, assim, se a versão local for maior que a do npm,
 # a nova versão resultante será superior à atual.
 if [ "$current_version" == "$latest_version" ]; then
     echo "Versões identicas detectadas (local: $current_version, npm: $latest_version). Executando npm version patch..."
+    #fazer o commit na branch atual e depois fazer o merge pra main e dar push, ficar na main (checkout main) e seguir com o script
+    git add .
+    git commit -m "Atualização da versão para $current_version"
+    git push origin "$current_branch"
+    git checkout main
+    git merge "$current_branch"
+    git push origin main
+
+    # Verifica se o working directory do Git está limpo antes de prosseguir
+    check_git_clean
+
     # Incrementa a versão (patch) no package.json e gera uma nova tag
     npm version patch
     # Atualiza o package-lock.json com a nova versão
