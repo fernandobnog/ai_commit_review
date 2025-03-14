@@ -98,7 +98,7 @@ async function resolveConflictsAutomatically(conflicts) {
     console.log(chalk.blue("⚙️ Launching mergetool to resolve conflicts..."));
     conflicts.forEach((file) => {
       console.log(chalk.yellow(`Resolving conflict for: ${file}`));
-      executeGitCommand(`git mergetool --no-prompt -- ${file}`);
+      executeGitCommand(`git mergetool -- ${file}`);
     });
     console.log(chalk.green("✔ Conflicts resolved using mergetool."));
 
