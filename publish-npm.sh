@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+set -e
+
+# Função para verificar se o diretório Git está limpo.
+check_git_clean() {
+  if [ -n "$(git status --porcelain)" ]; then
+    echo "Git working directory not clean. Please commit or stash your changes before updating the version."
+    exit 1
+  fi
+}
+
+# Verifica se o arquivo package.json existe
+if [ ! -f package.json ]; then
+    echo "Arquivo package.json não encontrado no diretório atual."
+    exit 1
+fi
+
+# Utiliza Node.js para extrair os dados do package.json sem usar o jq
+current_version=$(node -p "require('./package.json').version")
+name=$(node -p "require('./package.json').name")
+current_branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "Não em um repositório git")
+
+# Exibe informações de depuração
+echo "Versão atual no package.json: $current_version"
+echo "Nome do pacote: $name"
+echo "Branch atual: $current_branch"
+
+# Verifica se o nome do pacote foi definido
+if [ -z "$name" ]; then
+    echo "Nome do pacote não definido no package.json."
+    exit 1
+fi
+
+# Obtém a última versão disponível do pacote via npm
+latest_version=$(npm show "$name" version 2>/dev/null)
+if [ -z "$latest_version" ]; then
+    echo "Não foi possível obter a última versão disponível do pacote $name via npm."
+    exit 1
+fi
+
+echo "Última versão via npm: $latest_version"
+
+# Verifica se o working directory do Git está limpo antes de prosseguir
+#check_git_clean
+
+# Se houver divergência entre a versão local e a versão do npm, atualiza a versão.
+# Note que o comando npm version patch incrementa a versão conforme semver, assim, se a versão local for maior que a do npm,
+# a nova versão resultante será superior à atual.
+if [ "$current_version" != "$latest_version" ]; then
+    echo "Diferença de versão detectada (local: $current_version, npm: $latest_version). Executando npm version patch..."
+    # Incrementa a versão (patch) no package.json e gera uma nova tag
+    npm version patch
+    # Atualiza o package-lock.json com a nova versão
+    npm install
+    # Se desejar, você pode descomentar as linhas abaixo para adicionar os arquivos modificados, comitar e realizar push:
+    # git add package.json package-lock.json
+    # nova_version=$(node -p "require('./package.json').version")
+    # git commit -m "chore: atualizar versão para $nova_version"
+    # git push --follow-tags
+else
+    echo "A versão já está atualizada no package.json: $current_version"
+fi
