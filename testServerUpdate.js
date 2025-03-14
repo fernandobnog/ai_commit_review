@@ -13,9 +13,6 @@ import fs from "fs";
 import path from "path";
 import os from "os";
 import { createCommit } from "./createCommit.js"; // Create commits
-import { fileURLToPath } from 'url';
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 export async function updateServerToTest() {
   try{
