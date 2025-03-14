@@ -8,12 +8,13 @@ import {
 import chalk from "chalk";
 import inquirer from "inquirer";
 
-export async function updateServerToProduction({  
-  branchOrigem = "teste",
-  branchPR = "master",
-  branchDestino = "develop",
-  revisor = "fernandobnog"
-}) {
+export async function updateServerToProduction() {
+  
+  const branchOrigem = "teste";
+  const branchPR = "master";
+  const branchDestino = "develop";
+  const revisor = "fernandobnog";
+
   try {
     console.log(chalk.blue(`ℹ️  Mudando para a branch '${branchOrigem}'...`));
     await executeGitCommand(`git checkout ${branchOrigem}`);
