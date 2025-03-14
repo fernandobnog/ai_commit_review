@@ -7,6 +7,7 @@ import { analyzeCommits } from "./analyzeCommit.js"; // Analyze commits
 import { createCommit } from "./createCommit.js"; // Create commits
 import { criptografarcli } from "./crypto.js"; // Encrypt/decrypt functionality
 import { updateServerToTest } from "./testServerUpdate.js"; // Script to Update Server to Test
+import { updateServerToProduction } from "./productionServerUpdate.js"; // Script to Update Server to production
 
 process.noDeprecation = true;
 
@@ -53,7 +54,15 @@ program
   .action(async () => {
     await updateServerToTest();
   });
-  
+
+// Command to update server to production
+program
+  .command("updateProductionServer")
+  .description("Update server to production")
+  .action(async () => {
+    await updateServerToProduction();
+  });
+
 
 // Command to update configurations
 program
@@ -80,7 +89,8 @@ if (!process.argv.slice(2).length) {
           { name: "Analyze commits", value: "analyze" },
           { name: "Create a new commit", value: "create" },
           { name: "Encrypt/Decrypt text", value: "crypto" },
-          { name: "Update server to test", value: "updateTestServer" }
+          { name: "Update server to test", value: "updateTestServer" },
+          { name: "Update server to production", value: "updateProductionServer" }
         ],
       },
     ]);
@@ -93,6 +103,8 @@ if (!process.argv.slice(2).length) {
       await criptografarcli();
     } else if (command === "updateTestServer") {
       await updateServerToTest();
+    } else if (command === "updateProductionServer") {
+      await updateServerToProduction();
     }
   })();
 } else {
