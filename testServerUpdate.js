@@ -1,8 +1,7 @@
 // testServerUpdate.js
-
-
 import {
   getCurrentBranch,
+  mergeBranch,
   switchBranch,
   pushChanges
 } from "./gitUtils.js";
@@ -13,60 +12,61 @@ import inquirer from "inquirer";
 import fs from "fs";
 import path from "path";
 import os from "os";
-import { createCommit, mergeBranch } from "./createCommit.js"; // Create commits
+import { createCommit } from "./createCommit.js"; // Create commits
+import { fileURLToPath } from 'url';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export async function updateServerToTest() {
-  dockerCheck();
-  await createCommit();
-  await mergeToTeste();
-  pushChanges();
-  await switchBranch('develop');
-
+  try{
+    await dockerCheck();
+    await createCommit();
+    await mergeToTest(); // renamed function
+    pushChanges();
+    switchBranch('develop');
+  }catch(err){
+    console.error(err);
+    process.exit(1);
+  }
 }
 
-async function mergeToTeste(){
+// Renamed mergeToTeste to mergeToTest with updated branch names and messages
+async function mergeToTest(){
       const currentBranch = await getCurrentBranch();
 
-      if (currentBranch === 'teste') {
-        console.log(chalk.green('Você já está na branch teste.'));
+      if (currentBranch === 'test') {
+        console.log(chalk.green('You are already on the test branch.'));
         return;
       }
 
       if (currentBranch === 'develop') {
-        await mergeBranch('develop', 'teste');
+        await mergeBranch('develop', 'test');
         return;
       }
 
       await mergeBranch(currentBranch, 'develop');
-      await mergeBranch('develop', 'teste');
-      await switchBranch('teste');
-
+      await mergeBranch('develop', 'test');
+      await switchBranch('test');
 }
 
+// Updated dockerCheck to English prompts and messages
 async function dockerCheck() {
-  
   const { isDockerized } = await inquirer.prompt([
-    {
-      type: 'confirm',
-      name: 'isDockerized',
-      message: 'O projeto é dockerizado?',
-      default: true,
-    },
+    { type: 'confirm', name: 'isDockerized', message: 'Is the project dockerized?', default: true },
   ]);
 
   if (isDockerized) {
-    const versionFilePath = path.join(__dirname, './docker/versao.txt');
+    // Changed: using process.cwd() so the version file is relative to the project root.
+    const versionFilePath = path.join(process.cwd(), 'docker', 'versao.txt');
+    console.log(chalk.blue(versionFilePath));
 
-    const currentVersion = fs.existsSync(versionFilePath) ? fs.readFileSync(versionFilePath, 'utf8').trim() : 'Nenhuma versão encontrada';
-    console.log(chalk.blue(`Versão atual: ${currentVersion}`));
+    const currentVersion = fs.existsSync(versionFilePath)
+      ? fs.readFileSync(versionFilePath, 'utf8').trim()
+      : 'No version found';
+    console.log(chalk.blue(`Current version: ${currentVersion}`));
 
     const { updateVersion } = await inquirer.prompt([
-      {
-        type: 'confirm',
-        name: 'updateVersion',
-        message: 'Precisa atualizar a versão do projeto que vamos commitar?',
-        default: false,
-      },
+      { type: 'confirm', name: 'updateVersion', message: 'Do you need to update the project version to be committed?', default: false },
     ]);
 
     if (updateVersion) {
@@ -74,24 +74,20 @@ async function dockerCheck() {
         {
           type: 'input',
           name: 'version',
-          message: 'Digite a nova versão (formato aaaa.nn.nnnn):',
+          message: 'Enter the new version (format yyyy.nn.nnn):',
           validate: function (input) {
-            const versionRegex = /^\d{4}\.\d{2}\.\d{4}$/;
-            if (versionRegex.test(input)) {
-              return true;
-            }
-            return 'A versão deve estar no formato aaaa.nn.nnnn';
+            const versionRegex = /^\d{4}\.\d{2}\.\d{3}$/;
+            return versionRegex.test(input) ? true : 'The version must be in the format yyyy.nn.nnn';
           },
         },
       ]);
 
       fs.writeFileSync(versionFilePath, version + os.EOL, 'utf8');
-      console.log(chalk.green('Versão atualizada com sucesso!'));
+      console.log(chalk.green('Version updated successfully!'));
     } else {
-      console.log(chalk.yellow('Versão não foi atualizada.'));
+      console.log(chalk.yellow('Version was not updated.'));
     }
   } else {
-    console.log(chalk.yellow('O projeto não é dockerizado.'));
+    console.log(chalk.yellow('The project is not dockerized.'));
   }
-
 }

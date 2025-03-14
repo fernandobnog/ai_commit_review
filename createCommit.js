@@ -331,5 +331,6 @@ export async function createCommit() {
       chalk.red("❌ Error during the commit creation process:"),
       error.message
     );
+    process.exit(1);
   }
 }
