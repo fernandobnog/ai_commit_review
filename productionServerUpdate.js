@@ -10,13 +10,13 @@ import inquirer from "inquirer";
 
 export async function updateServerToProduction() {
   
-  const branchOrigem = "teste";
-  const branchPR = "master";
-  const branchDestino = "develop";
-  const revisor = "fernandobnog";
+  const branchOrigem = 'teste';
+  const branchPR = 'master';
+  const branchDestino = 'develop';
+  const revisor = 'fernandobnog';
 
   try {
-    console.log(chalk.blue(`ℹ️  Mudando para a branch '${branchOrigem}'...`));
+    console.log(chalk.blue(`ℹ️  Mudando para a branch ${branchOrigem}...`));
     await executeGitCommand(`git checkout ${branchOrigem}`);
 
     console.log(chalk.blue("ℹ️  Verificando alterações não commitadas..."));
@@ -76,15 +76,15 @@ export async function updateServerToProduction() {
 
 
 
-    console.log(chalk.blue(`ℹ️  Fazendo merge da branch '${branchOrigem}'...`));
+    console.log(chalk.blue(`ℹ️  Fazendo merge da branch ${branchOrigem}...`));
     await mergeBranch(branchOrigem, branchDestino);
 
-    console.log(chalk.blue(`ℹ️  Criando pull request de '${branchOrigem}' para '${branchPR}'...`));
+    console.log(chalk.blue(`ℹ️  Criando pull request de ${branchOrigem} para '${branchPR}'...`));
     createPullRequest({
       base: branchPR,
       head: branchOrigem,
       title: `Merge de ${branchOrigem} para ${branchPR}`,
-      body: `Atualizar Servidor de Producao: Este pull request foi criado automaticamente para mesclar a branch '${branchOrigem}' na branch '${branchPR}'.`,
+      body: `Atualizar Servidor de Producao: Este pull request foi criado automaticamente para mesclar a branch '${branchOrigem}' na branch ${branchPR}.`,
       reviewer: revisor
     });
 
