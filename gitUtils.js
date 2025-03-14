@@ -42,6 +42,7 @@ export async function mergeBranch(fromBranch, toBranch) {
   await switchBranch(toBranch);
   await executeGitCommand(`git merge --no-ff ${fromBranch}`);
   console.log(chalk.green(`Merge of branch ${fromBranch} into ${toBranch} completed successfully.`));
+  pullChanges();
 }
 
 export function undoLastCommitSoft() {
