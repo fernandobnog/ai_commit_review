@@ -58,11 +58,17 @@ echo "Última versão via npm: $versao_ultima"
 if [ "$versao_atual" == "$versao_ultima" ]; then
     echo "Versões idênticas detectadas (local: $versao_atual, npm: $versao_ultima). Executando npm version patch..."
 
+
     # Atualiza a branch atual
     git pull origin "$branch_atual"
-    git add .
-    git commit -m "Atualização da versão npm"
-    git push origin "$branch_atual"
+    
+    if [ -n "$(git status --porcelain)" ]; then
+      git add .
+      git commit -m "Atualização da versão npm"
+      git push origin "$branch_atual"
+    else
+      echo "Nenhuma alteração não comitada encontrada."
+    fi
 
     # Muda para a branch master e atualiza
     git checkout master

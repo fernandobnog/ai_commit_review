@@ -5,6 +5,32 @@ import fs from "fs";
 import path from "path";
 import os from "os";
 
+
+/**
+ * Cria um pull request utilizando o GitHub CLI.
+ * @param {object} params - Parâmetros do pull request.
+ * @param {string} params.base - Branch base do PR.
+ * @param {string} params.head - Branch de origem do PR.
+ * @param {string} params.title - Título do PR.
+ * @param {string} params.body - Corpo do PR.
+ * @param {string} [params.reviewer] - Usuário revisor (opcional).
+ * @returns {string} - Saída do comando.
+ */
+export function createPullRequest({ base, head, title, body, reviewer }) {
+  try {
+    let comando = `gh pr create --base ${base} --head ${head} --title "${title}" --body "${body}"`;
+    if (reviewer) {
+      comando += ` --reviewer ${reviewer}`;
+    }
+    const resultado = executeGitCommand(comando);
+    console.log(chalk.green(`✔ Pull request criado com sucesso: ${resultado}`));
+    return resultado;
+  } catch (error) {
+    console.error(chalk.red("❌ Erro ao criar pull request:"), error.message);
+    throw error;
+  }
+}
+
 export async function mergeBranch(fromBranch, toBranch) {
   await switchBranch(toBranch);
   await executeGitCommand(`git merge --no-ff ${fromBranch}`);
@@ -213,11 +239,19 @@ export function switchBranch(branch) {
       hadStash = true;
     }
 
-    // Attempts to switch to the desired branch
+    // Atualiza a branch atual para garantir que está com as últimas mudanças
+    console.log(chalk.blue("ℹ️  Atualizando a branch atual com 'git pull'..."));
+    executeGitCommand("git pull");
+
+    // Tenta alternar para a branch de destino
     executeGitCommand("git checkout " + branch);
     console.log(chalk.green(`✔ Switched to branch '${branch}' successfully.`));
 
-    // If stash was performed, attempts to reapply the saved changes
+    // Atualiza a branch de destino para garantir que está com as últimas mudanças
+    console.log(chalk.blue("ℹ️  Atualizando a branch de destino com 'git pull'..."));
+    executeGitCommand("git pull");
+
+    // Caso tenha feito stash, tenta reaplicar as alterações salvas
     if (hadStash) {
       console.log(chalk.blue("ℹ️  Reapplying stash changes on the new branch..."));
       try {
@@ -232,6 +266,8 @@ export function switchBranch(branch) {
 
         // Reverts to the original branch
         executeGitCommand("git checkout " + originalBranch);
+        console.log(chalk.blue("ℹ️  Atualizando a branch original com 'git pull'..."));
+        executeGitCommand("git pull");
 
         // Attempts to apply the stash on the original branch
         try {
@@ -250,6 +286,7 @@ export function switchBranch(branch) {
     throw error;
   }
 }
+
 
 /**
  * Checks for conflicts in the repository.
