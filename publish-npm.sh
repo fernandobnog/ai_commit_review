@@ -46,8 +46,8 @@ echo "Última versão via npm: $latest_version"
 # Se houver divergência entre a versão local e a versão do npm, atualiza a versão.
 # Note que o comando npm version patch incrementa a versão conforme semver, assim, se a versão local for maior que a do npm,
 # a nova versão resultante será superior à atual.
-if [ "$current_version" != "$latest_version" ]; then
-    echo "Diferença de versão detectada (local: $current_version, npm: $latest_version). Executando npm version patch..."
+if [ "$current_version" == "$latest_version" ]; then
+    echo "Versões identicas detectadas (local: $current_version, npm: $latest_version). Executando npm version patch..."
     # Incrementa a versão (patch) no package.json e gera uma nova tag
     npm version patch
     # Atualiza o package-lock.json com a nova versão
