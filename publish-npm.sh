@@ -55,7 +55,7 @@ if [ "$current_version" == "$latest_version" ]; then
     git commit -m "Atualização da versão npm"
     git push origin "$current_branch"
     git checkout master
-    git merge "$current_branch" -m "Merge branch $current_branch"
+    git merge --no-ff "$current_branch" -m "Merge branch $current_branch"
     git push origin master
 
     # Verifica se o working directory do Git está limpo antes de prosseguir
@@ -69,11 +69,12 @@ if [ "$current_version" == "$latest_version" ]; then
     git push origin master --tags
     
     git checkout "$current_branch"
-    git merge master -m "Merge branch master"
+    git merge --no-ff master -m "Merge branch master"
     git push origin "$current_branch"
 
     #Publicar no npm
     npm publish --access public
+
 
     
 else
