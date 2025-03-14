@@ -18,6 +18,13 @@ import os from "os";
  */
 export function createPullRequest({ base, head, title, body, reviewer }) {
   try {
+    execSync("gh --version", { stdio: "ignore" });
+  } catch (error) {
+    console.error(chalk.red("❌ GitHub CLI (gh) is not installed. Please install it and try again."));
+    process.exit(1);
+  }
+  
+  try {
     let comando = `gh pr create --base ${base} --head ${head} --title "${title}" --body "${body}"`;
     if (reviewer) {
       comando += ` --reviewer ${reviewer}`;
