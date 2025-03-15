@@ -52,10 +52,50 @@ async function dockerCheck() {
     { type: 'confirm', name: 'isDockerized', message: 'Is the project dockerized?', default: true },
   ]);
 
-  if (isDockerized) {
-    // Changed: using process.cwd() so the version file is relative to the project root.
-    const versionFilePath = path.join(process.cwd(), 'docker', 'versao.txt');
-    console.log(chalk.blue(versionFilePath));
+  if (!isDockerized) {
+    console.log(chalk.yellow('The project is not dockerized.'));
+    process.exit(0);
+  }
+
+  const getDockerFolders = () => {
+    const baseDir = process.cwd();
+    const rootDocker = path.join(baseDir, 'docker');
+  
+    // Se encontrar a pasta 'docker' no diretório base, retorna imediatamente
+    if (fs.existsSync(rootDocker) && fs.statSync(rootDocker).isDirectory()) {
+      return ['docker'];
+    }
+  
+    const folders = [];
+    // Lista as pastas do diretório base, excluindo 'node_modules' e '.git'
+    const directories = fs.readdirSync(baseDir, { withFileTypes: true })
+      .filter(entry => entry.isDirectory() && !['node_modules', '.git'].includes(entry.name));
+  
+    // Para cada diretório, verifica se existe uma subpasta 'docker'
+    directories.forEach(entry => {
+      const dockerPath = path.join(baseDir, entry.name, 'docker');
+      if (fs.existsSync(dockerPath) && fs.statSync(dockerPath).isDirectory()) {
+        folders.push(path.join(entry.name, 'docker'));
+      }
+    });
+  
+    return folders;
+  };
+
+  let discoveredFolders = getDockerFolders();
+  if (discoveredFolders.length > 0) {
+    console.log(chalk.blue('Discovered docker folders:'));
+    discoveredFolders.forEach(folder => console.log(chalk.blue(`- ${folder}`)));
+  } else {
+    console.log(chalk.yellow('No docker folders found.'));
+    process.exit(0);
+  }
+
+  //pastas localizadas de forma correta
+
+  for (const folder of discoveredFolders) {
+    const versionFilePath = path.join(process.cwd(), folder, 'versao.txt');
+    console.log(chalk.blue(`Checking version file at: ${versionFilePath}`));
 
     const currentVersion = fs.existsSync(versionFilePath)
       ? fs.readFileSync(versionFilePath, 'utf8').trim()
@@ -83,8 +123,6 @@ async function dockerCheck() {
       console.log(chalk.green('Version updated successfully!'));
     } else {
       console.log(chalk.yellow('Version was not updated.'));
-    }
-  } else {
-    console.log(chalk.yellow('The project is not dockerized.'));
+    }  
   }
 }
