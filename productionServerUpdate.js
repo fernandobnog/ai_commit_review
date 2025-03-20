@@ -2,7 +2,8 @@
 import {
   createPullRequest,
   mergeBranch,
-  executeGitCommand
+  executeGitCommand,
+  pullChanges
 } from "./gitUtils.js";
 
 import chalk from "chalk";
@@ -16,11 +17,18 @@ export async function updateServerToProduction() {
   const revisor = 'fernandobnog';
 
   try {
-    console.log(chalk.blue(`ℹ️  Mudando para a branch ${branchOrigem}...`));
-    await executeGitCommand("git checkout " + branchOrigem);
+    const { stdout: currentBranch } = executeGitCommand("git rev-parse --abbrev-ref HEAD");
+    if (currentBranch.trim() !== branchOrigem) {
+      console.log(chalk.blue(`ℹ️  Mudando para a branch ${branchOrigem}...`));
+      executeGitCommand("git checkout " + branchOrigem);
+    } else {
+      console.log(chalk.blue(`ℹ️  Já estamos na branch ${branchOrigem}.`));
+    }
 
+    pullChanges()
+    
     console.log(chalk.blue("ℹ️  Verificando alterações não commitadas..."));
-    const { stdout } = await executeGitCommand("git status --porcelain");
+    const { stdout } = executeGitCommand("git status --porcelain");
 
     if (stdout) {
       console.error(
@@ -73,8 +81,6 @@ export async function updateServerToProduction() {
       console.log(chalk.yellow("Operação cancelada pelo usuário."));
       process.exit(0);
     }
-
-
 
     console.log(chalk.blue(`ℹ️  Fazendo merge da branch ${branchOrigem}...`));
     await mergeBranch(branchOrigem, branchDestino);
