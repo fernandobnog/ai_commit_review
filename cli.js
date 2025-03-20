@@ -8,6 +8,37 @@ import { createCommit } from "./createCommit.js"; // Create commits
 import { criptografarcli } from "./crypto.js"; // Encrypt/decrypt functionality
 import { updateServerToTest } from "./testServerUpdate.js"; // Script to Update Server to Test
 import { updateServerToProduction } from "./productionServerUpdate.js"; // Script to Update Server to production
+import { execSync } from "child_process";
+
+try {
+  console.log(chalk.blue("Verificando se a lib 'ai-commit-review' está atualizada..."));
+  const outdatedData = execSync("npm outdated ai-commit-review --json", { encoding: "utf8" });
+  const outdated = outdatedData ? JSON.parse(outdatedData) : {};
+  if (Object.keys(outdated).length > 0) {
+    console.log(chalk.yellow("Lib 'ai-commit-review' desatualizada. Atualizando..."));
+    execSync("npm update ai-commit-review", { stdio: "inherit" });
+    console.log(chalk.green("Lib 'ai-commit-review' atualizada com sucesso."));
+  } else {
+    console.log(chalk.green("Lib 'ai-commit-review' já está atualizada."));
+  }
+} catch (error) {
+  if (error.stdout) {
+    try {
+      const outdated = JSON.parse(error.stdout || "{}");
+      if (Object.keys(outdated).length > 0) {
+        console.log(chalk.yellow("Lib 'ai-commit-review' desatualizada. Atualizando..."));
+        execSync("npm update ai-commit-review", { stdio: "inherit" });
+        console.log(chalk.green("Lib 'ai-commit-review' atualizada com sucesso."));
+      } else {
+        console.log(chalk.green("Lib 'ai-commit-review' já está atualizada."));
+      }
+    } catch {
+      console.error(chalk.red("Erro ao verificar atualizações da lib 'ai-commit-review'."));
+    }
+  } else {
+    console.error(chalk.red("Erro ao verificar atualizações da lib 'ai-commit-review'."));
+  }
+}
 
 process.noDeprecation = true;
 
