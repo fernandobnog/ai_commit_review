@@ -18,7 +18,7 @@ export async function updateServerToProduction() {
 
   try {
     const { stdout: currentBranch } = executeGitCommand("git rev-parse --abbrev-ref HEAD");
-    if (currentBranch.trim() !== branchOrigem) {
+    if (currentBranch !== branchOrigem) {
       console.log(chalk.blue(`ℹ️  Mudando para a branch ${branchOrigem}...`));
       executeGitCommand("git checkout " + branchOrigem);
     } else {
