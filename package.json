@@ -9,7 +9,8 @@
   },
   "scripts": {
     "start": "node -r dotenv/config cli.js",
-    "publish-npm": "powershell -File ./publish-npm.ps1"
+    "publish-npm": "powershell -File ./publish-npm.ps1",
+    "build": "webpack --mode production"
   },
   "keywords": [
     "git",
