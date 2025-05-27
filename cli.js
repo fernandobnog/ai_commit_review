@@ -1,13 +1,13 @@
 import chalk from "chalk";
 import { program } from "commander";
 import inquirer from "inquirer";
-import { showHelp } from "./helpers.js";
-import { updateConfigFromString, ensureValidApiKey } from "./configManager.js";
-import { analyzeCommits } from "./analyzeCommit.js"; // Analyze commits
-import { createCommit } from "./createCommit.js"; // Create commits
-import { criptografarcli } from "./crypto.js"; // Encrypt/decrypt functionality
-import { updateServerToTest } from "./testServerUpdate.js"; // Script to Update Server to Test
-import { updateServerToProduction } from "./productionServerUpdate.js"; // Script to Update Server to production
+import { showHelp } from "./src/helpers.js";
+import { updateConfigFromString, ensureValidApiKey } from "./src/configManager.js";
+import { analyzeCommits } from "./src/analyzeCommit.js"; // Analyze commits
+import { createCommit } from "./src/createCommit.js"; // Create commits
+import { criptografarcli } from "./src/crypto.js"; // Encrypt/decrypt functionality
+import { updateServerToTest } from "./src/testServerUpdate.js"; // Script to Update Server to Test
+import { updateServerToProduction } from "./src/productionServerUpdate.js"; // Script to Update Server to production
 import { execSync } from "child_process";
 
 try {
