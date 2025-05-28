@@ -194,7 +194,21 @@ if (($versaoAtual -eq $versaoUltima) -or ([string]::IsNullOrEmpty($versaoUltima)
     npm run build
 
     Write-Host "Empacotando o projeto..."
+        // ...existing code...
+    Write-Host "Empacotando o projeto..."
     npm pack
+    
+    Write-Host "Publicando o pacote no npm..."
+    npm publish --access public
+    
+    # Deprecar versões antigas automaticamente
+    Write-Host "Deprecando versões antigas..."
+    $versaoAtualObj = [Version]$versaoAtual
+    $versaoMajorMinor = "$($versaoAtualObj.Major).$($versaoAtualObj.Minor)"
+    npm deprecate "$nomePacote@<$versaoMajorMinor.0" "Versão obsoleta, use $versaoAtual ou superior"
+    
+    Write-Host "Processo de atualização e publicação concluído com sucesso!"
+    // ...existing code...
 
     Write-Host "Publicando o pacote no npm..."
     npm publish --access public
