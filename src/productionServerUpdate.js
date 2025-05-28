@@ -17,88 +17,67 @@ export async function updateServerToProduction() {
   const revisor = 'fernandobnog';
 
   try {
-    const { stdout: currentBranch } = executeGitCommand("git rev-parse --abbrev-ref HEAD");
-    if (currentBranch !== branchOrigem) {
-      console.log(chalk.blue(`ℹ️  Mudando para a branch ${branchOrigem}...`));
+    const { stdout: currentBranch } = executeGitCommand("git rev-parse --abbrev-ref HEAD");    if (currentBranch !== branchOrigem) {
+      console.log(chalk.blue(`ℹ️  Switching to branch ${branchOrigem}...`));
       executeGitCommand("git checkout " + branchOrigem);
     } else {
-      console.log(chalk.blue(`ℹ️  Já estamos na branch ${branchOrigem}.`));
-    }
-
-    pullChanges()
+      console.log(chalk.blue(`ℹ️  Already on branch ${branchOrigem}.`));
+    }    pullChanges()
     
-    console.log(chalk.blue("ℹ️  Verificando alterações não commitadas..."));
-    const { stdout } = executeGitCommand("git status --porcelain");
-
-    if (stdout) {
+    console.log(chalk.blue("ℹ️  Checking uncommitted changes..."));
+    const { stdout } = executeGitCommand("git status --porcelain");    if (stdout) {
       console.error(
         chalk.red(
-          "❌ Existem alterações não commitadas na branch. Por favor, faça commit das alterações e realize novos testes antes de colocar em produção."
+          "❌ There are uncommitted changes in the branch. Please commit the changes and run new tests before putting into production."
         )
       );
       process.exit(1);
     }
-
-
     const { confirm } = await inquirer.prompt([
       {
         type: "confirm",
         name: "confirm",
-        message: 'A branch "teste" está funcionando corretamente?',
+        message: 'Is the "teste" branch working correctly?',
         default: true
       }
-    ]);
-
-    if (!confirm) {
-      throw new Error('A branch "teste" não está funcionando corretamente. Corrija e tente novamente.');
-    }
-
-    const { deployConfirm } = await inquirer.prompt([
+    ]);    if (!confirm) {
+      throw new Error('The "teste" branch is not working correctly. Fix it and try again.');
+    }    const { deployConfirm } = await inquirer.prompt([
       {
         type: "confirm",
         name: "deployConfirm",
-        message: "A branch 'teste' está funcionando corretamente. Deseja colocá-la em produção?",
+        message: "The 'teste' branch is working correctly. Do you want to put it into production?",
         default: true
       }
     ]);
 
-    if (deployConfirm) {
-      const { finalDeploy } = await inquirer.prompt([
+    if (deployConfirm) {      const { finalDeploy } = await inquirer.prompt([
         {
           type: "confirm",
           name: "finalDeploy",
-          message: "Tem certeza? Essa ação não poderá ser desfeita.",
+          message: "Are you sure? This action cannot be undone.",
           default: false
         }
-      ]);
-      if (!finalDeploy) {
-        console.log(chalk.yellow("Operação cancelada pelo usuário."));
+      ]);      if (!finalDeploy) {
+        console.log(chalk.yellow("Operation cancelled by user."));
         return;
       }
-    }
-
-    if (!deployConfirm) {
-      console.log(chalk.yellow("Operação cancelada pelo usuário."));
+    }    if (!deployConfirm) {
+      console.log(chalk.yellow("Operation cancelled by user."));
       process.exit(0);
-    }
-
-    console.log(chalk.blue(`ℹ️  Fazendo merge da branch ${branchOrigem}...`));
-    await mergeBranch(branchOrigem, branchDestino);
-
-    console.log(chalk.blue(`ℹ️  Criando pull request de ${branchOrigem} para '${branchPR}'...`));
+    }    console.log(chalk.blue(`ℹ️  Merging branch ${branchOrigem}...`));
+    await mergeBranch(branchOrigem, branchDestino);    console.log(chalk.blue(`ℹ️  Creating pull request from ${branchOrigem} to '${branchPR}'...`));
     createPullRequest({
       base: branchPR,
       head: branchOrigem,
-      title: `Merge de ${branchOrigem} para ${branchPR}`,
-      body: `Atualizar Servidor de Producao: Este pull request foi criado automaticamente para mesclar a branch '${branchOrigem}' na branch ${branchPR}.`,
+      title: `Merge from ${branchOrigem} to ${branchPR}`,
+      body: `Update Production Server: This pull request was automatically created to merge the '${branchOrigem}' branch into the ${branchPR} branch.`,
       reviewer: revisor
     });
-
-  console.log(chalk.green("ℹ️  Pull request criado com sucesso!"));
-  console.log(chalk.yellow("⚠️  Atenção: NÃO aprove o pull request. Aguarde o Fernando revisar a solicitação."));
-
+  console.log(chalk.green("ℹ️  Pull request created successfully!"));
+  console.log(chalk.yellow("⚠️  Warning: DO NOT approve the pull request. Wait for Fernando to review the request."));
   } catch (error) {
-    console.error(chalk.red("❌ Erro no fluxo de pull request e merge:"), error.message);
+    console.error(chalk.red("❌ Error in pull request and merge flow:"), error.message);
     throw error;
   }
 }

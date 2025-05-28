@@ -32,104 +32,102 @@ function generatePrompt(files, promptType, config) {
   const languageInstruction = generateLanguageInstruction(
     config.OPENAI_RESPONSE_LANGUAGE
   );
-
   if (promptType === PromptType.ANALYZE) {
-    return `Assuma o papel de um revisor de código sênior.
+    return `Assume the role of a senior code reviewer.
 
-            Analise detalhadamente as seguintes alterações de código (commits) fornecidas:
+            Analyze in detail the following code changes (commits) provided:
             
             ${diffs}
             
-            Para cada arquivo modificado, organize sua análise da seguinte forma:
+            For each modified file, organize your analysis as follows:
 
-            **Arquivo: [Nome do Arquivo]**
+            **File: [File Name]**
 
-            1.  **Resumo Detalhado das Modificações:**
-                * Qual foi o objetivo principal e o impacto esperado das alterações neste arquivo?
-                * Descreva as principais funcionalidades ou lógicas que foram adicionadas, removidas ou significativamente alteradas.
+            1.  **Detailed Summary of Modifications:**
+                * What was the main objective and expected impact of the changes in this file?
+                * Describe the main functionalities or logic that were added, removed, or significantly altered.
 
-            2.  **Identificação de Erros, Bugs Potenciais e Vulnerabilidades:**
-                * Existem erros de lógica, falhas no tratamento de exceções, condições de corrida (race conditions), vazamentos de memória, ou outros bugs?
-                * Foram introduzidas ou negligenciadas vulnerabilidades de segurança (ex: SQL Injection, XSS, manipulação insegura de entradas)?
-                * Para cada item identificado:
-                    * Cite o trecho de código relevante (ou a linha aproximada).
-                    * Explique detalhadamente a natureza do problema.
-                    * Descreva o impacto potencial (ex: comportamento incorreto, falha no sistema, brecha de segurança).
+            2.  **Identification of Errors, Potential Bugs, and Vulnerabilities:**
+                * Are there logic errors, exception handling failures, race conditions, memory leaks, or other bugs?
+                * Were security vulnerabilities introduced or neglected (e.g., SQL Injection, XSS, insecure input handling)?
+                * For each identified item:
+                    * Quote the relevant code snippet (or approximate line).
+                    * Explain in detail the nature of the problem.
+                    * Describe the potential impact (e.g., incorrect behavior, system failure, security breach).
 
-            3.  **Sugestões de Melhoria e Otimização (com justificativas):**
-                * O código pode ser refatorado para aumentar a clareza, legibilidade ou manutenibilidade? (Ex: simplificar lógica complexa, extrair métodos/funções, aplicar princípios de design como DRY - Don't Repeat Yourself).
-                * Existem oportunidades para otimizar o desempenho? (Ex: algoritmos mais eficientes, redução de operações custosas, otimização de queries de banco de dados).
-                * A testabilidade do código pode ser aprimorada? Como?
-                * Para cada sugestão, forneça uma justificativa clara e, se possível, um pequeno exemplo de como poderia ser implementada.
+            3.  **Improvement and Optimization Suggestions (with justifications):**
+                * Can the code be refactored to increase clarity, readability, or maintainability? (e.g., simplify complex logic, extract methods/functions, apply design principles like DRY - Don't Repeat Yourself).
+                * Are there opportunities to optimize performance? (e.g., more efficient algorithms, reduction of costly operations, database query optimization).
+                * Can the testability of the code be improved? How?
+                * For each suggestion, provide a clear justification and, if possible, a small example of how it could be implemented.
 
-            4.  **Recomendações de Boas Práticas e Qualidade de Código:**
-                * Avalie a aderência a princípios de código limpo (Clean Code): nomes significativos para variáveis e funções, funções curtas e com responsabilidade única, baixo acoplamento e alta coesão.
-                * O código segue as convenções de estilo da linguagem ou do projeto (se conhecidas)?
-                * Os comentários são adequados? Eles explicam o "porquê" e as intenções, e não apenas "o quê" o código faz?
-                * A modularidade e a reutilização de código foram bem aplicadas ou há oportunidades para tal?
+            4.  **Best Practices and Code Quality Recommendations:**
+                * Evaluate adherence to clean code principles: meaningful names for variables and functions, short functions with single responsibility, low coupling and high cohesion.
+                * Does the code follow the language or project style conventions (if known)?
+                * Are comments adequate? Do they explain the "why" and intentions, not just "what" the code does?
+                * Were modularity and code reuse well applied or are there opportunities for such?
 
-            **Considerações Gerais sobre o Commit (se aplicável):**
-            * Há alguma observação sobre a mensagem do commit (clareza, completude)?
-            * As alterações parecem coesas e alinhadas com um único objetivo, ou misturam diferentes preocupações?
-            * Existem implicações mais amplas na arquitetura do sistema ou em outros módulos?
+            **General Considerations about the Commit (if applicable):**
+            * Are there any observations about the commit message (clarity, completeness)?
+            * Do the changes seem cohesive and aligned with a single objective, or do they mix different concerns?
+            * Are there broader implications for the system architecture or other modules?
 
-            Sua análise deve ser:
-            * **Completa e Específica:** Forneça detalhes suficientes e baseie suas observações diretamente nos trechos de código do diff. Evite afirmações genéricas.
-            * **Precisa e Justificada:** Certifique-se de que suas observações sobre erros ou melhorias são tecnicamente corretas e bem fundamentadas.
-            * **Construtiva:** O objetivo é auxiliar na melhoria da qualidade do código.
-            * **Objetiva:** Mantenha um tom neutro e profissional, focado nos aspectos técnicos.
+            Your analysis should be:
+            * **Complete and Specific:** Provide sufficient details and base your observations directly on code snippets from the diff. Avoid generic statements.
+            * **Accurate and Justified:** Ensure that your observations about errors or improvements are technically correct and well-founded.
+            * **Constructive:** The goal is to assist in improving code quality.
+            * **Objective:** Maintain a neutral and professional tone, focused on technical aspects.
 
             ${languageInstruction}`;
   }
-
   if (promptType === PromptType.CREATE) {
-    return `Sua tarefa é gerar um título de commit e uma mensagem de commit (corpo) que sejam precisos, informativos e sigam as melhores práticas de controle de versão. A resposta deve respeitar o idioma predominante no conteúdo dos arquivos fornecidos nos diffs.
+    return `Your task is to generate a commit title and commit message (body) that are accurate, informative, and follow version control best practices. The response should respect the predominant language in the content of the files provided in the diffs.
 
-            **Contexto:**
-            Você está analisando as seguintes alterações de código (diffs). Seu objetivo é resumir essas alterações de forma clara para que outros desenvolvedores (e seu eu futuro) possam entender facilmente o propósito e o impacto de cada commit.
+            **Context:**
+            You are analyzing the following code changes (diffs). Your goal is to summarize these changes clearly so that other developers (and your future self) can easily understand the purpose and impact of each commit.
             
             **Diffs:**
             ${diffs}
 
-            **Processo de Análise Interna (Passos que você deve seguir antes de formular a resposta):**
-            1.  **Compreensão Geral:** Analise o conjunto de diffs para identificar o tema central ou o objetivo principal das modificações. Pergunte-se: "Qual problema principal estas mudanças resolvem?" ou "Qual funcionalidade chave está sendo implementada, corrigida ou alterada?".
-            2.  **Identificação do "O Quê":** Para cada alteração significativa nos diffs, determine exatamente *o que* foi modificado (ex: quais funções, classes, variáveis, lógica de controle de fluxo, arquivos de configuração, etc.).
-            3.  **Inferência Cautelosa do "O Porquê" (Motivação):**
-                * Tente deduzir *por que* cada mudança significativa foi feita. Baseie essa dedução estritamente nas evidências presentes nos diffs (ex: código que simplifica uma lógica complexa, corrige um comportamento inconsistente, adiciona tratamento para um novo caso de uso visível no código, remove código obsoleto/comentado).
-                * **Importante:** Se o "porquê" não for claramente evidente a partir das alterações de código, NÃO INVENTE uma motivação. Neste caso, foque em descrever o "quê" e o impacto observável da mudança. É preferível uma descrição factual do que foi feito a uma especulação incorreta sobre o motivo.
-            4.  **Avaliação do Impacto:** Considere como as mudanças afetam o comportamento, a performance, a segurança ou a manutenibilidade do projeto.
+            **Internal Analysis Process (Steps you should follow before formulating the response):**
+            1.  **General Understanding:** Analyze the set of diffs to identify the central theme or main objective of the modifications. Ask yourself: "What main problem do these changes solve?" or "What key functionality is being implemented, fixed, or altered?".
+            2.  **Identification of "What":** For each significant change in the diffs, determine exactly *what* was modified (e.g., which functions, classes, variables, control flow logic, configuration files, etc.).
+            3.  **Cautious Inference of "Why" (Motivation):**
+                * Try to deduce *why* each significant change was made. Base this deduction strictly on evidence present in the diffs (e.g., code that simplifies complex logic, fixes inconsistent behavior, adds handling for a new use case visible in the code, removes obsolete/commented code).
+                * **Important:** If the "why" is not clearly evident from the code changes, DO NOT INVENT a motivation. In this case, focus on describing the "what" and the observable impact of the change. A factual description of what was done is preferable to incorrect speculation about the reason.
+            4.  **Impact Assessment:** Consider how the changes affect the behavior, performance, security, or maintainability of the project.
 
-            **Instruções para a Saída (Título e Mensagem do Commit):**
+            **Output Instructions (Title and Commit Message):**
 
-            -   **Título do Commit:**
+            -   **Commit Title:**
                 -   ${languageInstruction} 
-                -   Inicie com um emoji relevante que represente a natureza da mudança (sugestões: 🚀 para novas funcionalidades, ✨ para melhorias, 🐛 para correção de bugs, 🔧 para refatoração/ferramentas, 📝 para documentação, ♻️ para refatoração, 🔒 para segurança, 📈 para performance).
-                -   Use um verbo no imperativo no início da frase (ex: "Adiciona", "Corrige", "Refatora", "Remove", "Atualiza", "Melhora").
-                -   Seja específico, conciso e direto sobre a alteração principal.
-                -   Máximo de 50 caracteres.
+                -   Start with a relevant emoji that represents the nature of the change (suggestions: 🚀 for new features, ✨ for improvements, 🐛 for bug fixes, 🔧 for refactoring/tools, 📝 for documentation, ♻️ for refactoring, 🔒 for security, 📈 for performance).
+                -   Use an imperative verb at the beginning of the sentence (e.g., "Add", "Fix", "Refactor", "Remove", "Update", "Improve").
+                -   Be specific, concise, and direct about the main change.
+                -   Maximum of 50 characters.
 
-            -   **Mensagem do Commit (Corpo):**
+            -   **Commit Message (Body):**
                 -   ${languageInstruction}
-                -   **Descrição Detalhada das Mudanças (O Quê Foi Feito):**
-                    * Descreva as principais alterações realizadas de forma clara.
-                    * Use listas (bullet points) ou parágrafos curtos para organizar a explicação.
-                    * Mencione as partes mais importantes do código que foram afetadas (ex: "Modificada a função X para lidar com Y", "Removida a classe Z por ser obsoleta"), mas evite colar grandes trechos dos diffs.
-                -   **Motivação e Contexto (O Porquê da Mudança):**
-                    * Explique a razão por trás das alterações. Qual problema foi resolvido? Qual objetivo foi alcançado?
-                    * Se baseou sua inferência do "porquê" em heurísticas (e não em comentários explícitos no diff), seja objetivo ao descrever o cenário que a mudança parece endereçar.
-                    * Se a razão exata não for clara, descreva o benefício ou o resultado esperado da mudança (ex: "Esta alteração melhora a legibilidade do módulo X", "Com isso, o processamento de Y torna-se mais eficiente").
-                -   **Impacto no Projeto (Como Afeta):**
-                    * Se aplicável e inferível, explique brevemente como as mudanças impactam o projeto (ex: "Isso corrige o bug reportado em #123", "Permite que os usuários agora façam Z", "Reduz o tempo de carregamento da página X").
+                -   **Detailed Description of Changes (What Was Done):**
+                    * Describe the main changes made clearly.
+                    * Use lists (bullet points) or short paragraphs to organize the explanation.
+                    * Mention the most important parts of the code that were affected (e.g., "Modified function X to handle Y", "Removed class Z as it was obsolete"), but avoid pasting large chunks of the diffs.
+                -   **Motivation and Context (Why the Change):**
+                    * Explain the reason behind the changes. What problem was solved? What objective was achieved?
+                    * If you based your inference of "why" on heuristics (and not on explicit comments in the diff), be objective in describing the scenario that the change seems to address.
+                    * If the exact reason is not clear, describe the benefit or expected result of the change (e.g., "This change improves the readability of module X", "With this, processing of Y becomes more efficient").
+                -   **Project Impact (How It Affects):**
+                    * If applicable and inferable, briefly explain how the changes impact the project (e.g., "This fixes the bug reported in #123", "Allows users to now do Z", "Reduces loading time for page X").
 
-            -   **Restrições Importantes:**
-                -   **Fidelidade aos Diffs:** Baseie TODA a sua resposta estritamente na informação contida nos diffs.
-                -   **Não Invente:** Não adicione informações, funcionalidades, razões ou contextos que não possam ser razoavelmente e diretamente inferidos a partir das alterações de código fornecidas.
-                -   **Concisão:** Evite copiar e colar porções extensas dos diffs. O objetivo é resumir e explicar.
-                -   **Privacidade:** Não inclua nenhuma informação pessoal ou sensível.
+            -   **Important Restrictions:**
+                -   **Fidelity to Diffs:** Base ALL your response strictly on information contained in the diffs.
+                -   **Don't Invent:** Do not add information, functionalities, reasons, or contexts that cannot be reasonably and directly inferred from the provided code changes.
+                -   **Conciseness:** Avoid copying and pasting extensive portions of the diffs. The goal is to summarize and explain.
+                -   **Privacy:** Do not include any personal or sensitive information.
 
-            **Formato da Resposta (Exatamente como no exemplo):**
-            Título
-            Mensagem (corpo)`;
+            **Response Format (Exactly as in the example):**
+            Title
+            Message (body)`;
   }
 
   throw new Error(`Invalid prompt type: ${promptType}`);
