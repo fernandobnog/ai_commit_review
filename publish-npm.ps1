@@ -208,7 +208,6 @@ if (($versaoAtual -eq $versaoUltima) -or ([string]::IsNullOrEmpty($versaoUltima)
     npm deprecate "$nomePacote@<$versaoMajorMinor.0" "Versão obsoleta, use $versaoAtual ou superior"
     
     Write-Host "Processo de atualização e publicação concluído com sucesso!"
-    // ...existing code...
 
     Write-Host "Publicando o pacote no npm..."
     npm publish --access public
