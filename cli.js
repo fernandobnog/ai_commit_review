@@ -12,7 +12,7 @@ import { execSync } from "child_process";
 
 try {
   console.log(chalk.blue("Checking if 'ai-commit-review' lib is up to date..."));
-  const outdatedData = execSync("npm outdated ai-commit-review --json", { encoding: "utf8" });
+  const outdatedData = execSync("npm outdated -g ai-commit-review --json", { encoding: "utf8" });
   const outdated = outdatedData ? JSON.parse(outdatedData) : {};
   if (Object.keys(outdated).length > 0) {
     console.log(chalk.yellow("'ai-commit-review' lib is outdated. Updating..."));
