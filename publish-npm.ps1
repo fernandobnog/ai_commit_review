@@ -206,12 +206,6 @@ if (($versaoAtual -eq $versaoUltima) -or ([string]::IsNullOrEmpty($versaoUltima)
     npm deprecate "$nomePacote@<$versaoMajorMinor.0" "Versão obsoleta, use $versaoAtual ou superior"
     
     Write-Host "Processo de atualização e publicação concluído com sucesso!"
-
-    Write-Host "Publicando o pacote no npm..."
-    npm publish --access public
-
-    Write-Host "Processo de atualização e publicação concluído com sucesso!"
-
 }
 else {
     Write-Host "A versão no package.json ($versaoAtual) é diferente da última versão no npm ($versaoUltima) e não é uma publicação inicial."
