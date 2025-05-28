@@ -1,5 +1,8 @@
-*
-!dist/
+# Exclui tudo
+/**/*
+
+# Inclui apenas o necessário
+!dist/**
 !package.json
 !README.md
 !LICENSE
