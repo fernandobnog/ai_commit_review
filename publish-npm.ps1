@@ -192,12 +192,10 @@ if (($versaoAtual -eq $versaoUltima) -or ([string]::IsNullOrEmpty($versaoUltima)
 
     Write-Host "Executando o build do pacote..."
     npm run build
-
-    Write-Host "Empacotando o projeto..."
-        // ...existing code...
+    
     Write-Host "Empacotando o projeto..."
     npm pack
-    
+
     Write-Host "Publicando o pacote no npm..."
     npm publish --access public
     
