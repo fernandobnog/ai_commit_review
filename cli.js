@@ -16,7 +16,7 @@ try {
   const outdated = outdatedData ? JSON.parse(outdatedData) : {};
   if (Object.keys(outdated).length > 0) {
     console.log(chalk.yellow("'ai-commit-review' lib is outdated. Updating..."));
-    execSync("npm update ai-commit-review", { stdio: "inherit" });
+    execSync("npm update -g ai-commit-review", { stdio: "inherit" });
     console.log(chalk.green("'ai-commit-review' lib updated successfully."));
   } else {
     console.log(chalk.green("'ai-commit-review' lib is already up to date."));
