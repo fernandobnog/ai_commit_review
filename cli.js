@@ -15,13 +15,11 @@ try {
   
   let outdatedData;
   try {
-    // npm outdated retorna código 1 quando há pacotes desatualizados
     outdatedData = execSync("npm outdated -g ai-commit-review --json", { 
       encoding: "utf8",
-      stdio: ['pipe', 'pipe', 'pipe'] // Captura stdout e stderr
+      stdio: ['pipe', 'pipe', 'pipe']
     });
   } catch (error) {
-    // Se há pacotes desatualizados, npm outdated retorna código 1 mas com dados válidos no stdout
     outdatedData = error.stdout || "";
   }
   
