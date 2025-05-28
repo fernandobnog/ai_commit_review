@@ -11,32 +11,31 @@ import { updateServerToProduction } from "./src/productionServerUpdate.js"; // S
 import { execSync } from "child_process";
 
 try {
-  console.log(chalk.blue("Verificando se a lib 'ai-commit-review' está atualizada..."));
+  console.log(chalk.blue("Checking if 'ai-commit-review' lib is up to date..."));
   const outdatedData = execSync("npm outdated ai-commit-review --json", { encoding: "utf8" });
   const outdated = outdatedData ? JSON.parse(outdatedData) : {};
   if (Object.keys(outdated).length > 0) {
-    console.log(chalk.yellow("Lib 'ai-commit-review' desatualizada. Atualizando..."));
+    console.log(chalk.yellow("'ai-commit-review' lib is outdated. Updating..."));
     execSync("npm update ai-commit-review", { stdio: "inherit" });
-    console.log(chalk.green("Lib 'ai-commit-review' atualizada com sucesso."));
+    console.log(chalk.green("'ai-commit-review' lib updated successfully."));
   } else {
-    console.log(chalk.green("Lib 'ai-commit-review' já está atualizada."));
+    console.log(chalk.green("'ai-commit-review' lib is already up to date."));
   }
-} catch (error) {
-  if (error.stdout) {
+} catch (error) {  if (error.stdout) {
     try {
       const outdated = JSON.parse(error.stdout || "{}");
       if (Object.keys(outdated).length > 0) {
-        console.log(chalk.yellow("Lib 'ai-commit-review' desatualizada. Atualizando..."));
+        console.log(chalk.yellow("'ai-commit-review' lib is outdated. Updating..."));
         execSync("npm update ai-commit-review", { stdio: "inherit" });
-        console.log(chalk.green("Lib 'ai-commit-review' atualizada com sucesso."));
+        console.log(chalk.green("'ai-commit-review' lib updated successfully."));
       } else {
-        console.log(chalk.green("Lib 'ai-commit-review' já está atualizada."));
+        console.log(chalk.green("'ai-commit-review' lib is already up to date."));
       }
     } catch {
-      console.error(chalk.red("Erro ao verificar atualizações da lib 'ai-commit-review'."));
+      console.error(chalk.red("Error checking 'ai-commit-review' lib updates."));
     }
   } else {
-    console.error(chalk.red("Erro ao verificar atualizações da lib 'ai-commit-review'."));
+    console.error(chalk.red("Error checking 'ai-commit-review' lib updates."));
   }
 }
 
