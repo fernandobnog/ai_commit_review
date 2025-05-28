@@ -88,12 +88,6 @@ function generatePrompt(files, promptType, config) {
             **Contexto:**
             Você está analisando as seguintes alterações de código (diffs). Seu objetivo é resumir essas alterações de forma clara para que outros desenvolvedores (e seu eu futuro) possam entender facilmente o propósito e o impacto de cada commit.
             
-            **Contexto Adicional do Git:**
-            * Nome da Branch Atual: ${branchName}
-            * Status dos Arquivos:
-                ${gitStatusShort}
-            * (Opcional) Mensagem do Commit Anterior Relevante: ${previousCommitMessage}
-
             **Diffs:**
             ${diffs}
 
