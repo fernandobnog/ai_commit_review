@@ -196,7 +196,7 @@ if (($versaoAtual -eq $versaoUltima) -or ([string]::IsNullOrEmpty($versaoUltima)
     Write-Host "Empacotando o projeto..."
     npm pack
 
-    Write-Host "Publicando o pacote no npm..."
+    Write-Host "Publicando o pacote no npm..."s
     npm publish --access public
     
     # Deprecar versões antigas automaticamente
