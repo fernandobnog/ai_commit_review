@@ -100,7 +100,6 @@ export async function updateServerToProduction() {
     console.log(chalk.green("ℹ️  Pull request created successfully!"));
     console.log(chalk.yellow("⚠️  Warning: DO NOT approve the pull request. Wait for Fernando to review the request."));
 
-    
     const { stdout: currentBranch2 } = executeGitCommand("git rev-parse --abbrev-ref HEAD");
     if (currentBranch2 !== branchDestino) {
       console.log(chalk.blue(`ℹ️  Switching to branch ${branchDestino}...`));
