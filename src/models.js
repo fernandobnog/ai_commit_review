@@ -2,8 +2,8 @@
 
 // Enum for OpenAI models
 export const OpenAIModels = Object.freeze({
-  GPT_4_1_NANO: "gpt-4.1-nano",
-  DEEPSEEK_LOCAL: "deepseek-r1-distill-llama-8b",
+  GPT_5_NANO: "gpt-5-nano",
+  OSS_20B_LOCAL: "openai/gpt-oss-20b",
 });
 
 // Enum for configuration keys
