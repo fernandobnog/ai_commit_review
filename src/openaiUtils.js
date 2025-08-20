@@ -154,7 +154,7 @@ export async function analyzeUpdatedCode(
     const response = await openai.chat.completions.create({
       model: config.OPENAI_API_MODEL,
       messages: [{ role: "user", content: prompt }],
-      max_tokens: 2000,
+      max_completion_tokens: 2000,
     });
     console.log(chalk.green("✅ Response received."));
 
