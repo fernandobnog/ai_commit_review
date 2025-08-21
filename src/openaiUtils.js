@@ -150,13 +150,18 @@ export async function analyzeUpdatedCode(
   const prompt = generatePrompt(files, promptType, config);
   try {
     console.log(chalk.blue("📤 Sending request to AI..."));
-    const response = await openai.chat.completions.create({
+
+    const isGpt5Nano = config.OPENAI_API_MODEL === OpenAIModels.GPT_5_NANO;
+    const requestPayload = {
       model: config.OPENAI_API_MODEL,
       messages: [{ role: "user", content: prompt }],
+      ...(isGpt5Nano && {
+        reasoning: { effort: "low" },
+        text: { verbosity: "low" },
+      }),
+    };
 
-      reasoning: { effort: "low" },
-      text: { verbosity: "low" },
-    });
+    const response = await openai.chat.completions.create(requestPayload);
     console.log(chalk.green("✅ Response received."));
 
     return response.choices[0].message.content.trim();
