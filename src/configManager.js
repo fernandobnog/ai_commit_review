@@ -65,7 +65,11 @@ export async function setBaseURLOpenAILocal(config) {
  */
 function setDefaultModel(config) {
   if (!config[ConfigKeys.OPENAI_API_MODEL]) {
-    config[ConfigKeys.OPENAI_API_MODEL] = OpenAIModels.GPT_5_NANO;
+    if(config[ConfigKeys.OPENAI_API_KEY] !='local'){
+      config[ConfigKeys.OPENAI_API_MODEL] = OpenAIModels.GPT_5_NANO;
+    } else {
+      config[ConfigKeys.OPENAI_API_MODEL] = OpenAIModels.OSS_20B_LOCAL;
+    }
     saveConfig(config);
     console.log(
       chalk.green(
