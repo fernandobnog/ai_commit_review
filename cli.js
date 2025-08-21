@@ -9,25 +9,39 @@ import { criptografarcli } from "./src/crypto.js"; // Encrypt/decrypt functional
 import { updateServerToTest } from "./src/testServerUpdate.js"; // Script to Update Server to Test
 import { updateServerToProduction } from "./src/productionServerUpdate.js"; // Script to Update Server to production
 import { execSync } from "child_process";
+import { deleteConfigFile } from "./src/config.js"; // Function to delete config file
 
 try {
   console.log(chalk.blue("Checking if 'ai-commit-review' lib is up to date..."));
-  
+
   let outdatedData;
   try {
-    outdatedData = execSync("npm outdated -g ai-commit-review --json", { 
+    outdatedData = execSync("npm outdated -g ai-commit-review --json", {
       encoding: "utf8",
       stdio: ['pipe', 'pipe', 'pipe']
     });
   } catch (error) {
     outdatedData = error.stdout || "";
   }
-  
+
   if (outdatedData.trim()) {
     try {
       const outdated = JSON.parse(outdatedData);
       if (Object.keys(outdated).length > 0) {
         console.log(chalk.yellow("'ai-commit-review' lib is outdated. Updating..."));
+
+        const { restartConfig } = await inquirer.prompt([
+          {
+            type: "confirm",
+            name: "restartConfig",
+            message: "Delete the configuration file and start a new setup?",
+            default: true
+          }
+        ]);
+        if (restartConfig) {
+          deleteConfigFile();
+        }
+        
         execSync("npm update -g ai-commit-review", { stdio: "inherit" });
         console.log(chalk.green("'ai-commit-review' lib updated successfully."));
       } else {

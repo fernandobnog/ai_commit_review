@@ -49,6 +49,26 @@ try {
 const configFilePath = path.join(configDirectory, ".config.json");
 
 /**
+ * Exclui o arquivo de configuração (.config.json) caso exista.
+ * @returns {boolean} true se o arquivo foi excluído, false caso não exista ou ocorra erro.
+ */
+export function deleteConfigFile() {
+  try {
+    if (fs.existsSync(configFilePath)) {
+      fs.removeSync(configFilePath);
+      console.log(`Arquivo de configuração excluído: ${configFilePath}`);
+      return true;
+    } else {
+      console.log(`Arquivo de configuração não encontrado: ${configFilePath}`);
+    }
+  } catch (error) {
+    console.error("Erro ao excluir o arquivo de configuração:", error);
+  }
+  return false;
+}
+
+
+/**
  * Loads the configuration from the .config.json file.
  * @returns {Object} Configuration object or an empty object if the file does not exist or an error occurs.
  */

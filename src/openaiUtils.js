@@ -142,7 +142,6 @@ export async function analyzeUpdatedCode(
 ) {
   const config = await validateConfiguration();
   let openai = null;
-  //TODO logica para acesso local ou remoto
   if(config.OPENAI_API_BASEURL){
     openai = new OpenAI({baseURL:config.OPENAI_API_BASEURL, apiKey: config.OPENAI_API_KEY });
   }else{
@@ -154,7 +153,9 @@ export async function analyzeUpdatedCode(
     const response = await openai.chat.completions.create({
       model: config.OPENAI_API_MODEL,
       messages: [{ role: "user", content: prompt }],
-      max_completion_tokens: 2000,
+
+      reasoning: { effort: "low" },
+      text: { verbosity: "low" },
     });
     console.log(chalk.green("✅ Response received."));
 
