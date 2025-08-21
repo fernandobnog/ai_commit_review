@@ -1,7 +1,7 @@
 import chalk from "chalk";
 import { validateConfiguration, updateValidApiKey } from "./configManager.js";
 import { OpenAI } from "openai";
-import { PromptType, SupportedLanguages } from "./models.js";
+import { OpenAIModels, PromptType, SupportedLanguages } from "./models.js";
 
 /**
  * Generates the language instruction for OpenAI prompts.
@@ -151,13 +151,13 @@ export async function analyzeUpdatedCode(
   try {
     console.log(chalk.blue("📤 Sending request to AI..."));
 
-    const isGpt5Nano = config.OPENAI_API_MODEL === OpenAIModels.GPT_5_NANO;
+    const isGpt5Nano = config.OPENAI_API_MODEL == OpenAIModels.GPT_5_NANO;
     const requestPayload = {
       model: config.OPENAI_API_MODEL,
       messages: [{ role: "user", content: prompt }],
       ...(isGpt5Nano && {
-        reasoning: { effort: "low" },
-        text: { verbosity: "low" },
+        reasoning_effort: "low",
+        verbosity: "low",
       }),
     };
 
