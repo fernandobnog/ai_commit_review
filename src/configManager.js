@@ -1,9 +1,10 @@
 import chalk from "chalk";
-import { loadConfig, saveConfig } from "./config.js";
+import { loadConfig, saveConfig, deleteConfigFile } from "./config.js";
 import { OpenAIModels, ConfigKeys, SupportedLanguages } from "./models.js";
 import inquirer from "inquirer";
 import { configByNTAPPEmail, configBaseUrlLocal } from "./validateEmail.js";
 import { decriptografar } from "./crypto.js";
+
 
 /**
  * Sets the default OpenAI model to 'gpt-4o-mini' if not already set.
@@ -25,6 +26,19 @@ export function setApiKeyOpenAINTapp() {
   return config;
 }
 
+export async function resetConfig() {
+  const { restartConfig } = await inquirer.prompt([
+    {
+      type: "confirm",
+      name: "restartConfig",
+      message: "Delete the configuration file and start a new setup?",
+      default: true
+    }
+  ]);
+  if (restartConfig) {
+    deleteConfigFile();
+  }
+}
 
 export async function setBaseURLOpenAILocal(config) {
   if (!config[ConfigKeys.OPENAI_API_BASEURL] && !config[ConfigKeys.OPENAI_API_MODEL]) {

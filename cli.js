@@ -2,18 +2,16 @@ import chalk from "chalk";
 import { program } from "commander";
 import inquirer from "inquirer";
 import { showHelp } from "./src/helpers.js";
-import { updateConfigFromString, ensureValidApiKey } from "./src/configManager.js";
+import { updateConfigFromString, ensureValidApiKey, resetConfig } from "./src/configManager.js";
 import { analyzeCommits } from "./src/analyzeCommit.js"; // Analyze commits
 import { createCommit } from "./src/createCommit.js"; // Create commits
 import { criptografarcli } from "./src/crypto.js"; // Encrypt/decrypt functionality
 import { updateServerToTest } from "./src/testServerUpdate.js"; // Script to Update Server to Test
 import { updateServerToProduction } from "./src/productionServerUpdate.js"; // Script to Update Server to production
 import { execSync } from "child_process";
-import { deleteConfigFile } from "./src/config.js"; // Function to delete config file
 
 try {
   console.log(chalk.blue("Checking if 'ai-commit-review' lib is up to date..."));
-
   let outdatedData;
   try {
     outdatedData = execSync("npm outdated -g ai-commit-review --json", {
@@ -30,18 +28,8 @@ try {
       if (Object.keys(outdated).length > 0) {
         console.log(chalk.yellow("'ai-commit-review' lib is outdated. Updating..."));
 
-        const { restartConfig } = await inquirer.prompt([
-          {
-            type: "confirm",
-            name: "restartConfig",
-            message: "Delete the configuration file and start a new setup?",
-            default: true
-          }
-        ]);
-        if (restartConfig) {
-          deleteConfigFile();
-        }
-        
+        await resetConfig();
+
         execSync("npm update -g ai-commit-review", { stdio: "inherit" });
         console.log(chalk.green("'ai-commit-review' lib updated successfully."));
       } else {
@@ -111,6 +99,13 @@ program
     await updateServerToProduction();
   });
 
+  // Command to reset configuration
+program
+  .command("resetConfig")
+  .description("Reset configuration to defaults")
+  .action(async () => {
+    await resetConfig();
+  });
 
 // Command to update configurations
 program
@@ -138,7 +133,8 @@ if (!process.argv.slice(2).length) {
           { name: "Create a new commit", value: "create" },
           { name: "Encrypt/Decrypt text", value: "crypto" },
           { name: "Update server to test", value: "updateTestServer" },
-          { name: "Update server to production", value: "updateProductionServer" }
+          { name: "Update server to production", value: "updateProductionServer" },
+          { name: "Reset configuration", value: "resetConfig" }
         ],
       },
     ]);
@@ -153,6 +149,8 @@ if (!process.argv.slice(2).length) {
       await updateServerToTest();
     } else if (command === "updateProductionServer") {
       await updateServerToProduction();
+    } else if (command === "resetConfig") {
+      await resetConfig();
     }
   })();
 } else {
