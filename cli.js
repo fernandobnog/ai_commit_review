@@ -33,6 +33,7 @@ try {
 
         execSync("npm update -g ai-commit-review", { stdio: "inherit" });
         console.log(chalk.green("'ai-commit-review' lib updated successfully."));
+        process.exit(0);
       } else {
         console.log(chalk.green("'ai-commit-review' lib is already up to date."));
       }
