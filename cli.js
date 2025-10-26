@@ -5,6 +5,7 @@ import { showHelp } from "./src/helpers.js";
 import { updateConfigFromString, ensureValidApiKey, resetConfig } from "./src/configManager.js";
 import { analyzeCommits } from "./src/analyzeCommit.js"; // Analyze commits
 import { createCommit } from "./src/createCommit.js"; // Create commits
+import { commitStaged } from "./src/commitStaged.js"; // Commit staged changes
 import { criptografarcli } from "./src/crypto.js"; // Encrypt/decrypt functionality
 import { updateServerToTest } from "./src/testServerUpdate.js"; // Script to Update Server to Test
 import { updateServerToProduction } from "./src/productionServerUpdate.js"; // Script to Update Server to production
@@ -83,6 +84,14 @@ program
     await createCommit();
   });
 
+// Command to commit staged changes
+program
+  .command("commit")
+  .description("Commit staged changes with AI assistance")
+  .action(async () => {
+    await commitStaged();
+  });
+
 // Command to update server to test
 program
   .command("updateTestServer")
@@ -131,6 +140,7 @@ if (!process.argv.slice(2).length) {
         choices: [
           { name: "Analyze commits", value: "analyze" },
           { name: "Create a new commit", value: "create" },
+          { name: "Commit staged changes", value: "commit" },
           { name: "Encrypt/Decrypt text", value: "crypto" },
           { name: "Update server to test", value: "updateTestServer" },
           { name: "Update server to production", value: "updateProductionServer" },
@@ -143,6 +153,8 @@ if (!process.argv.slice(2).length) {
       await analyzeCommits();
     } else if (command === "create") {
       await createCommit();
+    } else if (command === "commit") {
+      await commitStaged();
     } else if (command === "crypto") {
       await criptografarcli();
     } else if (command === "updateTestServer") {
