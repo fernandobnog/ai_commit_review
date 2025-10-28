@@ -2,6 +2,7 @@ import chalk from "chalk";
 import inquirer from "inquirer";
 import { getCommits, getModifiedFiles, getFileDiff } from "./gitUtils.js";
 import { analyzeUpdatedCode } from "./openaiUtils.js";
+import { buildContextForFiles } from "./contextManager.js";
 import { PromptType } from "./models.js";
 
 /**
@@ -135,7 +136,10 @@ const analyzeCommit = async (sha) => {
       return;
     }
 
-    const analysis = await analyzeUpdatedCode(files, PromptType.ANALYZE);
+    // Build a condensed context for large diffs to avoid hitting token limits
+    const condensedFiles = await buildContextForFiles(files, PromptType.ANALYZE);
+
+    const analysis = await analyzeUpdatedCode(condensedFiles, PromptType.ANALYZE);
     console.log(
       chalk.magentaBright(`\n📊 Code analysis result for commit ${sha}:\n`),
       chalk.magenta(analysis)

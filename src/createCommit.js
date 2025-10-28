@@ -20,6 +20,7 @@ import {
   executeGitCommand
 } from "./gitUtils.js";
 import { analyzeUpdatedCode } from "./openaiUtils.js";
+import { buildContextForFiles } from "./contextManager.js";
 import { PromptType } from "./models.js";
 import fs from "fs";
 import path from "path";
@@ -236,10 +237,9 @@ export async function createCommit() {
       if (messageOption === "ai") {
         // Generate commit message using AI
         console.log(chalk.blue("📤 Generating commit message with AI..."));
-        commitMessage = await analyzeUpdatedCode(
-          stagedFiles,
-          PromptType.CREATE
-        ); // Pass the diffs
+        // Condense staged diffs into summaries if necessary to avoid token limits
+        const condensed = await buildContextForFiles(stagedFiles, PromptType.CREATE);
+        commitMessage = await analyzeUpdatedCode(condensed, PromptType.CREATE); // Pass the diffs (or summaries)
       }
 
       if (messageOption === "manual") {

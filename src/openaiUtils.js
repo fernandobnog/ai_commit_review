@@ -175,3 +175,34 @@ export async function analyzeUpdatedCode(
     }
   }
 }
+
+/**
+ * Summarize arbitrary text using the configured OpenAI model.
+ * This helper is intended for internal use by contextManager to reduce token usage.
+ */
+export async function summarizeText(text) {
+  const config = await validateConfiguration();
+  let openai = null;
+  if (config.OPENAI_API_BASEURL) {
+    openai = new OpenAI({ baseURL: config.OPENAI_API_BASEURL, apiKey: config.OPENAI_API_KEY });
+  } else {
+    openai = new OpenAI({ apiKey: config.OPENAI_API_KEY });
+  }
+
+  try {
+    const languageInstruction = generateLanguageInstruction(config.OPENAI_RESPONSE_LANGUAGE);
+    const prompt = `${languageInstruction}\nResuma de forma concisa e técnica o conteúdo a seguir. Seja direto e foque nas mudanças e impacto:\n\n${text}`;
+
+    const requestPayload = {
+      model: config.OPENAI_API_MODEL,
+      messages: [{ role: "user", content: prompt }],
+    };
+
+    const response = await openai.chat.completions.create(requestPayload);
+    return response.choices[0].message.content.trim();
+  } catch (error) {
+    console.error(chalk.red("❌ Error while summarizing text:"), error.message);
+    // bubble up so caller can fallback
+    throw error;
+  }
+}

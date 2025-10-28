@@ -1,0 +1,12 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "check-context-syntax",
+			"type": "shell",
+			"command": "node --input-type=module -e \"import('./src/contextManager.js').then(()=>console.log('ok')).catch(e=>{console.error(e); process.exit(1)})\"",
+			"isBackground": false,
+			"problemMatcher": []
+		}
+	]
+}
