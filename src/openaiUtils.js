@@ -147,7 +147,49 @@ export async function analyzeUpdatedCode(
   }else{
     openai = new OpenAI({ apiKey: config.OPENAI_API_KEY });
   }
+  
   const prompt = generatePrompt(files, promptType, config);
+  
+  // Validate prompt size against model context limit
+  const contextLimit = await getModelContextLimit();
+  const RESERVED_FOR_RESPONSE = 2000; // Reserve tokens for the AI response
+  const estimatedPromptTokens = Math.ceil(prompt.length / 4);
+  const maxAllowedTokens = contextLimit - RESERVED_FOR_RESPONSE;
+  
+  if (estimatedPromptTokens > maxAllowedTokens) {
+    // Prompt is too large - need to reduce file diffs
+    console.warn(chalk.yellow(`⚠️  Prompt too large (${estimatedPromptTokens} tokens). Truncating files to fit ${maxAllowedTokens} tokens...`));
+    
+    // Calculate how much we need to reduce
+    const maxDiffCharsTotal = Math.floor(maxAllowedTokens * 4 * 0.6); // 60% of available space for diffs
+    let currentDiffChars = files.reduce((sum, f) => sum + (f.diff || "").length, 0);
+    
+    if (currentDiffChars > maxDiffCharsTotal) {
+      const ratio = maxDiffCharsTotal / currentDiffChars;
+      const truncatedFiles = files.map(file => {
+        const maxDiffChars = Math.floor((file.diff || "").length * ratio);
+        if ((file.diff || "").length > maxDiffChars) {
+          return {
+            ...file,
+            diff: file.diff.substring(0, maxDiffChars) + "\n... [truncated due to model context limit]"
+          };
+        }
+        return file;
+      });
+      
+      // Regenerate prompt with truncated files
+      const newPrompt = generatePrompt(truncatedFiles, promptType, config);
+      const newEstimatedTokens = Math.ceil(newPrompt.length / 4);
+      console.log(chalk.yellow(`✂️  Reduced from ${estimatedPromptTokens} to ${newEstimatedTokens} tokens`));
+      
+      return analyzeWithPrompt(openai, newPrompt, config, files, promptType);
+    }
+  }
+  
+  return analyzeWithPrompt(openai, prompt, config, files, promptType);
+}
+
+async function analyzeWithPrompt(openai, prompt, config, files, promptType) {
   try {
     console.log(chalk.blue("📤 Sending request to AI..."));
 
@@ -166,7 +208,7 @@ export async function analyzeUpdatedCode(
 
     return response.choices[0].message.content.trim();
   } catch (error) {
-    console.error(chalk.red("❌ Error analyzing updated code:", error.message));
+    console.error(chalk.red("❌ Error analyzing updated code:"), error.message);
     if(error.message.includes("401")) {
       await updateValidApiKey()
       return analyzeUpdatedCode(files, promptType);
