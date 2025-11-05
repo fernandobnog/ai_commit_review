@@ -65,7 +65,7 @@ export async function buildContextForFiles(files, promptType, options = {}) {
   
   // Get the model's context limit and calculate safe chunk size
   const modelTokenLimit = await getModelContextLimit();
-  const CHARS_PER_TOKEN = 4; // Conservative estimate (1 token ≈ 4 chars)
+  const CHARS_PER_TOKEN = 3; // Conservative estimate (1 token ≈ 4 chars)
   const INPUT_MARGIN = 0.25; // Use only 25% of context for input (rest for system prompt + output)
   
   const maxTokensForInput = Math.floor(modelTokenLimit * INPUT_MARGIN);
