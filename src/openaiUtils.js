@@ -201,11 +201,20 @@ export async function summarizeText(text) {
 
   try {
     const languageInstruction = generateLanguageInstruction(config.OPENAI_RESPONSE_LANGUAGE);
-    const prompt = `${languageInstruction}\nResuma de forma concisa e técnica o conteúdo a seguir. Seja direto e foque nas mudanças e impacto:\n\n${text}`;
+    const promptPrefix = `${languageInstruction}\nResuma de forma concisa e técnica o conteúdo a seguir. Seja direto e foque nas mudanças e impacto:\n\n`;
+    const fullPrompt = promptPrefix + text;
+    
+    // Estimate tokens and warn if approaching limit
+    const estimatedTokens = Math.ceil(fullPrompt.length / 4);
+    const contextLimit = await getModelContextLimit();
+    
+    if (estimatedTokens > contextLimit * 0.8) {
+      console.warn(chalk.yellow(`⚠️  Warning: Summary prompt is ${estimatedTokens} tokens, close to model limit of ${contextLimit}`));
+    }
 
     const requestPayload = {
       model: config.OPENAI_API_MODEL,
-      messages: [{ role: "user", content: prompt }],
+      messages: [{ role: "user", content: fullPrompt }],
     };
 
     const response = await openai.chat.completions.create(requestPayload);

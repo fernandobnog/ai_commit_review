@@ -65,14 +65,14 @@ export async function buildContextForFiles(files, promptType, options = {}) {
   
   // Get the model's context limit and calculate safe chunk size
   const modelTokenLimit = await getModelContextLimit();
-  const CHARS_PER_TOKEN = 4; // Conservative estimate
-  const INPUT_MARGIN = 0.50; // Use only 50% of context for input (rest for prompt + output)
+  const CHARS_PER_TOKEN = 4; // Conservative estimate (1 token ≈ 4 chars)
+  const INPUT_MARGIN = 0.25; // Use only 25% of context for input (rest for system prompt + output)
   
   const maxTokensForInput = Math.floor(modelTokenLimit * INPUT_MARGIN);
   const maxChars = options.maxChars || parseInt(process.env.OPENAI_CHUNK_SIZE_CHARS) || (maxTokensForInput * CHARS_PER_TOKEN);
   const maxCombinedChars = options.maxCombinedChars || maxChars;
   
-  console.log(chalk.blue(`ℹ️  Using model context limit: ${modelTokenLimit} tokens (~${Math.floor(maxChars/1000)}k chars per chunk)`));
+  console.log(chalk.blue(`ℹ️  Model: ${modelTokenLimit} tokens | Chunk size: ~${Math.floor(maxChars/1000)}k chars (${maxTokensForInput} tokens max per chunk)`));
 
   const result = [];
   for (const file of files) {
@@ -91,9 +91,14 @@ export async function buildContextForFiles(files, promptType, options = {}) {
 
       // split into chunks and summarize each
       const chunks = chunkText(file.diff, maxChars);
+      console.log(chalk.yellow(`  📦 Splitting ${file.filename} into ${chunks.length} chunks for summarization...`));
+      
       const chunkSummaries = [];
       for (let i = 0; i < chunks.length; i++) {
         const chunk = chunks[i];
+        const chunkTokens = Math.ceil(chunk.length / CHARS_PER_TOKEN);
+        console.log(chalk.gray(`    → Chunk ${i+1}/${chunks.length}: ${chunk.length} chars (~${chunkTokens} tokens)`));
+        
         const prompt = `Resuma de forma concisa e técnica o seguinte trecho de diff (responda no mesmo idioma do conteúdo):\n\n${chunk}`;
         const summary = await summarizeText(prompt);
         chunkSummaries.push(summary);
