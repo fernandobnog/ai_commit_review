@@ -69,7 +69,7 @@ export async function buildContextForFiles(files, promptType, options = {}) {
   const INPUT_MARGIN = 0.25; // Use only 25% of context for input (rest for system prompt + output)
   
   const maxTokensForInput = Math.floor(modelTokenLimit * INPUT_MARGIN);
-  const maxChars = options.maxChars || parseInt(process.env.OPENAI_CHUNK_SIZE_CHARS) || (maxTokensForInput * CHARS_PER_TOKEN);
+  const maxChars = options.maxChars || (maxTokensForInput * CHARS_PER_TOKEN);
   const maxCombinedChars = options.maxCombinedChars || maxChars;
   
   console.log(chalk.blue(`ℹ️  Model: ${modelTokenLimit} tokens | Chunk size: ~${Math.floor(maxChars/1000)}k chars (${maxTokensForInput} tokens max per chunk)`));
