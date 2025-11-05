@@ -202,14 +202,26 @@ export async function summarizeText(text) {
   try {
     const languageInstruction = generateLanguageInstruction(config.OPENAI_RESPONSE_LANGUAGE);
     const promptPrefix = `${languageInstruction}\nResuma de forma concisa e técnica o conteúdo a seguir. Seja direto e foque nas mudanças e impacto:\n\n`;
-    const fullPrompt = promptPrefix + text;
     
-    // Estimate tokens and warn if approaching limit
-    const estimatedTokens = Math.ceil(fullPrompt.length / 4);
+    // Estimate tokens and check if we need to truncate
     const contextLimit = await getModelContextLimit();
+    const RESERVED_FOR_RESPONSE = 1000; // Reserve tokens for the AI response
+    const prefixTokens = Math.ceil(promptPrefix.length / 4);
+    const maxTextTokens = contextLimit - RESERVED_FOR_RESPONSE - prefixTokens;
+    const maxTextChars = maxTextTokens * 4;
     
-    if (estimatedTokens > contextLimit * 0.8) {
-      console.warn(chalk.yellow(`⚠️  Warning: Summary prompt is ${estimatedTokens} tokens, close to model limit of ${contextLimit}`));
+    // Truncate text if necessary
+    let contentToSummarize = text;
+    if (text.length > maxTextChars) {
+      console.warn(chalk.yellow(`⚠️  Text truncated from ${text.length} to ${maxTextChars} chars to fit model context`));
+      contentToSummarize = text.substring(0, maxTextChars) + "\n... [truncated]";
+    }
+    
+    const fullPrompt = promptPrefix + contentToSummarize;
+    const estimatedTokens = Math.ceil(fullPrompt.length / 4);
+    
+    if (estimatedTokens + RESERVED_FOR_RESPONSE > contextLimit) {
+      throw new Error(`Prompt too large: ${estimatedTokens} tokens (+ ${RESERVED_FOR_RESPONSE} for response) exceeds limit of ${contextLimit}`);
     }
 
     const requestPayload = {

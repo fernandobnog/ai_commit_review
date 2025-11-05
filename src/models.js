@@ -9,6 +9,7 @@ export const OpenAIModels = Object.freeze({
 // Token context limits per model
 export const ModelContextLimits = Object.freeze({
   "gpt-5-nano": 128000,
+  "openai/gpt-oss-20b": 8000,
   "default": 8000,
 });
 

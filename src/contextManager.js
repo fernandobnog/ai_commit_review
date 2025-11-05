@@ -65,14 +65,16 @@ export async function buildContextForFiles(files, promptType, options = {}) {
   
   // Get the model's context limit and calculate safe chunk size
   const modelTokenLimit = await getModelContextLimit();
-  const CHARS_PER_TOKEN = 3; // Conservative estimate (1 token ≈ 4 chars)
-  const INPUT_MARGIN = 0.25; // Use only 25% of context for input (rest for system prompt + output)
+  const CHARS_PER_TOKEN = 4; // Conservative estimate (1 token ≈ 4 chars)
+  const RESERVED_FOR_RESPONSE = 1000; // Reserve tokens for the AI response
+  const RESERVED_FOR_INSTRUCTIONS = 200; // Reserve tokens for the summarization prompt instructions
   
-  const maxTokensForInput = Math.floor(modelTokenLimit * INPUT_MARGIN);
-  const maxChars = options.maxChars || (maxTokensForInput * CHARS_PER_TOKEN);
+  // Calculate max tokens we can use for the actual content
+  const maxTokensForContent = modelTokenLimit - RESERVED_FOR_RESPONSE - RESERVED_FOR_INSTRUCTIONS;
+  const maxChars = options.maxChars || (maxTokensForContent * CHARS_PER_TOKEN);
   const maxCombinedChars = options.maxCombinedChars || maxChars;
   
-  console.log(chalk.blue(`ℹ️  Model: ${modelTokenLimit} tokens | Chunk size: ~${Math.floor(maxChars/1000)}k chars (${maxTokensForInput} tokens max per chunk)`));
+  console.log(chalk.blue(`ℹ️  Model: ${modelTokenLimit} tokens | Chunk size: ~${Math.floor(maxChars/1000)}k chars (${maxTokensForContent} tokens max per chunk)`));
 
   const result = [];
   for (const file of files) {
