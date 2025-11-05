@@ -6,6 +6,12 @@ export const OpenAIModels = Object.freeze({
   OSS_20B_LOCAL: "openai/gpt-oss-20b",
 });
 
+// Token context limits per model
+export const ModelContextLimits = Object.freeze({
+  "gpt-5-nano": 128000,
+  "default": 8000,
+});
+
 // Enum for configuration keys
 export const ConfigKeys = Object.freeze({
   OPENAI_API_BASEURL: "OPENAI_API_BASEURL",

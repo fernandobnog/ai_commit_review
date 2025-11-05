@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import crypto from "crypto";
 import chalk from "chalk";
-import { summarizeText } from "./openaiUtils.js";
+import { summarizeText, getModelContextLimit } from "./openaiUtils.js";
 
 const CACHE_DIR = path.join(process.cwd(), ".cache");
 const CACHE_FILE = path.join(CACHE_DIR, "context.json");
@@ -62,8 +62,17 @@ function chunkText(text, maxChars) {
  */
 export async function buildContextForFiles(files, promptType, options = {}) {
   const cache = readCache();
-  const maxChars = options.maxChars || parseInt(process.env.OPENAI_CHUNK_SIZE_CHARS) || 8000; // default chunk size (chars)
+  
+  // Get the model's context limit and calculate safe chunk size
+  const modelTokenLimit = await getModelContextLimit();
+  const CHARS_PER_TOKEN = 4; // Conservative estimate
+  const INPUT_MARGIN = 0.50; // Use only 50% of context for input (rest for prompt + output)
+  
+  const maxTokensForInput = Math.floor(modelTokenLimit * INPUT_MARGIN);
+  const maxChars = options.maxChars || parseInt(process.env.OPENAI_CHUNK_SIZE_CHARS) || (maxTokensForInput * CHARS_PER_TOKEN);
   const maxCombinedChars = options.maxCombinedChars || maxChars;
+  
+  console.log(chalk.blue(`ℹ️  Using model context limit: ${modelTokenLimit} tokens (~${Math.floor(maxChars/1000)}k chars per chunk)`));
 
   const result = [];
   for (const file of files) {

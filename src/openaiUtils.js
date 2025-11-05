@@ -1,7 +1,7 @@
 import chalk from "chalk";
 import { validateConfiguration, updateValidApiKey } from "./configManager.js";
 import { OpenAI } from "openai";
-import { OpenAIModels, PromptType, SupportedLanguages } from "./models.js";
+import { OpenAIModels, PromptType, SupportedLanguages, ModelContextLimits } from "./models.js";
 
 /**
  * Generates the language instruction for OpenAI prompts.
@@ -174,6 +174,16 @@ export async function analyzeUpdatedCode(
       throw error;
     }
   }
+}
+
+/**
+ * Get the context token limit for the configured model.
+ * @returns {Promise<number>} The token limit for the model
+ */
+export async function getModelContextLimit() {
+  const config = await validateConfiguration();
+  const model = config.OPENAI_API_MODEL;
+  return ModelContextLimits[model] || ModelContextLimits["default"];
 }
 
 /**
