@@ -32,7 +32,7 @@ export async function resetConfig() {
       type: "confirm",
       name: "restartConfig",
       message: "Delete the configuration file and start a new setup?",
-      default: true
+      default: false
     }
   ]);
   if (restartConfig) {

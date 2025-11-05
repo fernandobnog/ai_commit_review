@@ -4,19 +4,11 @@
 export const OpenAIModels = Object.freeze({
   GPT_5_NANO: "gpt-5-nano",
   OSS_20B_LOCAL: "openai/gpt-oss-20b",
-  DEEPSEEK_LOCAL: "deepseek-ai/DeepSeek-R1-Distill-Qwen-32B",
 });
 
 // Token context limits per model
 export const ModelContextLimits = Object.freeze({
   "gpt-5-nano": 128000,
-  "openai/gpt-oss-20b": 32768,
-  "deepseek-ai/DeepSeek-R1-Distill-Qwen-32B": 8000,
-  "gpt-4o": 128000,
-  "gpt-4o-mini": 128000,
-  "gpt-4-turbo": 128000,
-  "gpt-4": 8192,
-  "gpt-3.5-turbo": 16385,
   "default": 8000,
 });
 
