@@ -400,7 +400,7 @@ export function getStagedFilesDiffs() {
  */
 export function commitChangesWithEditor(tempFilePath) {
   try {
-    executeGitCommand(`git commit --edit --file="${tempFilePath}" --no-verify`);
+    execSync(`git commit --edit --file="${tempFilePath}" --no-verify`, { stdio: "inherit" });
     console.log(chalk.green("✔ Commit successfully made!"));
   } catch (error) {
     console.error(chalk.red("❌ Error making commit:"), error.message);
