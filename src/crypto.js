@@ -2,18 +2,28 @@ import inquirer from "inquirer";
 import crypto from 'crypto';
 
 const algoritmo = 'aes-256-cbc';
-const chave = crypto.scryptSync(process.env.PASSWORD_CRYPTO_KEY, 'sal', 32);
+let chave;
+function obterChave() {
+    if (!chave) {
+        const password = process.env.PASSWORD_CRYPTO_KEY;
+        if (!password) {
+            throw new Error("PASSWORD_CRYPTO_KEY environment variable is not defined.");
+        }
+        chave = crypto.scryptSync(password, 'sal', 32);
+    }
+    return chave;
+}
 const iv = Buffer.alloc(16, 0);
 
 function criptografarsimples(texto) {
-    const cifrador = crypto.createCipheriv(algoritmo, chave, iv);
+    const cifrador = crypto.createCipheriv(algoritmo, obterChave(), iv);
     let criptografado = cifrador.update(texto, 'utf8', 'hex');
     criptografado += cifrador.final('hex');
     return criptografado;
 }
 
 function decriptografarsimples(texto) {
-    const decifrador = crypto.createDecipheriv(algoritmo, chave, iv);
+    const decifrador = crypto.createDecipheriv(algoritmo, obterChave(), iv);
     let decriptografado = decifrador.update(texto, 'hex', 'utf8');
     decriptografado += decifrador.final('utf8');
     return decriptografado;

@@ -2,9 +2,14 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import Dotenv from 'dotenv-webpack';
 import webpack from 'webpack';
+import fs from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+const envPath = fs.existsSync(path.resolve(__dirname, '.env'))
+  ? path.resolve(__dirname, '.env')
+  : path.resolve(__dirname, '.env.develop');
 
 export default {
   entry: './cli.js',
@@ -20,6 +25,8 @@ export default {
       raw: true,
       entryOnly: true
     }),
-    new Dotenv()
+    new Dotenv({
+      path: envPath
+    })
   ]
 };
