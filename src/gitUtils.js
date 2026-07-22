@@ -249,7 +249,7 @@ export function switchBranch(branch) {
 
     // Atualiza a branch atual para garantir que está com as últimas mudanças
     console.log(chalk.blue("ℹ️  Atualizando a branch atual com 'git pull'..."));
-    executeGitCommand("git pull");
+    executeGitCommand("git pull --no-rebase");
 
     // Tenta alternar para a branch de destino
     executeGitCommand("git checkout " + branch);
@@ -257,7 +257,7 @@ export function switchBranch(branch) {
 
     // Atualiza a branch de destino para garantir que está com as últimas mudanças
     console.log(chalk.blue("ℹ️  Atualizando a branch de destino com 'git pull'..."));
-    executeGitCommand("git pull");
+    executeGitCommand("git pull --no-rebase");
 
     // Caso tenha feito stash, tenta reaplicar as alterações salvas
     if (hadStash) {
@@ -275,7 +275,7 @@ export function switchBranch(branch) {
         // Reverts to the original branch
         executeGitCommand("git checkout " + originalBranch);
         console.log(chalk.blue("ℹ️  Atualizando a branch original com 'git pull'..."));
-        executeGitCommand("git pull");
+        executeGitCommand("git pull --no-rebase");
 
         // Attempts to apply the stash on the original branch
         try {
@@ -413,7 +413,7 @@ export function commitChangesWithEditor(tempFilePath) {
  */
 export function pullChanges() {
   try {
-    executeGitCommand("git pull");
+    executeGitCommand("git pull --no-rebase");
     console.log(
       chalk.green(
         "✔ Successfully pulled the latest changes from the remote repository."

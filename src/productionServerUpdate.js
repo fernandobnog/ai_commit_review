@@ -30,7 +30,7 @@ export async function updateServerToProduction() {
   const revisor = 'fernandobnog';
 
   try {
-    const { stdout: currentBranch } = executeGitCommand("git rev-parse --abbrev-ref HEAD");
+    const currentBranch = executeGitCommand("git rev-parse --abbrev-ref HEAD");
     if (currentBranch !== branchOrigem) {
       console.log(chalk.blue(`ℹ️  Switching to branch ${branchOrigem}...`));
       executeGitCommand("git checkout " + branchOrigem);
@@ -40,8 +40,8 @@ export async function updateServerToProduction() {
     pullChanges();
 
     console.log(chalk.blue("ℹ️  Checking uncommitted changes..."));
-    const { stdout } = executeGitCommand("git status --porcelain");
-    if (stdout) {
+    const status = executeGitCommand("git status --porcelain");
+    if (status) {
       console.error(
         chalk.red(
           "❌ There are uncommitted changes in the branch. Please commit the changes and run new tests before putting into production."
@@ -100,7 +100,7 @@ export async function updateServerToProduction() {
     console.log(chalk.green("ℹ️  Pull request created successfully!"));
     console.log(chalk.yellow("⚠️  Warning: DO NOT approve the pull request. Wait for Fernando to review the request."));
 
-    const { stdout: currentBranch2 } = executeGitCommand("git rev-parse --abbrev-ref HEAD");
+    const currentBranch2 = executeGitCommand("git rev-parse --abbrev-ref HEAD");
     if (currentBranch2 !== branchDestino) {
       console.log(chalk.blue(`ℹ️  Switching to branch ${branchDestino}...`));
       executeGitCommand("git checkout " + branchDestino);

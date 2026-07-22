@@ -97,7 +97,7 @@ if (($versaoAtual -eq $versaoUltima) -or ([string]::IsNullOrEmpty($versaoUltima)
 
     # Atualiza a branch atual
     Write-Host "Atualizando branch '$branchAtual'..."
-    git pull origin $branchAtual
+    git pull origin $branchAtual --no-rebase
 
     $gitStatusPorcelain = git status --porcelain
     if ($gitStatusPorcelain) {
@@ -113,7 +113,7 @@ if (($versaoAtual -eq $versaoUltima) -or ([string]::IsNullOrEmpty($versaoUltima)
     # Muda para a branch master e atualiza
     Write-Host "Mudando para a branch 'master' e atualizando..."
     git checkout master
-    git pull origin master
+    git pull origin master --no-rebase
 
     # Mescla a branch atual na master e verifica por conflitos
     Write-Host "Mesclando branch '$branchAtual' na 'master'..."
@@ -171,7 +171,7 @@ if (($versaoAtual -eq $versaoUltima) -or ([string]::IsNullOrEmpty($versaoUltima)
     Write-Host "Voltando para a branch '$branchAtual'..."
     git checkout "$branchAtual"
     Write-Host "Atualizando branch '$branchAtual' com as últimas alterações remotas..."
-    git pull origin "$branchAtual"
+    git pull origin "$branchAtual" --no-rebase
     Write-Host "Mesclando 'master' na branch '$branchAtual'..."
     try {
         git merge --no-ff master -m "Merge da branch master"
