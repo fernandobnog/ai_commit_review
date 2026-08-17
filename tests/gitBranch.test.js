@@ -1,9 +1,13 @@
+process.env.ACR_CONFIG_FILE = path.join(os.tmpdir(), `test_cfg_gitBranch_${process.pid}.json`);
+process.env.PASSWORD_CRYPTO_KEY = "segredo_teste_key";
+
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import fs from "fs";
 import path from "path";
 import os from "os";
 import {
+  getDeps,
   getCurrentBranch,
   listBranches,
   pullChanges,
@@ -19,6 +23,31 @@ import {
 } from "../src/gitBranch.js";
 
 test("gitBranch.js - Cobertura 100% de Gerenciamento de Branches (Padrão AAA)", async (t) => {
+  await t.test("getDeps deve cobrir 100% dos ramos de injeção e fallbacks", () => {
+    // Act 1: com fallbacks padrão
+    const oldEditor = process.env.EDITOR;
+    delete process.env.EDITOR;
+    const defaultDeps = getDeps({});
+    assert.equal(typeof defaultDeps.executeGitCommandFn, "function");
+    assert.equal(typeof defaultDeps.execSyncFn, "function");
+    assert.equal(defaultDeps.editor, "vim");
+
+    // Act 2: com process.env.EDITOR
+    process.env.EDITOR = "nano";
+    const envDeps = getDeps();
+    assert.equal(envDeps.editor, "nano");
+    if (oldEditor !== undefined) process.env.EDITOR = oldEditor; else delete process.env.EDITOR;
+
+    // Act 3: com injeção explícita
+    const customDeps = getDeps({
+      executeGitCommandFn: () => "custom",
+      execSyncFn: () => {},
+      editor: "code"
+    });
+    assert.equal(customDeps.executeGitCommandFn(), "custom");
+    assert.equal(customDeps.editor, "code");
+  });
+
   await t.test("getCurrentBranch deve retornar o nome da branch atual ou 'unknown' em erro", () => {
     // Act 1: Sucesso
     const branch = getCurrentBranch({ executeGitCommandFn: () => "feature/nova-feature" });
@@ -40,7 +69,11 @@ test("gitBranch.js - Cobertura 100% de Gerenciamento de Branches (Padrão AAA)",
     const vazio = listBranches({ executeGitCommandFn: () => "" });
     assert.deepEqual(vazio, []);
 
-    // Act 3: Erro
+    // Act 3: Output null
+    const nullOutput = listBranches({ executeGitCommandFn: () => null });
+    assert.deepEqual(nullOutput, []);
+
+    // Act 4: Erro
     const erro = listBranches({ executeGitCommandFn: () => { throw new Error("List Fail"); } });
     assert.deepEqual(erro, []);
   });
@@ -67,14 +100,15 @@ test("gitBranch.js - Cobertura 100% de Gerenciamento de Branches (Padrão AAA)",
   await t.test("switchBranch deve validar parâmetros e lidar com stash e erros", async () => {
     // Act 1: Nome de branch inválido
     switchBranch(null);
+    switchBranch(123);
     switchBranch("   ");
 
-    // Act 2: Troca com uncommitted changes (hadStash = true)
+    // Act 2: Troca com uncommitted changes (hadStash = true) e rev-parse retornando null
     const executedCmds = [];
     const depsStash = {
       executeGitCommandFn: (cmd) => {
         executedCmds.push(cmd);
-        if (cmd === "git rev-parse --abbrev-ref HEAD") return "main";
+        if (cmd === "git rev-parse --abbrev-ref HEAD") return null;
         if (cmd === "git status --porcelain") return " M file.js";
         return "";
       }
@@ -84,13 +118,13 @@ test("gitBranch.js - Cobertura 100% de Gerenciamento de Branches (Padrão AAA)",
     assert.ok(executedCmds.includes("git checkout feature/teste"));
     assert.ok(executedCmds.includes("git stash pop"));
 
-    // Act 3: Troca sem uncommitted changes (hadStash = false)
+    // Act 3: Troca sem uncommitted changes (hadStash = false) e status retornando null
     const executedCmdsNoStash = [];
     const depsNoStash = {
       executeGitCommandFn: (cmd) => {
         executedCmdsNoStash.push(cmd);
         if (cmd === "git rev-parse --abbrev-ref HEAD") return "main";
-        if (cmd === "git status --porcelain") return "";
+        if (cmd === "git status --porcelain") return null;
         return "";
       }
     };
@@ -172,9 +206,12 @@ test("gitBranch.js - Cobertura 100% de Gerenciamento de Branches (Padrão AAA)",
     const conflicts = checkConflicts({ executeGitCommandFn: () => statusOutput });
     assert.deepEqual(conflicts, ["file1.js", "file3.js"]);
 
-    // checkConflicts - output vazio
+    // checkConflicts - output vazio e null
     const semConflito = checkConflicts({ executeGitCommandFn: () => "" });
     assert.deepEqual(semConflito, []);
+
+    const nullConflito = checkConflicts({ executeGitCommandFn: () => null });
+    assert.deepEqual(nullConflito, []);
 
     // checkConflicts - erro
     const erroConflito = checkConflicts({ executeGitCommandFn: () => { throw new Error("Status Fail"); } });
@@ -195,13 +232,13 @@ test("gitBranch.js - Cobertura 100% de Gerenciamento de Branches (Padrão AAA)",
 
     // openFileInEditor - sucesso e erro
     let editorCmd = "";
-    openFileInEditor(tempPath, { execSyncFn: (cmd) => { editorCmd = cmd; } });
-    assert.match(editorCmd, /teste\.js_conflict\.txt/);
+    openFileInEditor(tempPath, { execSyncFn: (cmd) => { editorCmd = cmd; }, editor: "subl" });
+    assert.match(editorCmd, /subl ".*teste\.js_conflict\.txt"/);
 
     assert.doesNotThrow(() => openFileInEditor(tempPath, { execSyncFn: () => { throw new Error("Editor Fail"); } }));
 
     // updateFileFromTemp - sucesso e erro
-    const targetFile = path.join(os.tmpdir(), "target_test.js");
+    const targetFile = path.join(os.tmpdir(), `target_test_${process.pid}.js`);
     fs.writeFileSync(tempPath, "CONTEUDO_RESOLVIDO", "utf-8");
 
     let addCmd = "";

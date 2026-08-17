@@ -6,13 +6,21 @@ import path from "path";
 import os from "os";
 import { executeGitCommand } from "./gitCore.js";
 
+export function getDeps(deps = {}) {
+  return {
+    executeGitCommandFn: deps.executeGitCommandFn || executeGitCommand,
+    execSyncFn: deps.execSyncFn || execSync,
+    editor: deps.editor || process.env.EDITOR || "vim"
+  };
+}
+
 /**
  * Gets the current branch name.
  */
 export function getCurrentBranch(deps = {}) {
-  const runGit = deps.executeGitCommandFn || executeGitCommand;
+  const d = getDeps(deps);
   try {
-    return runGit("git branch --show-current", deps);
+    return d.executeGitCommandFn("git branch --show-current", deps);
   } catch (error) {
     console.error(chalk.red("❌ Error retrieving current branch:"), error.message);
     return "unknown";
@@ -23,9 +31,9 @@ export function getCurrentBranch(deps = {}) {
  * Lists all local branch names.
  */
 export function listBranches(deps = {}) {
-  const runGit = deps.executeGitCommandFn || executeGitCommand;
+  const d = getDeps(deps);
   try {
-    const output = runGit("git branch --list", deps);
+    const output = d.executeGitCommandFn("git branch --list", deps);
     if (!output) return [];
     return output
       .split("\n")
@@ -40,9 +48,9 @@ export function listBranches(deps = {}) {
  * Pulls latest changes from remote.
  */
 export function pullChanges(deps = {}) {
-  const runGit = deps.executeGitCommandFn || executeGitCommand;
+  const d = getDeps(deps);
   try {
-    runGit("git pull --no-rebase", deps);
+    d.executeGitCommandFn("git pull --no-rebase", deps);
     console.log(chalk.green("✔ Pulled latest changes from remote."));
   } catch (error) {
     console.error(chalk.red("❌ Error pulling changes:"), error.message);
@@ -54,9 +62,9 @@ export function pullChanges(deps = {}) {
  * Pushes changes to remote.
  */
 export function pushChanges(deps = {}) {
-  const runGit = deps.executeGitCommandFn || executeGitCommand;
+  const d = getDeps(deps);
   try {
-    runGit("git push", deps);
+    d.executeGitCommandFn("git push", deps);
     console.log(chalk.green("✔ Changes successfully pushed to remote repository!"));
   } catch (error) {
     console.error(chalk.red("❌ Error pushing changes:"), error.message);
@@ -67,31 +75,31 @@ export function pushChanges(deps = {}) {
  * Switches to a target branch handling stashes cleanly.
  */
 export function switchBranch(branch, deps = {}) {
-  const runGit = deps.executeGitCommandFn || executeGitCommand;
+  const d = getDeps(deps);
   if (typeof branch !== "string" || !branch.trim()) {
     console.error(chalk.red("❌ Branch name is required and must be non-empty."));
     return;
   }
 
-  const originalBranch = (runGit("git rev-parse --abbrev-ref HEAD", deps) || "").toString().trim();
+  const originalBranch = (d.executeGitCommandFn("git rev-parse --abbrev-ref HEAD", deps) || "").toString().trim();
   let hadStash = false;
 
   try {
-    const statusOutput = (runGit("git status --porcelain", deps) || "").toString().trim();
+    const statusOutput = (d.executeGitCommandFn("git status --porcelain", deps) || "").toString().trim();
     if (statusOutput.length > 0) {
       console.log(chalk.blue("ℹ️ Saving uncommitted changes with stash..."));
-      runGit("git stash", deps);
+      d.executeGitCommandFn("git stash", deps);
       hadStash = true;
     }
 
     console.log(chalk.blue("ℹ️ Updating current branch with git pull..."));
-    runGit("git pull --no-rebase", deps);
+    d.executeGitCommandFn("git pull --no-rebase", deps);
 
-    runGit("git checkout " + branch, deps);
+    d.executeGitCommandFn("git checkout " + branch, deps);
     console.log(chalk.green(`✔ Switched to branch '${branch}' successfully.`));
 
     console.log(chalk.blue("ℹ️ Updating target branch with git pull..."));
-    runGit("git pull --no-rebase", deps);
+    d.executeGitCommandFn("git pull --no-rebase", deps);
 
     if (hadStash) {
       restoreStashOrRollback(originalBranch, deps);
@@ -103,16 +111,16 @@ export function switchBranch(branch, deps = {}) {
 }
 
 export function restoreStashOrRollback(originalBranch, deps = {}) {
-  const runGit = deps.executeGitCommandFn || executeGitCommand;
+  const d = getDeps(deps);
   console.log(chalk.blue("ℹ️ Reapplying stash changes..."));
   try {
-    runGit("git stash pop", deps);
+    d.executeGitCommandFn("git stash pop", deps);
   } catch (stashError) {
     console.error(chalk.red("❌ Conflicts detected reapplying stash. Reverting..."));
-    runGit("git checkout " + originalBranch, deps);
-    runGit("git pull --no-rebase", deps);
+    d.executeGitCommandFn("git checkout " + originalBranch, deps);
+    d.executeGitCommandFn("git pull --no-rebase", deps);
     try {
-      runGit("git stash pop", deps);
+      d.executeGitCommandFn("git stash pop", deps);
     } catch (restoreError) {
       throw restoreError;
     }
@@ -124,9 +132,9 @@ export function restoreStashOrRollback(originalBranch, deps = {}) {
  * Merges a branch into another branch.
  */
 export async function mergeBranch(fromBranch, toBranch, deps = {}) {
-  const runGit = deps.executeGitCommandFn || executeGitCommand;
+  const d = getDeps(deps);
   switchBranch(toBranch, deps);
-  runGit(`git merge --no-ff ${fromBranch}`, deps);
+  d.executeGitCommandFn(`git merge --no-ff ${fromBranch}`, deps);
   console.log(chalk.green(`Merge of ${fromBranch} into ${toBranch} completed.`));
   pullChanges(deps);
 }
@@ -135,9 +143,9 @@ export async function mergeBranch(fromBranch, toBranch, deps = {}) {
  * Checks for conflict files in status.
  */
 export function checkConflicts(deps = {}) {
-  const runGit = deps.executeGitCommandFn || executeGitCommand;
+  const d = getDeps(deps);
   try {
-    const status = runGit("git status --short", deps);
+    const status = d.executeGitCommandFn("git status --short", deps);
     if (!status) return [];
     return status
       .split("\n")
@@ -153,9 +161,9 @@ export function checkConflicts(deps = {}) {
  * Gets diff output for conflict file.
  */
 export function getConflictDiff(file, deps = {}) {
-  const runGit = deps.executeGitCommandFn || executeGitCommand;
+  const d = getDeps(deps);
   try {
-    return runGit(`git diff ${file}`, deps);
+    return d.executeGitCommandFn(`git diff ${file}`, deps);
   } catch (error) {
     console.error(chalk.red(`❌ Error getting conflict diff for '${file}':`), error.message);
     return "";
@@ -175,10 +183,9 @@ export function writeConflictToTempFile(file, diff) {
  * Opens file in editor.
  */
 export function openFileInEditor(tempFilePath, deps = {}) {
-  const runSync = deps.execSyncFn || execSync;
-  const editor = process.env.EDITOR || "vim";
+  const d = getDeps(deps);
   try {
-    runSync(`${editor} "${tempFilePath}"`, { stdio: "inherit" });
+    d.execSyncFn(`${d.editor} "${tempFilePath}"`, { stdio: "inherit" });
     console.log(chalk.green(`✔ Resolved file saved: ${tempFilePath}`));
   } catch (error) {
     console.error(chalk.red("❌ Error opening file in editor:"), error.message);
@@ -189,11 +196,11 @@ export function openFileInEditor(tempFilePath, deps = {}) {
  * Updates repository file from resolved temp file.
  */
 export function updateFileFromTemp(file, tempFilePath, deps = {}) {
-  const runGit = deps.executeGitCommandFn || executeGitCommand;
+  const d = getDeps(deps);
   try {
     const resolvedContent = fs.readFileSync(tempFilePath, "utf-8");
     fs.writeFileSync(file, resolvedContent);
-    runGit(`git add "${file}"`, deps);
+    d.executeGitCommandFn(`git add "${file}"`, deps);
     console.log(chalk.green(`✔ Conflict resolved and staged for: ${file}`));
   } catch (error) {
     console.error(chalk.red("❌ Error updating file from temp:"), error.message);

@@ -12,16 +12,18 @@ O módulo `src/gitBranch.js` gerencia operações de trocas de branch, atualiza�
 ---
 
 ## 🔄 Funções Exportadas
-- `getCurrentBranch()`: Retorna o nome da branch ativa.
-- `listBranches()`: Lista branches locais.
-- `pullChanges()`: Executa `git pull --no-rebase`.
-- `pushChanges()`: Executa `git push`.
-- `switchBranch(branch)`: Alterna de branch com stash defensivo.
-- `mergeBranch(fromBranch, toBranch)`: Executa merge entre branches.
-- `checkConflicts()`: Retorna lista de arquivos em conflito.
-- `getConflictDiff(file)`, `writeConflictToTempFile(file, diff)`, `openFileInEditor(tempFilePath)`, `updateFileFromTemp(file, tempFilePath)`: Resolução de conflitos.
+- `getDeps(deps)`: Retorna fábrica de dependências com fallbacks seguros (`executeGitCommandFn`, `execSyncFn`, `editor`).
+- `getCurrentBranch(deps)`: Retorna o nome da branch ativa.
+- `listBranches(deps)`: Lista branches locais.
+- `pullChanges(deps)`: Executa `git pull --no-rebase`.
+- `pushChanges(deps)`: Executa `git push`.
+- `switchBranch(branch, deps)`: Alterna de branch com stash defensivo.
+- `restoreStashOrRollback(originalBranch, deps)`: Restaura stash com rollback em caso de conflito.
+- `mergeBranch(fromBranch, toBranch, deps)`: Executa merge entre branches.
+- `checkConflicts(deps)`: Retorna lista de arquivos em conflito (`UU`).
+- `getConflictDiff(file, deps)`, `writeConflictToTempFile(file, diff)`, `openFileInEditor(tempFilePath, deps)`, `updateFileFromTemp(file, tempFilePath, deps)`: Resolução de conflitos de merge.
 
 ---
 
 ## 🧪 Testes e Isolamento de Efeitos Colaterais
-Todas as funções em `gitBranch.js` suportam injeção de dependências (`executeGitCommandFn`, `execSyncFn`). Nos testes automatizados, todas as invocações devem fornecer mocks para evitar execuções de `git checkout`, `git stash`, `git merge`, `git pull` ou `git push` no repositório real.
+Todas as funções em `gitBranch.js` suportam injeção de dependências (`executeGitCommandFn`, `execSyncFn`, `editor`) através de `getDeps()`. Nos testes automatizados, todas as invocações devem fornecer mocks para evitar execuções de `git checkout`, `git stash`, `git merge`, `git pull` ou `git push` no repositório real. Cobertura: **100.00% lines**, **100.00% branches** e **100.00% functions**.
