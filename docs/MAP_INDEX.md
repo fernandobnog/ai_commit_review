@@ -58,13 +58,17 @@ Este documento rastreia o status do mapeamento e documentação dos módulos e a
 ### 2. Integração IA & Criptografia
 | Arquivo | Descrição | Status |
 | :--- | :--- | :---: |
-| `src/openaiUtils.js` | Integração com a API da OpenAI e geração de prompts | 🟢 Concluído |
+| `src/openaiUtils.js` | Integração com a API da OpenAI | 🟢 Concluído |
+| `src/prompts.js` | Templates de prompt estruturados para IA | 🟢 Concluído |
 | `src/crypto.js` | Utilitários de criptografia AES-256-CBC | 🟢 Concluído |
 
 ### 3. Utilitários & Git
 | Arquivo | Descrição | Status |
 | :--- | :--- | :---: |
-| `src/gitUtils.js` | Interação com comandos e repositório Git | 🟢 Concluído |
+| `src/gitUtils.js` | Fachada de re-exportação dos módulos Git | 🟢 Concluído |
+| `src/gitCore.js` | Operações fundamentais de leitura e staging Git | 🟢 Concluído |
+| `src/gitBranch.js` | Gerenciamento de branches, stash e merges | 🟢 Concluído |
+| `src/githubCli.js` | Execução segura da GitHub CLI (gh) | 🟢 Concluído |
 | `src/helpers.js` | Funções auxiliares gerais e exibição de ajuda | 🟢 Concluído |
 | `src/validateEmail.js` | Validação de e-mail e envio de códigos OTP | 🟢 Concluído |
 | `src/acr-wrapper.js` | Wrapper para execução CLI sem avisos | 🟢 Concluído |
@@ -72,6 +76,7 @@ Este documento rastreia o status do mapeamento e documentação dos módulos e a
 ### 4. Fluxos de Trabalho / Comandos Principais
 | Arquivo | Descrição | Status |
 | :--- | :--- | :---: |
+| `src/commitFlowHandlers.js` | Handlers interativos compartilhados de commit | 🟢 Concluído |
 | `src/analyzeCommit.js` | Comando de análise de commits com IA | 🟢 Concluído |
 | `src/createCommit.js` | Comando de criação interativa de commit com IA | 🟢 Concluído |
 | `src/commitStaged.js` | Comando de commit direto de alterações staged | 🟢 Concluído |

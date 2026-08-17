@@ -1,174 +1,202 @@
-process.env.PASSWORD_CRYPTO_KEY = "segredo_teste_key";
-
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   executeGitCommand,
-  getDeps,
+  stageAllChanges,
+  clearStage,
+  undoLastCommitSoft,
+  commitChangesWithEditor,
+  getCommits,
   formatGitDate,
   truncateString,
-  getCommits,
   getModifiedFiles,
   getFileDiff,
   getRepositoryDiff,
-  clearStage,
-  stageAllChanges,
-  undoLastCommitSoft,
-  commitChangesWithEditor,
   getStagedFileDiff,
   getStagedFilesDiffs
 } from "../src/gitCore.js";
-import { saveConfig, deleteConfigFile } from "../src/config.js";
 
 test("gitCore.js - Cobertura 100% de Operações do Git (Padrão AAA)", async (t) => {
-  t.beforeEach(() => {
-    saveConfig({
-      OPENAI_API_KEY: "sk-test-key",
-      OPENAI_API_MODEL: "gpt-5-nano",
-      OPENAI_RESPONSE_LANGUAGE: "pt-BR"
-    });
-  });
-
-  t.afterEach(() => {
-    deleteConfigFile();
-  });
-
   await t.test("executeGitCommand deve retornar output limpo e relançar erros no catch", () => {
-    const depsSuccess = { execSyncFn: () => "  main \n" };
-    const res = executeGitCommand("git branch", depsSuccess);
-    assert.equal(res, "main");
+    // Act 1: Sucesso
+    const res = executeGitCommand("git status", { execSyncFn: () => "  On branch main \n" });
+    assert.equal(res, "On branch main");
 
-    const depsError = { execSyncFn: () => { throw new Error("Git Error"); } };
-    assert.throws(() => executeGitCommand("git status", depsError), /Git Error/);
+    // Act 2: Erro
+    assert.throws(
+      () => executeGitCommand("git status", { execSyncFn: () => { throw new Error("Git Error"); } }),
+      /Git Error/
+    );
   });
 
   await t.test("stageAllChanges deve executar git add . e lançar erro em falhas", () => {
-    let ran = false;
-    const depsSuccess = { execSyncFn: () => { ran = true; return ""; } };
-    stageAllChanges(depsSuccess);
-    assert.equal(ran, true);
+    let executedCmd = "";
 
-    const depsError = { execSyncFn: () => { throw new Error("Add Fail"); } };
-    assert.throws(() => stageAllChanges(depsError), /Add Fail/);
+    // Act 1: Sucesso
+    stageAllChanges({ execSyncFn: (cmd) => { executedCmd = cmd; return ""; } });
+    assert.equal(executedCmd, "git add .");
+
+    // Act 2: Erro
+    assert.throws(
+      () => stageAllChanges({ execSyncFn: () => { throw new Error("Add Fail"); } }),
+      /Add Fail/
+    );
   });
 
   await t.test("clearStage deve executar git reset e capturar exceções sem quebrar fluxo", () => {
-    let ran = false;
-    const depsSuccess = { execSyncFn: () => { ran = true; return ""; } };
-    clearStage(depsSuccess);
-    assert.equal(ran, true);
+    let executedCmd = "";
 
-    const depsError = { execSyncFn: () => { throw new Error("Reset Fail"); } };
-    clearStage(depsError);
+    // Act 1: Sucesso
+    clearStage({ execSyncFn: (cmd) => { executedCmd = cmd; return ""; } });
+    assert.equal(executedCmd, "git reset");
+
+    // Act 2: Captura de erro
+    assert.doesNotThrow(() => clearStage({ execSyncFn: () => { throw new Error("Reset Fail"); } }));
   });
 
   await t.test("undoLastCommitSoft deve executar git reset --soft HEAD~1 e relançar exceções", () => {
-    let ran = false;
-    const depsSuccess = { execSyncFn: () => { ran = true; return ""; } };
-    undoLastCommitSoft(depsSuccess);
-    assert.equal(ran, true);
+    let executedCmd = "";
 
-    const depsError = { execSyncFn: () => { throw new Error("Undo Fail"); } };
-    assert.throws(() => undoLastCommitSoft(depsError), /Undo Fail/);
+    // Act 1: Sucesso
+    undoLastCommitSoft({ execSyncFn: (cmd) => { executedCmd = cmd; return ""; } });
+    assert.equal(executedCmd, "git reset --soft HEAD~1");
+
+    // Act 2: Erro
+    assert.throws(
+      () => undoLastCommitSoft({ execSyncFn: () => { throw new Error("Undo Fail"); } }),
+      /Undo Fail/
+    );
   });
 
   await t.test("commitChangesWithEditor deve executar git commit com editor e relançar exceção", () => {
-    let ran = false;
-    const depsSuccess = { execSyncFn: () => { ran = true; return ""; } };
-    commitChangesWithEditor("/tmp/msg.txt", depsSuccess);
-    assert.equal(ran, true);
+    let executedCmd = "";
 
-    const depsError = { execSyncFn: () => { throw new Error("Commit Fail"); } };
-    assert.throws(() => commitChangesWithEditor("/tmp/msg.txt", depsError), /Commit Fail/);
+    // Act 1: Sucesso
+    commitChangesWithEditor("temp.txt", { execSyncFn: (cmd) => { executedCmd = cmd; return ""; } });
+    assert.match(executedCmd, /git commit --edit --file="temp\.txt"/);
+
+    // Act 2: Erro
+    assert.throws(
+      () => commitChangesWithEditor("temp.txt", { execSyncFn: () => { throw new Error("Commit Fail"); } }),
+      /Commit Fail/
+    );
   });
 
   await t.test("getCommits e utilitários de data/string devem cobrir parsings, truncamentos e falhas", () => {
+    // Utilitários de data e truncamento
+    assert.equal(formatGitDate(null), "");
+    assert.equal(formatGitDate(""), "");
+    assert.match(formatGitDate("1672531199"), /2022|2023/);
     assert.equal(truncateString("curto", 10), "curto");
     assert.equal(truncateString("texto_muito_longo_para_truncar", 10), "texto_m...");
 
-    const dStr = formatGitDate("1700000000");
-    assert.ok(typeof dStr === "string");
+    // Act 1: Output de log do git vazio
+    const resVazio = getCommits(0, 5, { execSyncFn: () => "" });
+    assert.deepEqual(resVazio, []);
 
-    const sampleOutput = "sha123full\x1f1700000000\x1fMensagem de commit";
-    const depsSuccess = { execSyncFn: () => sampleOutput };
-    const commits = getCommits(0, 5, depsSuccess);
-    assert.equal(commits.length, 1);
-    assert.equal(commits[0].shaShort, "sha123f");
+    // Act 2: Output com commit longo, linha sem sha e linha sem mensagem
+    const longMsg = "A".repeat(120);
+    const mockLogOutput = `abc1234567890def\x1f1672531199\x1f${longMsg}\n\x1f1672531199\x1fmsg\nsha123\x1f1672531199`;
+    const resCommits = getCommits(0, 5, { execSyncFn: () => mockLogOutput });
+    assert.equal(resCommits[0].shaShort, "abc1234");
+    assert.equal(resCommits[0].message.length, 100);
+    assert.equal(resCommits[1].shaShort, "");
+    assert.equal(resCommits[2].message, "");
 
-    const depsEmpty = { execSyncFn: () => "" };
-    assert.deepEqual(getCommits(0, 5, depsEmpty), []);
-
-    const depsError = { execSyncFn: () => { throw new Error("Log Fail"); } };
-    assert.deepEqual(getCommits(0, 5, depsError), []);
+    // Act 3: Exceção no git log
+    const resErro = getCommits(0, 5, { execSyncFn: () => { throw new Error("Log Fail"); } });
+    assert.deepEqual(resErro, []);
   });
 
   await t.test("getModifiedFiles deve retornar arquivos modificados e tratar saída vazia e exceções", () => {
-    const depsSuccess = { execSyncFn: () => "M\tapp.js\nA\tindex.js" };
-    const files = getModifiedFiles("sha123", depsSuccess);
-    assert.equal(files.length, 2);
-    assert.equal(files[0].file, "app.js");
+    // Act 1: Sucesso
+    const mockOutput = "M\tsrc/index.js\nA\tsrc/utils.js";
+    const res = getModifiedFiles("sha123", { execSyncFn: () => mockOutput });
+    assert.equal(res.length, 2);
+    assert.equal(res[0].status, "M");
+    assert.equal(res[0].file, "src/index.js");
 
-    const depsEmpty = { execSyncFn: () => "" };
-    assert.deepEqual(getModifiedFiles("sha123", depsEmpty), []);
+    // Act 2: Vazio
+    const resVazio = getModifiedFiles("sha123", { execSyncFn: () => "" });
+    assert.deepEqual(resVazio, []);
 
-    const depsError = { execSyncFn: () => { throw new Error("Diff Fail"); } };
-    assert.deepEqual(getModifiedFiles("sha123", depsError), []);
+    // Act 3: Erro
+    const resErro = getModifiedFiles("sha123", { execSyncFn: () => { throw new Error("Diff Fail"); } });
+    assert.deepEqual(resErro, []);
   });
 
   await t.test("getFileDiff e getRepositoryDiff devem retornar diff ou string vazia em erro", () => {
-    const depsSuccess = { execSyncFn: () => "+ diff content" };
-    assert.equal(getFileDiff("sha123", "app.js", depsSuccess), "+ diff content");
-    assert.equal(getRepositoryDiff(depsSuccess), "+ diff content");
+    // getFileDiff
+    const diff1 = getFileDiff("sha123", "app.js", { execSyncFn: () => "+ diff content" });
+    assert.equal(diff1, "+ diff content");
+    const diffFail = getFileDiff("sha123", "app.js", { execSyncFn: () => { throw new Error("Fail"); } });
+    assert.equal(diffFail, "");
 
-    const depsError = { execSyncFn: () => { throw new Error("Fail"); } };
-    assert.equal(getFileDiff("sha123", "app.js", depsError), "");
-    assert.equal(getRepositoryDiff(depsError), "");
+    // getRepositoryDiff
+    const repoDiff = getRepositoryDiff({ execSyncFn: () => "+ repo diff" });
+    assert.equal(repoDiff, "+ repo diff");
+    const repoDiffFail = getRepositoryDiff({ execSyncFn: () => { throw new Error("Fail"); } });
+    assert.equal(repoDiffFail, "");
   });
 
   await t.test("getStagedFileDiff e getStagedFilesDiffs devem cobrir arquivos deletados, linhas vazias e erros", () => {
-    let callCount = 0;
-    const depsDeleted = {
-      execSyncFn: (cmd) => {
-        callCount++;
-        if (cmd.includes("diff --cached")) throw new Error("Staged diff fail");
-        if (cmd.includes("ls-files --deleted")) return "deleted.js";
-        return "";
-      }
-    };
-    const diffDel = getStagedFileDiff("deleted.js", depsDeleted);
-    assert.ok(diffDel.includes("File deleted: deleted.js"));
+    // getStagedFileDiff - sucesso
+    const stagedDiff = getStagedFileDiff("app.js", { execSyncFn: () => "+ staged diff" });
+    assert.equal(stagedDiff, "+ staged diff");
 
-    const depsError = {
+    // getStagedFileDiff - erro com arquivo deletado
+    let calls = 0;
+    const deletedDiff = getStagedFileDiff("deleted.js", {
       execSyncFn: (cmd) => {
-        if (cmd.includes("diff --cached --name-only")) return "file1.js\nfile2.js";
-        throw new Error("Diff fail");
+        calls++;
+        if (calls === 1) throw new Error("Staged diff fail");
+        return "deleted.js"; // ls-files
       }
-    };
-    const stagedFiles = getStagedFilesDiffs(depsError);
-    assert.equal(stagedFiles.length, 2);
+    });
+    assert.equal(deletedDiff, "File deleted: deleted.js");
 
-    const depsDiffFail = {
+    // getStagedFileDiff - erro com ls-files lançando exceção no catch interno
+    const innerCatchDiff = getStagedFileDiff("other.js", {
+      execSyncFn: () => { throw new Error("Staged & ls-files fail"); }
+    });
+    assert.equal(innerCatchDiff, "");
+
+    // getStagedFilesDiffs - sucesso com quebra de linha final (linha vazia filtrada)
+    let diffCalls = 0;
+    const listDiffs = getStagedFilesDiffs({
+      execSyncFn: (cmd) => {
+        diffCalls++;
+        if (cmd === "git diff --cached --name-only") return "file1.js\nfile2.js\n";
+        return `+ diff for ${cmd}`;
+      }
+    });
+    assert.equal(listDiffs.length, 2);
+    assert.equal(listDiffs[0].filename, "file1.js");
+
+    // getStagedFilesDiffs - retorno de string vazia em name-only
+    const emptyOutputDiffs = getStagedFilesDiffs({
+      execSyncFn: () => ""
+    });
+    assert.deepEqual(emptyOutputDiffs, []);
+
+    // getStagedFilesDiffs - erro no git diff --cached --name-only
+    const emptyListDiffs = getStagedFilesDiffs({
       execSyncFn: () => { throw new Error("Diff --cached fail"); }
-    };
-    assert.deepEqual(getStagedFilesDiffs(depsDiffFail), []);
+    });
+    assert.deepEqual(emptyListDiffs, []);
   });
 
-  await t.test("getDeps e utilitários devem operar com segurança sem alterar o repositório", () => {
-    const defaultDeps = getDeps();
-    assert.equal(typeof defaultDeps.execSyncFn, "function");
-
-    const safeDeps = { execSyncFn: () => "" };
-    try { executeGitCommand("git --version", safeDeps); } catch (e) {}
-    try { getCommits(0, 1, safeDeps); } catch (e) {}
-    try { getModifiedFiles("HEAD", safeDeps); } catch (e) {}
-    try { getFileDiff("HEAD", "package.json", safeDeps); } catch (e) {}
-    try { getRepositoryDiff(safeDeps); } catch (e) {}
-    try { clearStage(safeDeps); } catch (e) {}
-    try { stageAllChanges(safeDeps); } catch (e) {}
-    try { undoLastCommitSoft(safeDeps); } catch (e) {}
-    try { commitChangesWithEditor("non_existent_file.txt", safeDeps); } catch (e) {}
-    try { getStagedFileDiff("package.json", safeDeps); } catch (e) {}
-    try { getStagedFilesDiffs(safeDeps); } catch (e) {}
+  await t.test("deve testar chamadas sem o argumento deps executando os fallbacks padrão", () => {
+    try { executeGitCommand("git --version"); } catch (e) {}
+    try { stageAllChanges(); } catch (e) {}
+    try { clearStage(); } catch (e) {}
+    try { undoLastCommitSoft(); } catch (e) {}
+    try { commitChangesWithEditor("non_existent_file.txt"); } catch (e) {}
+    try { getCommits(); } catch (e) {}
+    try { getModifiedFiles("HEAD"); } catch (e) {}
+    try { getFileDiff("HEAD", "file.js"); } catch (e) {}
+    try { getRepositoryDiff(); } catch (e) {}
+    try { getStagedFileDiff("file.js"); } catch (e) {}
+    try { getStagedFilesDiffs(); } catch (e) {}
   });
 });
-

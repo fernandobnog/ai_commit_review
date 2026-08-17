@@ -57,7 +57,7 @@ O módulo `src/configManager.js` é o gerenciador central de configurações da 
 - **Descrição**: Caso `OPENAI_API_BASEURL` e `OPENAI_API_MODEL` não estejam definidos, verifica se há um servidor local ativo via `configBaseUrlLocal()`.
 - **Configurações Locais Padrão**:
   - `OPENAI_API_BASEURL`: `"http://127.0.0.1:1234/v1"`
-  - `OPENAI_API_MODEL`: `OpenAIModels.DEEPSEEK_LOCAL`
+  - `OPENAI_API_MODEL`: `OpenAIModels.OSS_20B_LOCAL`
   - `OPENAI_API_KEY`: `"local"`
 
 ### `updateValidApiKey()`

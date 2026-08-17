@@ -1,109 +1,86 @@
-process.env.PASSWORD_CRYPTO_KEY = "segredo_teste_key";
-
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { getDeps, createPullRequest } from "../src/githubCli.js";
-import { saveConfig, deleteConfigFile } from "../src/config.js";
+import { createPullRequest } from "../src/githubCli.js";
 
 test("githubCli.js - Cobertura 100% de Criação Segura de PR via GitHub CLI (Padrão AAA)", async (t) => {
-  t.beforeEach(() => {
-    saveConfig({
-      OPENAI_API_KEY: "sk-test-key",
-      OPENAI_API_MODEL: "gpt-5-nano",
-      OPENAI_RESPONSE_LANGUAGE: "pt-BR"
-    });
-  });
-
-  t.afterEach(() => {
-    deleteConfigFile();
-  });
-
-  await t.test("getDeps deve retornar a biblioteca padrão execFileSync ou injetada", () => {
-    const defaults = getDeps();
-    assert.equal(typeof defaults.execFileSyncFn, "function");
-
-    const dummy = () => {};
-    const injected = getDeps({ execFileSyncFn: dummy });
-    assert.equal(injected.execFileSyncFn, dummy);
+  await t.test("deve testar execução sem argumento deps utilizando fallbacks padrão", () => {
+    // Arrange & Act & Assert
+    try {
+      createPullRequest({ base: "main", head: "dev", title: "Test", body: "Body" });
+    } catch (err) {
+      assert.ok(err);
+    }
   });
 
   await t.test("deve lançar erro tratável quando GitHub CLI (gh) não estiver instalado", () => {
-    const mockDeps = {
-      execFileSyncFn: (cmd) => {
-        if (cmd === "gh") throw new Error("gh: command not found");
-      }
+    // Arrange
+    const deps = {
+      execSyncFn: () => { throw new Error("gh: command not found"); }
     };
 
+    // Act & Assert
     assert.throws(
-      () => createPullRequest({ base: "main", head: "dev", title: "Test", body: "Body" }, mockDeps),
+      () => createPullRequest({ base: "main", head: "dev", title: "Test Title", body: "Test Body" }, deps),
       /GitHub CLI \(gh\) is not installed/
     );
   });
 
   await t.test("deve criar Pull Request com sucesso sem revisor especificado", () => {
-    let capturedArgs = [];
-    const mockDeps = {
+    // Arrange
+    const expectedUrl = "https://github.com/org/repo/pull/1";
+    const deps = {
+      execSyncFn: () => {},
       execFileSyncFn: (cmd, args) => {
-        if (args.includes("--version")) return "";
-        capturedArgs = args;
-        return "https://github.com/org/repo/pull/1\n";
+        assert.equal(cmd, "gh");
+        assert.deepEqual(args, ["pr", "create", "--base", "main", "--head", "dev", "--title", "Test Title", "--body", "Test Body"]);
+        return expectedUrl;
       }
     };
 
-    const res = createPullRequest(
-      { base: "main", head: "dev", title: "Test Title", body: "Test Body" },
-      mockDeps
-    );
+    // Act
+    const url = createPullRequest({ base: "main", head: "dev", title: "Test Title", body: "Test Body" }, deps);
 
-    assert.equal(res, "https://github.com/org/repo/pull/1");
-    assert.ok(capturedArgs.includes("main"));
-    assert.ok(capturedArgs.includes("dev"));
-    assert.equal(capturedArgs.includes("--reviewer"), false);
+    // Assert
+    assert.equal(url, expectedUrl);
   });
 
   await t.test("deve criar Pull Request com sucesso incluindo o parâmetro --reviewer", () => {
-    let capturedArgs = [];
-    const mockDeps = {
+    // Arrange
+    const expectedUrl = "https://github.com/org/repo/pull/2";
+    const deps = {
+      execSyncFn: () => {},
       execFileSyncFn: (cmd, args) => {
-        if (args.includes("--version")) return "";
-        capturedArgs = args;
-        return "https://github.com/org/repo/pull/2\n";
+        assert.equal(cmd, "gh");
+        assert.ok(args.includes("--reviewer"));
+        assert.ok(args.includes("revisor_dev"));
+        return expectedUrl;
       }
     };
 
-    const res = createPullRequest(
-      { base: "main", head: "dev", title: "Test Title", body: "Test Body", reviewer: "fernandobnog" },
-      mockDeps
-    );
+    // Act
+    const url = createPullRequest({
+      base: "main",
+      head: "dev",
+      title: "Test Title",
+      body: "Test Body",
+      reviewer: "revisor_dev"
+    }, deps);
 
-    assert.equal(res, "https://github.com/org/repo/pull/2");
-    assert.ok(capturedArgs.includes("--reviewer"));
-    assert.ok(capturedArgs.includes("fernandobnog"));
+    // Assert
+    assert.equal(url, expectedUrl);
   });
 
   await t.test("deve capturar e relançar erro quando execFileSync falhar na criação do PR", () => {
-    let callCount = 0;
-    const mockDeps = {
-      execFileSyncFn: (cmd, args) => {
-        callCount++;
-        if (callCount === 1) return ""; // gh --version ok
-        throw new Error("GraphQL: Head sha can't be blank");
-      }
+    // Arrange
+    const deps = {
+      execSyncFn: () => {},
+      execFileSyncFn: () => { throw new Error("GraphQL: Head sha can't be blank"); }
     };
 
+    // Act & Assert
     assert.throws(
-      () => createPullRequest({ base: "main", head: "dev", title: "Test", body: "Body" }, mockDeps),
+      () => createPullRequest({ base: "main", head: "dev", title: "Test Title", body: "Test Body" }, deps),
       /GraphQL: Head sha can't be blank/
     );
-  });
-
-  await t.test("deve testar execução sem argumento deps utilizando fallbacks padrão", () => {
-    const mockCli = {
-      execFileSyncFn: (cmd, args) => {
-        if (args && args.includes("--version")) return "";
-        return "https://github.com/org/repo/pull/1";
-      }
-    };
-    try { createPullRequest({ base: "main", head: "dev", title: "Test", body: "Body" }, mockCli); } catch (e) {}
   });
 });

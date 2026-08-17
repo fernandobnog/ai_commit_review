@@ -6,12 +6,23 @@ import {
   pullChanges,
   pushChanges
 } from "./gitUtils.js";
-
 import chalk from "chalk";
 import inquirer from "inquirer";
 
-async function verificaBranch() {
-  const { branch } = await inquirer.prompt([
+export function getDeps(deps = {}) {
+  return {
+    createPullRequestFn: deps.createPullRequestFn || createPullRequest,
+    mergeBranchFn: deps.mergeBranchFn || mergeBranch,
+    executeGitCommandFn: deps.executeGitCommandFn || executeGitCommand,
+    pullChangesFn: deps.pullChangesFn || pullChanges,
+    pushChangesFn: deps.pushChangesFn || pushChanges,
+    promptFn: deps.promptFn || inquirer.prompt,
+  };
+}
+
+export async function verificaBranch(deps = {}) {
+  const d = getDeps(deps);
+  const { branch } = await d.promptFn([
     {
       type: "input",
       name: "branch",
@@ -22,92 +33,110 @@ async function verificaBranch() {
   return branch;
 }
 
-export async function updateServerToProduction() {
+export function ensureBranch(targetBranch, deps = {}) {
+  const d = getDeps(deps);
+  const currentBranch = d.executeGitCommandFn("git rev-parse --abbrev-ref HEAD");
+  if (currentBranch !== targetBranch) {
+    console.log(chalk.blue(`ℹ️ Switching to branch ${targetBranch}...`));
+    d.executeGitCommandFn("git checkout " + targetBranch);
+  } else {
+    console.log(chalk.blue(`ℹ️ Already on branch ${targetBranch}.`));
+  }
+}
 
+export function checkUncommittedChanges(deps = {}) {
+  const d = getDeps(deps);
+  console.log(chalk.blue("ℹ️ Checking uncommitted changes..."));
+  const status = d.executeGitCommandFn("git status --porcelain");
+  if (status) {
+    console.error(
+      chalk.red(
+        "❌ There are uncommitted changes in the branch. Please commit the changes and run new tests before putting into production."
+      )
+    );
+    throw new Error("Uncommitted changes in branch.");
+  }
+}
+
+export async function confirmProductionDeploy(deps = {}) {
+  const d = getDeps(deps);
+  const { confirm } = await d.promptFn([
+    {
+      type: "confirm",
+      name: "confirm",
+      message: 'Is the "teste" branch working correctly?',
+      default: true
+    }
+  ]);
+
+  if (!confirm) {
+    throw new Error('The "teste" branch is not working correctly. Fix it and try again.');
+  }
+
+  const { deployConfirm } = await d.promptFn([
+    {
+      type: "confirm",
+      name: "deployConfirm",
+      message: "The 'teste' branch is working correctly. Do you want to put it into production?",
+      default: true
+    }
+  ]);
+
+  if (!deployConfirm) {
+    console.log(chalk.yellow("Operation cancelled by user."));
+    return false;
+  }
+
+  const { finalDeploy } = await d.promptFn([
+    {
+      type: "confirm",
+      name: "finalDeploy",
+      message: "Are you sure? This action cannot be undone.",
+      default: false
+    }
+  ]);
+
+  if (!finalDeploy) {
+    console.log(chalk.yellow("Operation cancelled by user."));
+    return false;
+  }
+
+  return true;
+}
+
+export async function updateServerToProduction(deps = {}) {
   const branchOrigem = 'teste';
   const branchPR = 'master';
   const branchDestino = 'develop';
   const revisor = 'fernandobnog';
+  const d = getDeps(deps);
 
   try {
-    const currentBranch = executeGitCommand("git rev-parse --abbrev-ref HEAD");
-    if (currentBranch !== branchOrigem) {
-      console.log(chalk.blue(`ℹ️  Switching to branch ${branchOrigem}...`));
-      executeGitCommand("git checkout " + branchOrigem);
-    } else {
-      console.log(chalk.blue(`ℹ️  Already on branch ${branchOrigem}.`));
-    }
-    pullChanges();
+    ensureBranch(branchOrigem, deps);
+    d.pullChangesFn();
+    checkUncommittedChanges(deps);
 
-    console.log(chalk.blue("ℹ️  Checking uncommitted changes..."));
-    const status = executeGitCommand("git status --porcelain");
-    if (status) {
-      console.error(
-        chalk.red(
-          "❌ There are uncommitted changes in the branch. Please commit the changes and run new tests before putting into production."
-        )
-      );
-      process.exit(1);
+    const shouldDeploy = await confirmProductionDeploy(deps);
+    if (!shouldDeploy) {
+      return;
     }
-    const { confirm } = await inquirer.prompt([
-      {
-        type: "confirm",
-        name: "confirm",
-        message: 'Is the "teste" branch working correctly?',
-        default: true
-      }
-    ]);
-    if (!confirm) {
-      throw new Error('The "teste" branch is not working correctly. Fix it and try again.');
-    }
-    const { deployConfirm } = await inquirer.prompt([
-      {
-        type: "confirm",
-        name: "deployConfirm",
-        message: "The 'teste' branch is working correctly. Do you want to put it into production?",
-        default: true
-      }
-    ]);
 
-    if (deployConfirm) {
-      const { finalDeploy } = await inquirer.prompt([
-        {
-          type: "confirm",
-          name: "finalDeploy",
-          message: "Are you sure? This action cannot be undone.",
-          default: false
-        }
-      ]);
-      if (!finalDeploy) {
-        console.log(chalk.yellow("Operation cancelled by user."));
-        return;
-      }
-    }
-    if (!deployConfirm) {
-      console.log(chalk.yellow("Operation cancelled by user."));
-      process.exit(0);
-    }
-    console.log(chalk.blue(`ℹ️  Merging branch ${branchOrigem}...`));
-    await mergeBranch(branchOrigem, branchDestino);
-    console.log(chalk.blue(`ℹ️  Creating pull request from ${branchOrigem} to '${branchPR}'...`));
-    createPullRequest({
+    console.log(chalk.blue(`ℹ️ Merging branch ${branchOrigem}...`));
+    await d.mergeBranchFn(branchOrigem, branchDestino);
+
+    console.log(chalk.blue(`ℹ️ Creating pull request from ${branchOrigem} to '${branchPR}'...`));
+    d.createPullRequestFn({
       base: branchPR,
       head: branchOrigem,
       title: `Merge from ${branchOrigem} to ${branchPR}`,
       body: `Update Production Server: This pull request was automatically created to merge the '${branchOrigem}' branch into the ${branchPR} branch.`,
       reviewer: revisor
     });
-    console.log(chalk.green("ℹ️  Pull request created successfully!"));
-    console.log(chalk.yellow("⚠️  Warning: DO NOT approve the pull request. Wait for Fernando to review the request."));
+    console.log(chalk.green("ℹ️ Pull request created successfully!"));
+    console.log(chalk.yellow("⚠️ Warning: DO NOT approve the pull request. Wait for Fernando to review the request."));
 
-    const currentBranch2 = executeGitCommand("git rev-parse --abbrev-ref HEAD");
-    if (currentBranch2 !== branchDestino) {
-      console.log(chalk.blue(`ℹ️  Switching to branch ${branchDestino}...`));
-      executeGitCommand("git checkout " + branchDestino);
-    } else {
-      console.log(chalk.blue(`ℹ️  Already on branch ${branchDestino}.`));
-    }
-    pushChanges();
+    ensureBranch(branchDestino, deps);
+    d.pushChangesFn();
   } catch (error) {
     console.error(chalk.red("❌ Error in pull request and merge flow:"), error.message);
     throw error;

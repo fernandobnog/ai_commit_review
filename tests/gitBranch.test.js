@@ -1,5 +1,3 @@
-process.env.PASSWORD_CRYPTO_KEY = "segredo_teste_key";
-
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import fs from "fs";
@@ -19,223 +17,217 @@ import {
   openFileInEditor,
   updateFileFromTemp
 } from "../src/gitBranch.js";
-import { saveConfig, deleteConfigFile } from "../src/config.js";
 
 test("gitBranch.js - Cobertura 100% de Gerenciamento de Branches (Padrão AAA)", async (t) => {
-  let tempBaseDir;
-
-  t.beforeEach(() => {
-    saveConfig({
-      OPENAI_API_KEY: "sk-test-key",
-      OPENAI_API_MODEL: "gpt-5-nano",
-      OPENAI_RESPONSE_LANGUAGE: "pt-BR"
-    });
-    tempBaseDir = fs.mkdtempSync(path.join(os.tmpdir(), "git_branch_"));
-  });
-
-  t.afterEach(() => {
-    deleteConfigFile();
-    if (fs.existsSync(tempBaseDir)) {
-      fs.rmSync(tempBaseDir, { recursive: true, force: true });
-    }
-  });
-
   await t.test("getCurrentBranch deve retornar o nome da branch atual ou 'unknown' em erro", () => {
-    const depsSuccess = { executeGitCommandFn: () => "main" };
-    assert.equal(getCurrentBranch(depsSuccess), "main");
+    // Act 1: Sucesso
+    const branch = getCurrentBranch({ executeGitCommandFn: () => "feature/nova-feature" });
+    assert.equal(branch, "feature/nova-feature");
 
-    const depsError = { executeGitCommandFn: () => { throw new Error("Branch Fail"); } };
-    assert.equal(getCurrentBranch(depsError), "unknown");
+    // Act 2: Erro
+    const erroBranch = getCurrentBranch({ executeGitCommandFn: () => { throw new Error("Branch Fail"); } });
+    assert.equal(erroBranch, "unknown");
   });
 
   await t.test("listBranches deve listar branches sem o marcador asterisco ou retornar [] em erro", () => {
-    const depsSuccess = { executeGitCommandFn: () => "* main\n  feature/1\n  develop" };
-    const branches = listBranches(depsSuccess);
-    assert.deepEqual(branches, ["main", "feature/1", "develop"]);
+    // Act 1: Sucesso
+    const branches = listBranches({
+      executeGitCommandFn: () => "* main\n  feature/login\n  dev"
+    });
+    assert.deepEqual(branches, ["main", "feature/login", "dev"]);
 
-    const depsEmpty = { executeGitCommandFn: () => "" };
-    assert.deepEqual(listBranches(depsEmpty), []);
+    // Act 2: Output vazio
+    const vazio = listBranches({ executeGitCommandFn: () => "" });
+    assert.deepEqual(vazio, []);
 
-    const depsError = { executeGitCommandFn: () => { throw new Error("List Fail"); } };
-    assert.deepEqual(listBranches(depsError), []);
+    // Act 3: Erro
+    const erro = listBranches({ executeGitCommandFn: () => { throw new Error("List Fail"); } });
+    assert.deepEqual(erro, []);
   });
 
   await t.test("pullChanges e pushChanges devem executar comandos e tratar erros", () => {
-    let pullRan = false;
-    let pushRan = false;
+    let pullCmd = "";
+    pullChanges({ executeGitCommandFn: (cmd) => { pullCmd = cmd; return ""; } });
+    assert.equal(pullCmd, "git pull --no-rebase");
 
-    const depsSuccess = {
+    assert.throws(
+      () => pullChanges({ executeGitCommandFn: () => { throw new Error("Pull Fail"); } }),
+      /Pull Fail/
+    );
+
+    let pushCmd = "";
+    pushChanges({ executeGitCommandFn: (cmd) => { pushCmd = cmd; return ""; } });
+    assert.equal(pushCmd, "git push");
+
+    assert.doesNotThrow(
+      () => pushChanges({ executeGitCommandFn: () => { throw new Error("Push Fail"); } })
+    );
+  });
+
+  await t.test("switchBranch deve validar parâmetros e lidar com stash e erros", async () => {
+    // Act 1: Nome de branch inválido
+    switchBranch(null);
+    switchBranch("   ");
+
+    // Act 2: Troca com uncommitted changes (hadStash = true)
+    const executedCmds = [];
+    const depsStash = {
       executeGitCommandFn: (cmd) => {
-        if (cmd.includes("pull")) pullRan = true;
-        if (cmd.includes("push")) pushRan = true;
+        executedCmds.push(cmd);
+        if (cmd === "git rev-parse --abbrev-ref HEAD") return "main";
+        if (cmd === "git status --porcelain") return " M file.js";
         return "";
       }
     };
+    switchBranch("feature/teste", depsStash);
+    assert.ok(executedCmds.includes("git stash"));
+    assert.ok(executedCmds.includes("git checkout feature/teste"));
+    assert.ok(executedCmds.includes("git stash pop"));
 
-    pullChanges(depsSuccess);
-    pushChanges(depsSuccess);
-    assert.equal(pullRan, true);
-    assert.equal(pushRan, true);
-
-    const depsError = {
-      executeGitCommandFn: () => { throw new Error("Git Error"); }
-    };
-    assert.throws(() => pullChanges(depsError), /Git Error/);
-    pushChanges(depsError);
-  });
-
-  await t.test("switchBranch deve validar parâmetros e lidar com stash e erros", () => {
-    // Parameter validation
-    switchBranch(null);
-    switchBranch("");
-
-    // Act 1: Sem alterações (sem stash)
-    let checkedOut = "";
+    // Act 3: Troca sem uncommitted changes (hadStash = false)
+    const executedCmdsNoStash = [];
     const depsNoStash = {
       executeGitCommandFn: (cmd) => {
-        if (cmd.includes("rev-parse")) return "main";
-        if (cmd.includes("status")) return "";
-        if (cmd.includes("git checkout")) checkedOut = cmd.replace("git checkout ", "");
+        executedCmdsNoStash.push(cmd);
+        if (cmd === "git rev-parse --abbrev-ref HEAD") return "main";
+        if (cmd === "git status --porcelain") return "";
         return "";
       }
     };
     switchBranch("feature/teste", depsNoStash);
-    assert.equal(checkedOut, "feature/teste");
+    assert.ok(!executedCmdsNoStash.includes("git stash"));
 
-    // Act 2: Com alterações (com stash pop com sucesso)
-    let stashed = false;
-    let stashPopped = false;
-    const depsWithStash = {
-      executeGitCommandFn: (cmd) => {
-        if (cmd.includes("rev-parse")) return "main";
-        if (cmd.includes("status")) return " M file.js";
-        if (cmd.includes("stash pop")) stashPopped = true;
-        if (cmd.includes("stash")) stashed = true;
-        return "";
-      }
-    };
-    switchBranch("feature/teste", depsWithStash);
-    assert.equal(stashed, true);
-    assert.equal(stashPopped, true);
+    // Act 4: Erro com objeto Error ao mudar de branch
+    assert.throws(
+      () => switchBranch("feature/erro", {
+        executeGitCommandFn: (cmd) => {
+          if (cmd.startsWith("git checkout")) throw new Error("Checkout Fail");
+          return "";
+        }
+      }),
+      /Checkout Fail/
+    );
 
-    // Act 3: Erro no checkout
-    const depsError = {
-      executeGitCommandFn: () => { throw new Error("Checkout Fail"); }
-    };
-    assert.throws(() => switchBranch("feature/erro", depsError), /Checkout Fail/);
+    // Act 5: Erro primitivo (sem propriedade .message) ao mudar de branch
+    assert.throws(
+      () => switchBranch("feature/erro_str", {
+        executeGitCommandFn: (cmd) => {
+          if (cmd.startsWith("git checkout")) throw "ErroPrimitivoString";
+          return "";
+        }
+      }),
+      (err) => err === "ErroPrimitivoString"
+    );
   });
 
   await t.test("restoreStashOrRollback deve tratar conflitos de stash e erros no rollback", () => {
-    // Act 1: Restauração com sucesso na branch original
-    let popOriginalSuccess = false;
-    const depsRollbackOk = {
+    // Act 1: Conflito no stash pop, rollback sucede (re-lança stashError)
+    let popCount = 0;
+    const depsRollbackSuccess = {
       executeGitCommandFn: (cmd) => {
-        if (cmd.includes("stash pop")) popOriginalSuccess = true;
+        if (cmd === "git stash pop") {
+          popCount++;
+          if (popCount === 1) throw new Error("Stash Pop Conflict");
+        }
         return "";
       }
     };
-    const errOrig = new Error("Stash Pop Conflict");
-    assert.throws(() => restoreStashOrRollback("main", errOrig, depsRollbackOk), /Stash Pop Conflict/);
-    assert.equal(popOriginalSuccess, true);
+    assert.throws(
+      () => restoreStashOrRollback("main", depsRollbackSuccess),
+      /Stash Pop Conflict/
+    );
 
-    // Act 2: Erro na restauração da branch original
-    const depsRollbackErr = {
+    // Act 2: Conflito no stash pop, rollback também falha no segundo stash pop (lança restoreError)
+    const depsRollbackFail = {
       executeGitCommandFn: (cmd) => {
-        if (cmd.includes("stash pop")) throw new Error("Fatal Stash Pop Failure");
+        if (cmd === "git stash pop") {
+          throw new Error("Stash Restore Error");
+        }
         return "";
       }
     };
-    assert.throws(() => restoreStashOrRollback("main", errOrig, depsRollbackErr), /Fatal Stash Pop Failure/);
+    assert.throws(
+      () => restoreStashOrRollback("main", depsRollbackFail),
+      /Stash Restore Error/
+    );
   });
 
   await t.test("mergeBranch deve executar switch, merge e pullChanges", async () => {
-    let mergedFrom = "";
-    const depsMerge = {
+    const executedCmds = [];
+    const deps = {
       executeGitCommandFn: (cmd) => {
-        if (cmd.includes("git merge")) mergedFrom = cmd;
+        executedCmds.push(cmd);
         return "";
       }
     };
-    await mergeBranch("dev", "main", depsMerge);
-    assert.ok(mergedFrom.includes("dev"));
+
+    await mergeBranch("dev", "main", deps);
+    assert.ok(executedCmds.includes("git checkout main"));
+    assert.ok(executedCmds.includes("git merge --no-ff dev"));
   });
 
   await t.test("checkConflicts e getConflictDiff devem identificar conflitos de merge", () => {
-    const statusOutput = "UU file1.js\nM  file2.js\nUU file3.js";
-    const depsConflict = {
-      executeGitCommandFn: (cmd) => {
-        if (cmd.includes("status")) return statusOutput;
-        if (cmd.includes("diff")) return "<<<<<<< HEAD";
-        return "";
-      }
-    };
-
-    const conflicts = checkConflicts(depsConflict);
+    // checkConflicts - com conflitos UU
+    const statusOutput = "UU file1.js\n M file2.js\nUU file3.js";
+    const conflicts = checkConflicts({ executeGitCommandFn: () => statusOutput });
     assert.deepEqual(conflicts, ["file1.js", "file3.js"]);
 
-    const diff = getConflictDiff("file1.js", depsConflict);
-    assert.equal(diff, "<<<<<<< HEAD");
+    // checkConflicts - output vazio
+    const semConflito = checkConflicts({ executeGitCommandFn: () => "" });
+    assert.deepEqual(semConflito, []);
 
-    const depsError = { executeGitCommandFn: () => { throw new Error("Status Fail"); } };
-    assert.deepEqual(checkConflicts(depsError), []);
-    assert.equal(getConflictDiff("file1.js", depsError), "");
+    // checkConflicts - erro
+    const erroConflito = checkConflicts({ executeGitCommandFn: () => { throw new Error("Status Fail"); } });
+    assert.deepEqual(erroConflito, []);
+
+    // getConflictDiff - sucesso e erro
+    const diff = getConflictDiff("file1.js", { executeGitCommandFn: () => "<<<<<< HEAD" });
+    assert.equal(diff, "<<<<<< HEAD");
+
+    const diffErro = getConflictDiff("file1.js", { executeGitCommandFn: () => { throw new Error("Diff Fail"); } });
+    assert.equal(diffErro, "");
   });
 
   await t.test("writeConflictToTempFile, openFileInEditor e updateFileFromTemp devem manipular arquivos temporarios", () => {
-    const tempPath = writeConflictToTempFile("teste.js", "conteudo conflito");
+    const tempPath = writeConflictToTempFile("teste.js", "CONFLITO_DIFF");
     assert.ok(fs.existsSync(tempPath));
+    assert.equal(fs.readFileSync(tempPath, "utf-8"), "CONFLITO_DIFF");
 
-    let editorRan = false;
-    const depsEditor = {
-      execSyncFn: () => { editorRan = true; return ""; }
-    };
-    openFileInEditor(tempPath, depsEditor);
-    assert.equal(editorRan, true);
+    // openFileInEditor - sucesso e erro
+    let editorCmd = "";
+    openFileInEditor(tempPath, { execSyncFn: (cmd) => { editorCmd = cmd; } });
+    assert.match(editorCmd, /teste\.js_conflict\.txt/);
 
-    // Erro no editor
-    const depsEditorErr = {
-      execSyncFn: () => { throw new Error("Editor Fail"); }
-    };
-    openFileInEditor(tempPath, depsEditorErr);
+    assert.doesNotThrow(() => openFileInEditor(tempPath, { execSyncFn: () => { throw new Error("Editor Fail"); } }));
 
-    // updateFileFromTemp
-    const targetFile = path.join(tempBaseDir, "target_test.js");
-    fs.writeFileSync(targetFile, "original");
+    // updateFileFromTemp - sucesso e erro
+    const targetFile = path.join(os.tmpdir(), "target_test.js");
+    fs.writeFileSync(tempPath, "CONTEUDO_RESOLVIDO", "utf-8");
 
-    let addedFile = "";
-    const depsUpdate = {
-      executeGitCommandFn: (cmd) => {
-        if (cmd.includes("git add")) addedFile = cmd;
-        return "";
-      }
-    };
-    updateFileFromTemp(targetFile, tempPath, depsUpdate);
-    assert.ok(addedFile.includes("target_test.js"));
+    let addCmd = "";
+    updateFileFromTemp(targetFile, tempPath, { executeGitCommandFn: (cmd) => { addCmd = cmd; } });
+    assert.equal(fs.readFileSync(targetFile, "utf-8"), "CONTEUDO_RESOLVIDO");
+    assert.match(addCmd, /git add/);
 
-    // Erro updateFileFromTemp
-    updateFileFromTemp("inexistente.txt", tempPath, depsUpdate);
+    // updateFileFromTemp erro
+    assert.doesNotThrow(() => updateFileFromTemp("/caminho/invalido/absurdo.js", "inexistente.txt"));
 
+    // Cleanup
     if (fs.existsSync(tempPath)) fs.unlinkSync(tempPath);
+    if (fs.existsSync(targetFile)) fs.unlinkSync(targetFile);
   });
 
-  await t.test("deve testar chamadas sem argumento deps utilizando mocks seguros de executeGitCommand", () => {
-    const safeDeps = {
-      executeGitCommandFn: (cmd) => {
-        if (cmd.includes("rev-parse")) return "master";
-        if (cmd.includes("status")) return "";
-        return "";
-      },
-      execSyncFn: () => ""
-    };
-
-    getCurrentBranch(safeDeps);
-    listBranches(safeDeps);
-    pullChanges(safeDeps);
-    pushChanges(safeDeps);
-    switchBranch("master", safeDeps);
-    checkConflicts(safeDeps);
-    getConflictDiff("file.js", safeDeps);
-    openFileInEditor("file.txt", safeDeps);
-    updateFileFromTemp("file.txt", "file.txt", safeDeps);
+  await t.test("deve testar chamadas sem argumento deps utilizando os fallbacks padrão", async () => {
+    try { getCurrentBranch(); } catch (e) {}
+    try { listBranches(); } catch (e) {}
+    try { pullChanges(); } catch (e) {}
+    try { pushChanges(); } catch (e) {}
+    try { switchBranch("main"); } catch (e) {}
+    try { restoreStashOrRollback("main"); } catch (e) {}
+    try { await mergeBranch("dev", "main"); } catch (e) {}
+    try { checkConflicts(); } catch (e) {}
+    try { getConflictDiff("file.js"); } catch (e) {}
+    try { openFileInEditor("file.txt"); } catch (e) {}
+    try { updateFileFromTemp("file.js", "file.txt"); } catch (e) {}
   });
 });

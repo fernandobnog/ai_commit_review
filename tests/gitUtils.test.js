@@ -1,41 +1,26 @@
-process.env.PASSWORD_CRYPTO_KEY = "segredo_teste_key";
-
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import * as gitUtils from "../src/gitUtils.js";
-import { saveConfig, deleteConfigFile } from "../src/config.js";
 
 test("gitUtils.js - Validação de Re-exportação do Módulo Fachada (Padrão AAA)", async (t) => {
-  t.beforeEach(() => {
-    saveConfig({
-      OPENAI_API_KEY: "sk-test-key",
-      OPENAI_API_MODEL: "gpt-5-nano",
-      OPENAI_RESPONSE_LANGUAGE: "pt-BR"
-    });
-  });
-
-  t.afterEach(() => {
-    deleteConfigFile();
-  });
-
   await t.test("deve re-exportar todas as funções do gitCore, gitBranch e githubCli", () => {
     const exportedFunctions = [
       "executeGitCommand",
+      "stageAllChanges",
+      "clearStage",
+      "undoLastCommitSoft",
+      "commitChangesWithEditor",
       "getCommits",
       "getModifiedFiles",
       "getFileDiff",
       "getRepositoryDiff",
-      "clearStage",
-      "stageAllChanges",
-      "undoLastCommitSoft",
-      "commitChangesWithEditor",
       "getStagedFileDiff",
       "getStagedFilesDiffs",
       "getCurrentBranch",
       "listBranches",
-      "switchBranch",
       "pullChanges",
       "pushChanges",
+      "switchBranch",
       "mergeBranch",
       "checkConflicts",
       "getConflictDiff",
@@ -46,16 +31,23 @@ test("gitUtils.js - Validação de Re-exportação do Módulo Fachada (Padrão A
     ];
 
     for (const fnName of exportedFunctions) {
-      assert.equal(typeof gitUtils[fnName], "function", `Esperava que gitUtils re-exportasse a função ${fnName}`);
+      assert.equal(typeof gitUtils[fnName], "function", `A função ${fnName} deve ser re-exportada em gitUtils.js`);
     }
   });
 
-  await t.test("funções re-exportadas em gitUtils devem ser executáveis sem exceção", async () => {
-    assert.doesNotThrow(() => {
-      try { gitUtils.listBranches(); } catch (e) {}
-      try { gitUtils.getCurrentBranch(); } catch (e) {}
-      try { gitUtils.checkConflicts(); } catch (e) {}
-      try { gitUtils.getRepositoryDiff(); } catch (e) {}
-    });
+  await t.test("funções re-exportadas em gitUtils devem ser executáveis sem exceção", () => {
+    // Arrange & Act
+    const output = gitUtils.executeGitCommand("git status --short");
+    const branch = gitUtils.getCurrentBranch();
+    const branches = gitUtils.listBranches();
+    const commits = gitUtils.getCommits(0, 1);
+    const diff = gitUtils.getRepositoryDiff();
+
+    // Assert
+    assert.equal(typeof output, "string");
+    assert.equal(typeof branch, "string");
+    assert.ok(Array.isArray(branches));
+    assert.ok(Array.isArray(commits));
+    assert.equal(typeof diff, "string");
   });
 });

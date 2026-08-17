@@ -1,14 +1,16 @@
-// gitUtils.js - Façade Module
+// gitUtils.js
+// Facade module delegating core Git, Branch and GitHub CLI operations to modularized files.
+
 export {
   executeGitCommand,
+  stageAllChanges,
+  clearStage,
+  undoLastCommitSoft,
+  commitChangesWithEditor,
   getCommits,
   getModifiedFiles,
   getFileDiff,
   getRepositoryDiff,
-  clearStage,
-  stageAllChanges,
-  undoLastCommitSoft,
-  commitChangesWithEditor,
   getStagedFileDiff,
   getStagedFilesDiffs,
 } from "./gitCore.js";
@@ -16,9 +18,9 @@ export {
 export {
   getCurrentBranch,
   listBranches,
-  switchBranch,
   pullChanges,
   pushChanges,
+  switchBranch,
   mergeBranch,
   checkConflicts,
   getConflictDiff,
@@ -27,6 +29,4 @@ export {
   updateFileFromTemp,
 } from "./gitBranch.js";
 
-export {
-  createPullRequest,
-} from "./githubCli.js";
+export { createPullRequest } from "./githubCli.js";
