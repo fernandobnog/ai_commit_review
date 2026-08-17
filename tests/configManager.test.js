@@ -11,7 +11,7 @@ import {
   updateConfigFromString
 } from "../src/configManager.js";
 import { saveConfig, deleteConfigFile } from "../src/config.js";
-import { criptografar } from "../src/crypto.js";
+import { criptografar, resetChave } from "../src/crypto.js";
 
 function setupInquirerMock(customAnswers = {}, shouldRejectKey = false) {
   inquirer.prompt = async (questions) => {
@@ -43,6 +43,8 @@ test("configManager.js - Cobertura 100% de Gerenciamento de Configuração (Padr
   const originalPrompt = inquirer.prompt;
 
   t.beforeEach(() => {
+    process.env.PASSWORD_CRYPTO_KEY = "segredo_teste";
+    resetChave();
     setupInquirerMock();
     saveConfig({
       OPENAI_API_KEY: "sk-test-key",
@@ -61,6 +63,7 @@ test("configManager.js - Cobertura 100% de Gerenciamento de Configuração (Padr
     // Arrange
     deleteConfigFile();
     process.env.PASSWORD_CRYPTO_KEY = "segredo_teste";
+    resetChave();
     process.env.CRIPTO_OPENAI_KEY = criptografar("sk-ntapp-chave-criptografada");
 
     // Act 1: Chave ausente

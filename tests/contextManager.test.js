@@ -28,17 +28,20 @@ function cleanCacheFile() {
 test("contextManager.js - Cobertura 100% de Gerenciamento de Contexto e Ramificações (Padrão AAA)", async (t) => {
   let mockServer;
 
-  t.before((done) => {
-    mockServer = http.createServer((req, res) => {
-      res.writeHead(200, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ choices: [{ message: { content: "Resumo mock" } }] }));
+  t.before(async () => {
+    await new Promise((resolve) => {
+      mockServer = http.createServer((req, res) => {
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ choices: [{ message: { content: "Resumo mock" } }] }));
+      });
+      mockServer.listen(9998, "127.0.0.1", resolve);
     });
-    mockServer.listen(9999, "127.0.0.1", done);
   });
 
-  t.after((done) => {
-    if (mockServer) mockServer.close(done);
-    else done();
+  t.after(async () => {
+    if (mockServer) {
+      await new Promise((resolve) => mockServer.close(resolve));
+    }
   });
 
   t.beforeEach(() => {
@@ -47,7 +50,7 @@ test("contextManager.js - Cobertura 100% de Gerenciamento de Contexto e Ramifica
       OPENAI_API_KEY: "sk-test-key",
       OPENAI_API_MODEL: "gpt-5-nano",
       OPENAI_RESPONSE_LANGUAGE: "pt-BR",
-      OPENAI_API_BASEURL: "http://127.0.0.1:9999/v1"
+      OPENAI_API_BASEURL: "http://127.0.0.1:9998/v1"
     });
   });
 

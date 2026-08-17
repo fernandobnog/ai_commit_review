@@ -15,7 +15,7 @@ function createPromptMock(answersList = []) {
     const result = {};
     for (const q of list) {
       if (q && q.name) {
-        result[q.name] = current[q.name] !== undefined ? current[q.name] : true;
+        result[q.name] = current[q.name] !== undefined ? current[q.name] : (q.type === "input" ? "feat: mensagem automatica" : true);
       }
     }
     return result;

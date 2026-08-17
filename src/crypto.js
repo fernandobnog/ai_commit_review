@@ -9,11 +9,11 @@ export function resetChave() {
 }
 
 export function obterChave() {
+    const password = process.env.PASSWORD_CRYPTO_KEY;
+    if (!password) {
+        throw new Error("PASSWORD_CRYPTO_KEY environment variable is not defined.");
+    }
     if (!chave) {
-        const password = process.env.PASSWORD_CRYPTO_KEY || "default_secret_key";
-        if (!password) {
-            throw new Error("PASSWORD_CRYPTO_KEY environment variable is not defined.");
-        }
         chave = crypto.scryptSync(password, 'sal', 32);
     }
     return chave;

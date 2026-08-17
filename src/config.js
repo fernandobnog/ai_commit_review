@@ -34,15 +34,24 @@ export function getConfigDirectory(overridePlatform, overrideEnv = process.env, 
 // Persistent configuration directory
 const configDirectory = getConfigDirectory();
 
-// Ensure the configuration directory exists
-try {
-  fs.ensureDirSync(configDirectory);
-} catch (error) {
-  console.error(
-    `Error creating the configuration directory at ${configDirectory}:`,
-    error
-  );
+/**
+ * Assigura a criação do diretório de configuração.
+ * @returns {boolean} true se o diretório existe/foi criado com sucesso, false em caso de erro.
+ */
+export function ensureConfigDirectory() {
+  try {
+    fs.ensureDirSync(configDirectory);
+    return true;
+  } catch (error) {
+    console.error(
+      `Error creating the configuration directory at ${configDirectory}:`,
+      error
+    );
+    return false;
+  }
 }
+
+ensureConfigDirectory();
 
 // Full path to the configuration file
 const configFilePath = path.join(configDirectory, ".config.json");

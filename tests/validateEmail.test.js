@@ -18,8 +18,9 @@ function setupInquirerMock(answersList = []) {
   let index = 0;
   inquirer.prompt = async (questions) => {
     const list = Array.isArray(questions) ? questions : [questions];
-    const current = answersList[index] || {};
+    const currentItem = answersList[index] || {};
     index++;
+    const current = typeof currentItem === "function" ? currentItem() : currentItem;
     const result = {};
     for (const q of list) {
       if (q && q.name && current[q.name] !== undefined) {
@@ -152,19 +153,8 @@ test("validateEmail.js - Cobertura 100% de Validação de E-mail e OTP (Padrão 
     setupInquirerMock([
       { isNTapp: true },
       { inputEmail: "sucesso@ntapp.com.br" },
-      { codigoUsuario: "MOCK_CODE" }
+      () => ({ codigoUsuario: codigoMap.get("sucesso@ntapp.com.br")?.code })
     ]);
-    // Força código mock no codigoMap ao rodar processNtappValidation
-    const promptProxy = inquirer.prompt;
-    inquirer.prompt = async (questions) => {
-      const res = await promptProxy(questions);
-      // Se for a pergunta do código, pega o código gerado no map
-      if (questions[0] && questions[0].name === "codigoUsuario") {
-        const entry = codigoMap.get("sucesso@ntapp.com.br");
-        if (entry) res.codigoUsuario = entry.code;
-      }
-      return res;
-    };
 
     const resSucesso = await configByNTAPPEmail();
     assert.equal(resSucesso, true);

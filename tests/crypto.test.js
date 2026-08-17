@@ -1,13 +1,14 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import inquirer from "inquirer";
-import { criptografar, decriptografar, criptografarcli } from "../src/crypto.js";
+import { criptografar, decriptografar, criptografarcli, resetChave } from "../src/crypto.js";
 
 test("crypto.js - Cobertura 100% de Criptografia AES-256-CBC (Padrão AAA)", async (t) => {
   await t.test("deve lançar erro se PASSWORD_CRYPTO_KEY não estiver definida", () => {
     // Arrange
     const originalEnv = process.env.PASSWORD_CRYPTO_KEY;
     delete process.env.PASSWORD_CRYPTO_KEY;
+    resetChave();
 
     // Act & Assert
     assert.throws(
@@ -17,6 +18,7 @@ test("crypto.js - Cobertura 100% de Criptografia AES-256-CBC (Padrão AAA)", asy
 
     // Cleanup
     process.env.PASSWORD_CRYPTO_KEY = originalEnv;
+    resetChave();
   });
 
   await t.test("deve criptografar e decriptografar texto em round-trip com sucesso", () => {
@@ -48,20 +50,20 @@ test("crypto.js - Cobertura 100% de Criptografia AES-256-CBC (Padrão AAA)", asy
 
     // Act 1: Encrypt
     inquirer.prompt = async () => ({ acao: "Encrypt", texto: "Teste CLI" });
-    assert.doesNotThrow(() => criptografarcli());
+    await criptografarcli();
 
     // Act 2: Decrypt
     const cifrado = criptografar("Teste CLI");
     inquirer.prompt = async () => ({ acao: "Decrypt", texto: cifrado });
-    assert.doesNotThrow(() => criptografarcli());
+    await criptografarcli();
 
     // Act 3: Decrypt Inválido
     inquirer.prompt = async () => ({ acao: "Decrypt", texto: "invalido" });
-    assert.doesNotThrow(() => criptografarcli());
+    await criptografarcli();
 
     // Act 4: Rejeição no Inquirer (Catch block)
     inquirer.prompt = () => Promise.reject(new Error("Prompt Error Test"));
-    assert.doesNotThrow(() => criptografarcli());
+    await assert.rejects(async () => await criptografarcli(), /Prompt Error Test/);
 
     // Cleanup
     inquirer.prompt = originalPrompt;

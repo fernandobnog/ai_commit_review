@@ -27,17 +27,20 @@ function createMockOpenAI(responseContent = "Análise mock da IA", shouldFail = 
 test("openaiUtils.js - Cobertura 100% de Integração com OpenAI (Padrão AAA)", async (t) => {
   let mockServer;
 
-  t.before((done) => {
-    mockServer = http.createServer((req, res) => {
-      res.writeHead(200, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ choices: [{ message: { content: "Resposta do servidor HTTP local" } }] }));
+  t.before(async () => {
+    await new Promise((resolve) => {
+      mockServer = http.createServer((req, res) => {
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ choices: [{ message: { content: "Resposta do servidor HTTP local" } }] }));
+      });
+      mockServer.listen(9999, "127.0.0.1", resolve);
     });
-    mockServer.listen(9999, "127.0.0.1", done);
   });
 
-  t.after((done) => {
-    if (mockServer) mockServer.close(done);
-    else done();
+  t.after(async () => {
+    if (mockServer) {
+      await new Promise((resolve) => mockServer.close(resolve));
+    }
   });
 
   t.beforeEach(() => {

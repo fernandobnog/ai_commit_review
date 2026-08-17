@@ -118,6 +118,7 @@ export async function validateConfiguration(deps = {}) {
     if (!configurado) {
       await updateValidApiKeyFn(deps);
     }
+    config = loadConfig();
   }
 
   return config;
