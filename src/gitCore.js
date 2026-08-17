@@ -2,6 +2,12 @@
 import { execSync } from "child_process";
 import chalk from "chalk";
 
+export function getDeps(deps = {}) {
+  return {
+    execSyncFn: deps.execSyncFn || execSync
+  };
+}
+
 /**
  * Executes a Git command synchronously with safe UTF-8 encoding.
  * @param {string} command - The Git command to execute.
@@ -9,9 +15,9 @@ import chalk from "chalk";
  * @returns {string} - The command output, trimmed of whitespace.
  */
 export function executeGitCommand(command, deps = {}) {
-  const runSync = deps.execSyncFn || execSync;
+  const d = getDeps(deps);
   try {
-    return runSync(command, { encoding: "utf-8" }).trim();
+    return d.execSyncFn(command, { encoding: "utf-8" }).trim();
   } catch (error) {
     console.error(
       chalk.red(`❌ Error executing Git command '${command}': ${error.message}`)
@@ -63,9 +69,9 @@ export function undoLastCommitSoft(deps = {}) {
  * Commits changes using the editor with a prefilled message file.
  */
 export function commitChangesWithEditor(tempFilePath, deps = {}) {
-  const runSync = deps.execSyncFn || execSync;
+  const d = getDeps(deps);
   try {
-    runSync(`git commit --edit --file="${tempFilePath}" --no-verify`, { stdio: "inherit" });
+    d.execSyncFn(`git commit --edit --file="${tempFilePath}" --no-verify`, { stdio: "inherit" });
     console.log(chalk.green("✔ Commit successfully made!"));
   } catch (error) {
     console.error(chalk.red("❌ Error making commit:"), error.message);

@@ -1,6 +1,13 @@
+import path from "path";
+import os from "os";
+
+process.env.ACR_CONFIG_FILE = path.join(os.tmpdir(), `test_cfg_gitCore_${process.pid}.json`);
+process.env.PASSWORD_CRYPTO_KEY = "segredo_teste_key";
+
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
+  getDeps,
   executeGitCommand,
   stageAllChanges,
   clearStage,
@@ -17,6 +24,17 @@ import {
 } from "../src/gitCore.js";
 
 test("gitCore.js - Cobertura 100% de Operações do Git (Padrão AAA)", async (t) => {
+  await t.test("getDeps deve cobrir 100% dos ramos de injeção e fallbacks padrão", () => {
+    const defaultDeps = getDeps();
+    assert.equal(typeof defaultDeps.execSyncFn, "function");
+
+    const emptyDeps = getDeps({});
+    assert.equal(typeof emptyDeps.execSyncFn, "function");
+
+    const customDeps = getDeps({ execSyncFn: () => "custom" });
+    assert.equal(customDeps.execSyncFn(), "custom");
+  });
+
   await t.test("executeGitCommand deve retornar output limpo e relançar erros no catch", () => {
     // Act 1: Sucesso
     const res = executeGitCommand("git status", { execSyncFn: () => "  On branch main \n" });
@@ -155,6 +173,17 @@ test("gitCore.js - Cobertura 100% de Operações do Git (Padrão AAA)", async (t
     });
     assert.equal(deletedDiff, "File deleted: deleted.js");
 
+    // getStagedFileDiff - erro mas ls-files retorna vazio (isDeleted = false)
+    let lsEmptyCalls = 0;
+    const notDeletedDiff = getStagedFileDiff("not_deleted.js", {
+      execSyncFn: (cmd) => {
+        lsEmptyCalls++;
+        if (lsEmptyCalls === 1) throw new Error("Staged diff fail");
+        return "";
+      }
+    });
+    assert.equal(notDeletedDiff, "");
+
     // getStagedFileDiff - erro com ls-files lançando exceção no catch interno
     const innerCatchDiff = getStagedFileDiff("other.js", {
       execSyncFn: () => { throw new Error("Staged & ls-files fail"); }
@@ -193,7 +222,7 @@ test("gitCore.js - Cobertura 100% de Operações do Git (Padrão AAA)", async (t
     try { clearStage(mockDeps); } catch (e) {}
     try { undoLastCommitSoft(mockDeps); } catch (e) {}
     try { commitChangesWithEditor("non_existent_file.txt", mockDeps); } catch (e) {}
-    try { getCommits(0, 5, mockDeps); } catch (e) {}
+    try { getCommits(undefined, undefined, mockDeps); } catch (e) {}
     try { getModifiedFiles("HEAD", mockDeps); } catch (e) {}
     try { getFileDiff("HEAD", "file.js", mockDeps); } catch (e) {}
     try { getRepositoryDiff(mockDeps); } catch (e) {}
