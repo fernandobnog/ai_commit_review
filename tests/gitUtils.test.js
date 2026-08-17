@@ -35,13 +35,14 @@ test("gitUtils.js - Validação de Re-exportação do Módulo Fachada (Padrão A
     }
   });
 
-  await t.test("funções re-exportadas em gitUtils devem ser executáveis sem exceção", () => {
+  await t.test("funções re-exportadas em gitUtils devem ser executáveis sem exceção com mocks de isolamento", () => {
+    const mockDeps = { execSyncFn: () => "", executeGitCommandFn: () => "" };
     // Arrange & Act
-    const output = gitUtils.executeGitCommand("git status --short");
-    const branch = gitUtils.getCurrentBranch();
-    const branches = gitUtils.listBranches();
-    const commits = gitUtils.getCommits(0, 1);
-    const diff = gitUtils.getRepositoryDiff();
+    const output = gitUtils.executeGitCommand("git status --short", mockDeps);
+    const branch = gitUtils.getCurrentBranch(mockDeps);
+    const branches = gitUtils.listBranches(mockDeps);
+    const commits = gitUtils.getCommits(0, 1, mockDeps);
+    const diff = gitUtils.getRepositoryDiff(mockDeps);
 
     // Assert
     assert.equal(typeof output, "string");

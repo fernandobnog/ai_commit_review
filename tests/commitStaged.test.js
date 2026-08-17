@@ -136,7 +136,7 @@ test("commitStaged.js - Cobertura 100% de Linhas, Branches e Funções (Padrão 
     await assert.rejects(async () => await commitStaged(depsError), /Erro de Git na branch/);
   });
 
-  await t.test("deve testar os fallbacks sem argumento deps utilizando mock global temporario em inquirer.prompt", async () => {
+  await t.test("deve testar os fallbacks utilizando mocks seguros de Git e inquirer.prompt", async () => {
     const origPrompt = inquirer.prompt;
     inquirer.prompt = async () => ({
       continueOnBranch: true,
@@ -144,7 +144,16 @@ test("commitStaged.js - Cobertura 100% de Linhas, Branches e Funções (Padrão 
       push: false
     });
 
-    try { await commitStaged(); } catch (e) {}
+    const safeDeps = {
+      getCurrentBranchFn: () => "main",
+      pullChangesFn: () => {},
+      checkConflictsFn: () => [],
+      getStagedFilesDiffsFn: () => [],
+      pushChangesFn: () => {},
+      promptFn: inquirer.prompt
+    };
+
+    try { await commitStaged(safeDeps); } catch (e) {}
 
     inquirer.prompt = origPrompt;
   });

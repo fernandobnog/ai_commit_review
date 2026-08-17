@@ -186,17 +186,18 @@ test("gitCore.js - Cobertura 100% de Operações do Git (Padrão AAA)", async (t
     assert.deepEqual(emptyListDiffs, []);
   });
 
-  await t.test("deve testar chamadas sem o argumento deps executando os fallbacks padrão", () => {
-    try { executeGitCommand("git --version"); } catch (e) {}
-    try { stageAllChanges(); } catch (e) {}
-    try { clearStage(); } catch (e) {}
-    try { undoLastCommitSoft(); } catch (e) {}
-    try { commitChangesWithEditor("non_existent_file.txt"); } catch (e) {}
-    try { getCommits(); } catch (e) {}
-    try { getModifiedFiles("HEAD"); } catch (e) {}
-    try { getFileDiff("HEAD", "file.js"); } catch (e) {}
-    try { getRepositoryDiff(); } catch (e) {}
-    try { getStagedFileDiff("file.js"); } catch (e) {}
-    try { getStagedFilesDiffs(); } catch (e) {}
+  await t.test("deve testar chamadas passando deps mockados seguros para validar executabilidade", () => {
+    const mockDeps = { execSyncFn: () => "" };
+    try { executeGitCommand("git --version", mockDeps); } catch (e) {}
+    try { stageAllChanges(mockDeps); } catch (e) {}
+    try { clearStage(mockDeps); } catch (e) {}
+    try { undoLastCommitSoft(mockDeps); } catch (e) {}
+    try { commitChangesWithEditor("non_existent_file.txt", mockDeps); } catch (e) {}
+    try { getCommits(0, 5, mockDeps); } catch (e) {}
+    try { getModifiedFiles("HEAD", mockDeps); } catch (e) {}
+    try { getFileDiff("HEAD", "file.js", mockDeps); } catch (e) {}
+    try { getRepositoryDiff(mockDeps); } catch (e) {}
+    try { getStagedFileDiff("file.js", mockDeps); } catch (e) {}
+    try { getStagedFilesDiffs(mockDeps); } catch (e) {}
   });
 });

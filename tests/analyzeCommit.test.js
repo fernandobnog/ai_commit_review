@@ -192,11 +192,20 @@ test("analyzeCommit.js - Cobertura 100% de Linhas, Branches e Funções (Padrão
     });
   });
 
-  await t.test("deve testar os fallbacks sem argumento deps usando mock global temporario em inquirer.prompt", async () => {
+  await t.test("deve testar os fallbacks utilizando mocks seguros de Git e inquirer.prompt", async () => {
     const origPrompt = inquirer.prompt;
     inquirer.prompt = async () => ({ selectedShas: [] });
 
-    try { await analyzeCommits(); } catch (e) {}
+    const safeDeps = {
+      getCommitsFn: () => [],
+      getModifiedFilesFn: () => [],
+      getFileDiffFn: () => "",
+      analyzeUpdatedCodeFn: async () => "",
+      buildContextForFilesFn: async () => "",
+      promptFn: inquirer.prompt
+    };
+
+    try { await analyzeCommits(safeDeps); } catch (e) {}
 
     inquirer.prompt = origPrompt;
   });

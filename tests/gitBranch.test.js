@@ -217,17 +217,18 @@ test("gitBranch.js - Cobertura 100% de Gerenciamento de Branches (Padrão AAA)",
     if (fs.existsSync(targetFile)) fs.unlinkSync(targetFile);
   });
 
-  await t.test("deve testar chamadas sem argumento deps utilizando os fallbacks padrão", async () => {
-    try { getCurrentBranch(); } catch (e) {}
-    try { listBranches(); } catch (e) {}
-    try { pullChanges(); } catch (e) {}
-    try { pushChanges(); } catch (e) {}
-    try { switchBranch("main"); } catch (e) {}
-    try { restoreStashOrRollback("main"); } catch (e) {}
-    try { await mergeBranch("dev", "main"); } catch (e) {}
-    try { checkConflicts(); } catch (e) {}
-    try { getConflictDiff("file.js"); } catch (e) {}
-    try { openFileInEditor("file.txt"); } catch (e) {}
-    try { updateFileFromTemp("file.js", "file.txt"); } catch (e) {}
+  await t.test("deve testar chamadas passando deps mockados seguros para validar executabilidade", async () => {
+    const mockDeps = { executeGitCommandFn: () => "", execSyncFn: () => "" };
+    try { getCurrentBranch(mockDeps); } catch (e) {}
+    try { listBranches(mockDeps); } catch (e) {}
+    try { pullChanges(mockDeps); } catch (e) {}
+    try { pushChanges(mockDeps); } catch (e) {}
+    try { switchBranch("main", mockDeps); } catch (e) {}
+    try { restoreStashOrRollback("main", mockDeps); } catch (e) {}
+    try { await mergeBranch("dev", "main", mockDeps); } catch (e) {}
+    try { checkConflicts(mockDeps); } catch (e) {}
+    try { getConflictDiff("file.js", mockDeps); } catch (e) {}
+    try { openFileInEditor("file.txt", mockDeps); } catch (e) {}
+    try { updateFileFromTemp("file.js", "file.txt", mockDeps); } catch (e) {}
   });
 });
