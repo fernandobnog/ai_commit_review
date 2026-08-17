@@ -63,6 +63,8 @@ Toda modificação de código deve respeitar rigorosamente os seguintes teto-lim
    - Comandos Git, operações no sistema de arquivos e requisições HTTP (API OpenAI/Nodemailer) devem ser 100% mockados durante a execução de testes unitários.
 4. **Consulta à Estratégia de Testes**:
    - Consulte obrigatoriamente [`docs/TESTING_STRATEGY.md`](file:///d:/GitHub/ai_commit_review/docs/TESTING_STRATEGY.md) para verificar a matriz de testes do módulo antes de submeter alterações.
+5. **Proibição de Mudança de State/Branch/Commit**:
+   - Ao executar testes automatizados, é **estritamente proibido** realizar trocas de commit, `git checkout`, `git switch` ou alterar a branch atual no repositório de trabalho.
 
 ---
 

@@ -152,4 +152,13 @@ describe("gitUtils.js - getCommits", () => {
     });
   });
 });
+
+---
+
+## 🔒 4. Garantia de Isolamento do Repositório Git
+
+Ao solicitar ou executar a suíte de testes automatizados:
+1. **Sem Alteração de Estado do Git**: É **estritamente proibido** realizar trocas de commit, `git checkout`, `git switch` ou alterar a branch atual no repositório de trabalho.
+2. **Execução Segura em Working Tree Local**: Os testes executam unicamente a partir da working tree e commit atual, utilizando mocks para todas as interações com subprocessos de sistema.
+
 ```

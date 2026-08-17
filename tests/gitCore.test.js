@@ -4,6 +4,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   executeGitCommand,
+  getDeps,
   formatGitDate,
   truncateString,
   getCommits,
@@ -152,17 +153,22 @@ test("gitCore.js - Cobertura 100% de Operações do Git (Padrão AAA)", async (t
     assert.deepEqual(getStagedFilesDiffs(depsDiffFail), []);
   });
 
-  await t.test("deve testar chamadas sem o argumento deps executando os fallbacks padrão", () => {
-    try { executeGitCommand("git --version"); } catch (e) {}
-    try { getCommits(0, 1); } catch (e) {}
-    try { getModifiedFiles("HEAD"); } catch (e) {}
-    try { getFileDiff("HEAD", "package.json"); } catch (e) {}
-    try { getRepositoryDiff(); } catch (e) {}
-    try { clearStage(); } catch (e) {}
-    try { stageAllChanges(); } catch (e) {}
-    try { undoLastCommitSoft(); } catch (e) {}
-    try { commitChangesWithEditor("non_existent_file.txt"); } catch (e) {}
-    try { getStagedFileDiff("package.json"); } catch (e) {}
-    try { getStagedFilesDiffs(); } catch (e) {}
+  await t.test("getDeps e utilitários devem operar com segurança sem alterar o repositório", () => {
+    const defaultDeps = getDeps();
+    assert.equal(typeof defaultDeps.execSyncFn, "function");
+
+    const safeDeps = { execSyncFn: () => "" };
+    try { executeGitCommand("git --version", safeDeps); } catch (e) {}
+    try { getCommits(0, 1, safeDeps); } catch (e) {}
+    try { getModifiedFiles("HEAD", safeDeps); } catch (e) {}
+    try { getFileDiff("HEAD", "package.json", safeDeps); } catch (e) {}
+    try { getRepositoryDiff(safeDeps); } catch (e) {}
+    try { clearStage(safeDeps); } catch (e) {}
+    try { stageAllChanges(safeDeps); } catch (e) {}
+    try { undoLastCommitSoft(safeDeps); } catch (e) {}
+    try { commitChangesWithEditor("non_existent_file.txt", safeDeps); } catch (e) {}
+    try { getStagedFileDiff("package.json", safeDeps); } catch (e) {}
+    try { getStagedFilesDiffs(safeDeps); } catch (e) {}
   });
 });
+
