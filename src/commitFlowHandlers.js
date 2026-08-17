@@ -189,7 +189,7 @@ export async function obtainCommitMessage(stagedFiles, deps = {}) {
       commitMessage = manualMessage;
     }
 
-    const tempFile = path.join(os.tmpdir(), "commit_message.txt");
+    const tempFile = path.join(os.tmpdir(), `commit_msg_${process.pid}_${Date.now()}_${Math.random().toString(36).slice(2)}.txt`);
     fs.writeFileSync(tempFile, commitMessage, { encoding: "utf-8" });
     d.commitChangesWithEditorFn(tempFile);
 

@@ -51,7 +51,10 @@ O módulo `src/testServerUpdate.js` implementa o comando `acr updateTestServer`.
 
 ---
 
-## 🔄 Funções Exportadas
-
-### `updateServerToTest()`
+### `updateServerToTest(deps = {})`
 - **Descrição**: Função assíncrona principal que executa a sequência: `dockerCheck` ➔ `createCommit` ➔ `mergeToTest` ➔ `pushChanges` ➔ `switchBranch('develop')`.
+
+---
+
+## 🧪 Testes e Isolamento de Efeitos Colaterais
+- A injeção de dependências (`deps.createCommitFn`, `deps.mergeBranchFn`, `deps.switchBranchFn`, `deps.pushChangesFn`) é mandatória na execução de testes automatizados para impedir staging, commits ou trocas de branch no repositório de trabalho.

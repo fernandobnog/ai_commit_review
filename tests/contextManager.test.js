@@ -40,6 +40,9 @@ test("contextManager.js - Cobertura 100% de Gerenciamento de Contexto e Ramifica
 
   t.after(async () => {
     if (mockServer) {
+      if (typeof mockServer.closeAllConnections === "function") {
+        mockServer.closeAllConnections();
+      }
       await new Promise((resolve) => mockServer.close(resolve));
     }
   });

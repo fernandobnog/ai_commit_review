@@ -1,6 +1,9 @@
+process.env.PASSWORD_CRYPTO_KEY = "segredo_teste_key";
+
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import inquirer from "inquirer";
+import { resetChave } from "../src/crypto.js";
 import {
   configBaseUrlLocal,
   configByNTAPPEmail,
@@ -36,6 +39,8 @@ test("validateEmail.js - Cobertura 100% de Validação de E-mail e OTP (Padrão 
   const originalSendMail = transporter.sendMail;
 
   t.beforeEach(() => {
+    process.env.PASSWORD_CRYPTO_KEY = "segredo_teste_key";
+    resetChave();
     codigoMap.clear();
     saveConfig({
       OPENAI_API_KEY: "sk-test-key",

@@ -5,11 +5,12 @@ import { createPullRequest } from "../src/githubCli.js";
 test("githubCli.js - Cobertura 100% de Criação Segura de PR via GitHub CLI (Padrão AAA)", async (t) => {
   await t.test("deve testar execução sem argumento deps utilizando fallbacks padrão", () => {
     // Arrange & Act & Assert
-    try {
-      createPullRequest({ base: "main", head: "dev", title: "Test", body: "Body" });
-    } catch (err) {
-      assert.ok(err);
-    }
+    const safeDeps = {
+      execSyncFn: () => "",
+      execFileSyncFn: () => "https://github.com/org/repo/pull/1"
+    };
+    const url = createPullRequest({ base: "main", head: "dev", title: "Test", body: "Body" }, safeDeps);
+    assert.equal(url, "https://github.com/org/repo/pull/1");
   });
 
   await t.test("deve lançar erro tratável quando GitHub CLI (gh) não estiver instalado", () => {

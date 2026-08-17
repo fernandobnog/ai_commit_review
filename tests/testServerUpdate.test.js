@@ -238,7 +238,17 @@ test("testServerUpdate.js - Cobertura 100% de Linhas, Branches e Funções (Padr
     const origPrompt = inquirer.prompt;
     inquirer.prompt = async () => ({ isDockerized: false });
 
-    try { await updateServerToTest(); } catch (e) {}
+    const safeDeps = {
+      getCurrentBranchFn: async () => "develop",
+      mergeBranchFn: async () => {},
+      switchBranchFn: () => {},
+      createCommitFn: async () => {},
+      pushChangesFn: () => {},
+      promptFn: inquirer.prompt,
+      baseDir: tempBaseDir
+    };
+
+    await updateServerToTest(safeDeps);
 
     inquirer.prompt = origPrompt;
   });

@@ -39,6 +39,9 @@ test("openaiUtils.js - Cobertura 100% de Integração com OpenAI (Padrão AAA)",
 
   t.after(async () => {
     if (mockServer) {
+      if (typeof mockServer.closeAllConnections === "function") {
+        mockServer.closeAllConnections();
+      }
       await new Promise((resolve) => mockServer.close(resolve));
     }
   });
