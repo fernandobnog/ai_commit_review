@@ -19,6 +19,9 @@ import {
 test("config.js - Cobertura 100% de Configuração e I/O por Plataforma (Padrão AAA)", async (t) => {
   await t.test("getConfigDirectory deve resolver caminhos corretos para Windows, macOS e Linux", () => {
     // Arrange & Act
+    const defaultDir = getConfigDirectory();
+    assert.ok(defaultDir.includes("ai-commit-review"));
+
     const winPath = getConfigDirectory("win32", { APPDATA: "C:\\AppData" }, "C:\\Users\\test");
     const winFallback = getConfigDirectory("win32", {}, "C:\\Users\\test");
     const macPath = getConfigDirectory("darwin", {}, "/Users/test");
@@ -71,6 +74,30 @@ test("config.js - Cobertura 100% de Configuração e I/O por Plataforma (Padrão
     // Act 4: Delete arquivo inexistente
     const deletedNonExistent = deleteConfigFile();
     assert.equal(deletedNonExistent, false);
+  });
+
+  await t.test("funções de I/O devem cobrir fallbacks padrão sem ACR_CONFIG_FILE definido", () => {
+    const originalAcrEnv = process.env.ACR_CONFIG_FILE;
+    delete process.env.ACR_CONFIG_FILE;
+
+    const originalExistsSync = fs.existsSync;
+    const originalWriteJsonSync = fs.writeJsonSync;
+    const originalEnsureDirSync = fs.ensureDirSync;
+
+    fs.existsSync = () => false;
+    fs.writeJsonSync = () => {};
+    fs.ensureDirSync = () => {};
+
+    try {
+      assert.deepEqual(loadConfig(), {});
+      assert.equal(deleteConfigFile(), false);
+      assert.doesNotThrow(() => saveConfig({ mocked: true }));
+    } finally {
+      process.env.ACR_CONFIG_FILE = originalAcrEnv;
+      fs.existsSync = originalExistsSync;
+      fs.writeJsonSync = originalWriteJsonSync;
+      fs.ensureDirSync = originalEnsureDirSync;
+    }
   });
 
   await t.test("funções de I/O devem tratar exceções de sistema de arquivos nos blocos catch", () => {

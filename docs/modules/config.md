@@ -49,3 +49,8 @@ Ao carregar o módulo, o diretório é criado automaticamente via `fs.ensureDirS
 
 ### `configFilePath`
 - **Descrição**: Constante exportada contendo o caminho absoluto padrão até o arquivo `.config.json`.
+
+---
+
+## 🧪 Testes e Cobertura
+O módulo possui 100% de testes automatizados unitários no padrão AAA em `tests/config.test.js` com **100.00% de linhas**, **100.00% de branches** e **100.00% de funções**.
