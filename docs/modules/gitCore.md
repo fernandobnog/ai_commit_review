@@ -23,3 +23,8 @@ O módulo `src/gitCore.js` abstrai as operações de leitura, log, diffs e stagi
 - `getRepositoryDiff()`: Retorna `git diff` não-staged.
 - `getStagedFileDiff(file)`: Retorna diff de arquivo staged.
 - `getStagedFilesDiffs()`: Retorna lista de arquivos e diffs staged.
+
+---
+
+## 🧪 Testes e Isolamento de Efeitos Colaterais
+Todas as funções expostas em `gitCore.js` aceitam um objeto opcional `deps = {}` contendo `execSyncFn`. Durante a execução de testes automatizados, `execSyncFn` deve ser obrigatoriamente mockado para garantir que nenhuma operação real (`git add`, `git reset`, `git commit`) altere o repositório local.

@@ -60,56 +60,21 @@ Todo teste unitário ou de integração no repositório segue rigorosamente a es
 
 Comandos para executar os testes e gerar relatório de cobertura:
 ```bash
+# Execução padrão (Linux/Bash)
 npm test
 node --experimental-test-coverage --test tests/*.test.js
+
+# Execução no PowerShell (Windows com expansão de globbing)
+node --experimental-test-coverage --test (Get-ChildItem tests/*.test.js)
 ```
-
-### Exemplo 2: Teste de Integração com Mock do Git CLI (`gitUtils.test.js`)
-
-```javascript
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import * as child_process from "child_process";
-import { getCommits } from "../src/gitUtils.js";
-
-vi.mock("child_process");
-
-describe("gitUtils.js - getCommits", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
-  it("deve retornar um array formatado de commits a partir da saída bruta do comando git log", () => {
-    // 1. ARRANGE
-    const mockGitLogOutput = 
-      "a1b2c3d4e5f67890\x1f1700000000\x1ffeat: adiciona suporte a LLM local\n" +
-      "f0e9d8c7b6a54321\x1f1700003600\x1ffix: corrige vazamento de memória no cache";
-
-    vi.spyOn(child_process, "execSync").mockReturnValue(mockGitLogOutput);
-
-    // 2. ACT
-    const commits = getCommits(0, 2);
-
-    // 3. ASSERT
-    expect(child_process.execSync).toHaveBeenCalledWith(
-      expect.stringContaining('git log --skip=0 -n 2 --pretty=format:"%H\x1f%ct\x1f%s"'),
-      expect.any(Object)
-    );
-    expect(commits).toHaveLength(2);
-    expect(commits[0]).toEqual({
-      shaFull: "a1b2c3d4e5f67890",
-      shaShort: "a1b2c3d",
-      date: expect.any(String),
-      message: "feat: adiciona suporte a LLM local"
-    });
-  });
-});
 
 ---
 
 ## 🔒 4. Garantia de Isolamento do Repositório Git
 
 Ao solicitar ou executar a suíte de testes automatizados:
-1. **Sem Alteração de Estado do Git**: É **estritamente proibido** realizar trocas de commit, `git checkout`, `git switch` ou alterar a branch atual no repositório de trabalho.
-2. **Execução Segura em Working Tree Local**: Os testes executam unicamente a partir da working tree e commit atual, utilizando mocks para todas as interações com subprocessos de sistema.
+1. **Sem Alteração de Estado do Git**: É **estritamente proibido** realizar trocas de commit, `git checkout`, `git switch`, `git reset`, `git add` ou alterar a branch/staged area no repositório de trabalho durante os testes.
+2. **Injeção Obrigatória de Mocks (`safeDeps`)**: Todos os testes unitários e de integração de módulos de fluxo (`createCommit`, `commitStaged`, `gitCore`, `gitBranch`, `gitUtils`, `analyzeCommit`) devem utilizar injeção de dependências (`execSyncFn`, `executeGitCommandFn`, `safeDeps`) para garantir que 0 sub-processos do Git real sejam invocados contra o repositório local.
+3. **Execução Segura em Working Tree Local**: Os testes executam unicamente a partir de dados em memória e mocks estritos, preservando o repositório limpo e inalterado antes, durante e após cada execução.
 
 ```

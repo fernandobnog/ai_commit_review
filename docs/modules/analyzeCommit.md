@@ -43,3 +43,8 @@ Para cada commit selecionado:
 
 ### `analyzeCommits()`
 - **Descrição**: Função assíncrona principal acionada pelo comando `acr analyze`. Gerencia a seleção e dispara o ciclo de análise para cada commit escolhido.
+
+---
+
+## 🧪 Testes e Isolamento de Efeitos Colaterais
+A função `analyzeCommits(deps = {})` aceita injeção de dependências (`getCommitsFn`, `getModifiedFilesFn`, `getFileDiffFn`, `analyzeUpdatedCodeFn`). Durante os testes automatizados, todas as dependências são mockadas para evitar leituras ou requisições externas reais.

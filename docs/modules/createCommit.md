@@ -65,3 +65,8 @@ O módulo `src/createCommit.js` implementa o fluxo guiado interativo para a cria
 
 ### `createCommit()`
 - **Descrição**: Função assíncrona principal que executa os 8 passos do fluxo interativo de criação de commit assistido por IA.
+
+---
+
+## 🧪 Testes e Isolamento de Efeitos Colaterais
+A função `createCommit(deps = {})` utiliza o padrão *Dependency Injection* (`getDeps`). Durante a execução de testes automatizados, é **obrigatório** fornecer um objeto `safeDeps` contendo mocks para `clearStageFn`, `stageAllChangesFn`, `pullChangesFn` e `pushChangesFn`, evitando qualquer mutação no Git de desenvolvimento/produção.

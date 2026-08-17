@@ -20,3 +20,8 @@ O módulo `src/gitBranch.js` gerencia operações de trocas de branch, atualiza�
 - `mergeBranch(fromBranch, toBranch)`: Executa merge entre branches.
 - `checkConflicts()`: Retorna lista de arquivos em conflito.
 - `getConflictDiff(file)`, `writeConflictToTempFile(file, diff)`, `openFileInEditor(tempFilePath)`, `updateFileFromTemp(file, tempFilePath)`: Resolução de conflitos.
+
+---
+
+## 🧪 Testes e Isolamento de Efeitos Colaterais
+Todas as funções em `gitBranch.js` suportam injeção de dependências (`executeGitCommandFn`, `execSyncFn`). Nos testes automatizados, todas as invocações devem fornecer mocks para evitar execuções de `git checkout`, `git stash`, `git merge`, `git pull` ou `git push` no repositório real.

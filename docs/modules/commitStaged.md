@@ -54,3 +54,8 @@ O módulo `src/commitStaged.js` implementa o comando `acr commit`. Diferente do 
 
 ### `commitStaged()`
 - **Descrição**: Função assíncrona principal que orquestra o fluxo de commit exclusivo para alterações em staging.
+
+---
+
+## 🧪 Testes e Isolamento de Efeitos Colaterais
+A função `commitStaged(deps = {})` utiliza o padrão *Dependency Injection* (`getDeps`). Durante a execução de testes automatizados, é **obrigatório** fornecer um objeto `safeDeps` contendo mocks para `pullChangesFn`, `pushChangesFn` e `getStagedFilesDiffsFn`, garantindo o isolamento completo contra o Git local.
