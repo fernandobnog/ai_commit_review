@@ -1,3 +1,7 @@
+import path from "path";
+import os from "os";
+
+process.env.ACR_CONFIG_FILE = path.join(os.tmpdir(), `test_cfg_productionServerUpdate_${process.pid}.json`);
 process.env.PASSWORD_CRYPTO_KEY = "segredo_teste_key";
 
 import { test } from "node:test";

@@ -220,5 +220,5 @@ export function updateConfigFromString(configString) {
   saveConfig(config);
 
   console.log(chalk.green(`\n✅ Configuration "${key}" updated.`));
-  validateConfiguration();
+  return config;
 }

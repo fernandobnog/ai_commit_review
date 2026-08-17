@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import fs from "fs";
 import path from "path";
-import http from "node:http";
+import os from "os";
 import {
   buildContextForFiles,
   clearContextCache,
@@ -13,6 +13,9 @@ import {
   writeCache
 } from "../src/contextManager.js";
 import { saveConfig, deleteConfigFile } from "../src/config.js";
+
+process.env.ACR_CONFIG_FILE = path.join(os.tmpdir(), `test_cfg_contextManager_${process.pid}.json`);
+process.env.PASSWORD_CRYPTO_KEY = "segredo_teste_key";
 
 const CACHE_DIR = path.join(process.cwd(), ".cache");
 const CACHE_FILE = path.join(CACHE_DIR, "context.json");
