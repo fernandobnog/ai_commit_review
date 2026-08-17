@@ -5,7 +5,6 @@ import inquirer from "inquirer";
 import { configByNTAPPEmail, configBaseUrlLocal } from "./validateEmail.js";
 import { decriptografar } from "./crypto.js";
 
-
 /**
  * Sets the default OpenAI model to 'gpt-4o-mini' if not already set.
  * @param {object} config - The current configuration object.
@@ -14,7 +13,7 @@ import { decriptografar } from "./crypto.js";
 export function setApiKeyOpenAINTapp() {
   const config = loadConfig();
   if (!config[ConfigKeys.OPENAI_API_KEY]) {
-    const apiKey = decriptografar(process.env.CRIPTO_OPENAI_KEY);
+    const apiKey = decriptografar(process.env.CRIPTO_OPENAI_KEY || "key_fallback");
     config[ConfigKeys.OPENAI_API_KEY] = apiKey;
     saveConfig(config);
     console.log(
@@ -26,8 +25,8 @@ export function setApiKeyOpenAINTapp() {
   return config;
 }
 
-export async function resetConfig() {
-  const { restartConfig } = await inquirer.prompt([
+export async function resetConfig(promptFn = inquirer.prompt) {
+  const { restartConfig } = await promptFn([
     {
       type: "confirm",
       name: "restartConfig",
@@ -40,12 +39,12 @@ export async function resetConfig() {
   }
 }
 
-export async function setBaseURLOpenAILocal(config) {
+export async function setBaseURLOpenAILocal(config, configBaseUrlLocalFn = configBaseUrlLocal) {
   if (!config[ConfigKeys.OPENAI_API_BASEURL] && !config[ConfigKeys.OPENAI_API_MODEL]) {
-    const isLocal = await configBaseUrlLocal();
-    if(isLocal){
+    const isLocal = await configBaseUrlLocalFn();
+    if (isLocal) {
       config[ConfigKeys.OPENAI_API_BASEURL] = "http://127.0.0.1:1234/v1";
-      config[ConfigKeys.OPENAI_API_MODEL] = OpenAIModels.DEEPSEEK_LOCAL;
+      config[ConfigKeys.OPENAI_API_MODEL] = OpenAIModels.OSS_20B_LOCAL;
       config[ConfigKeys.OPENAI_API_KEY] = "local";
       saveConfig(config);
       console.log(
@@ -59,13 +58,13 @@ export async function setBaseURLOpenAILocal(config) {
 }
 
 /**
- * Sets the default OpenAI model to 'gpt-4o-mini' if not already set.
+ * Sets the default OpenAI model if not already set.
  * @param {object} config - The current configuration object.
  * @returns {object} - The updated configuration object.
  */
-function setDefaultModel(config) {
+export function setDefaultModel(config) {
   if (!config[ConfigKeys.OPENAI_API_MODEL]) {
-    if(config[ConfigKeys.OPENAI_API_KEY] !='local'){
+    if (config[ConfigKeys.OPENAI_API_KEY] !== 'local') {
       config[ConfigKeys.OPENAI_API_MODEL] = OpenAIModels.GPT_5_NANO;
     } else {
       config[ConfigKeys.OPENAI_API_MODEL] = OpenAIModels.OSS_20B_LOCAL;
@@ -73,7 +72,7 @@ function setDefaultModel(config) {
     saveConfig(config);
     console.log(
       chalk.green(
-        `✅ OPENAI_API_MODEL not set. Defaulting to '${OpenAIModels.GPT_5_NANO}'.`
+        `✅ OPENAI_API_MODEL not set. Defaulting to '${config[ConfigKeys.OPENAI_API_MODEL]}'.`
       )
     );
   }
@@ -85,7 +84,7 @@ function setDefaultModel(config) {
  * @param {object} config - The current configuration object.
  * @returns {object} - The updated configuration object.
  */
-function setDefaultLanguage(config) {
+export function setDefaultLanguage(config) {
   if (!config[ConfigKeys.OPENAI_RESPONSE_LANGUAGE]) {
     config[ConfigKeys.OPENAI_RESPONSE_LANGUAGE] = SupportedLanguages.PT_BR.code;
     saveConfig(config);
@@ -103,46 +102,44 @@ function setDefaultLanguage(config) {
  * @returns {object} - The validated configuration object.
  * @throws Will throw an error if mandatory configurations are missing or invalid.
  */
-export async function validateConfiguration() {
+export async function validateConfiguration(deps = {}) {
+  const configBaseUrlLocalFn = deps.configBaseUrlLocalFn || configBaseUrlLocal;
+  const configByNTAPPEmailFn = deps.configByNTAPPEmailFn || configByNTAPPEmail;
+  const updateValidApiKeyFn = deps.updateValidApiKeyFn || updateValidApiKey;
+
   let config = loadConfig();
 
-  config = await setBaseURLOpenAILocal(config);
-  
-  // Set default model if not set
+  config = await setBaseURLOpenAILocal(config, configBaseUrlLocalFn);
   config = setDefaultModel(config);
-  
-  // Set default language if not set
   config = setDefaultLanguage(config);
 
   if (!config.OPENAI_API_KEY && !config.OPENAI_API_BASEURL) {
-    const configurado = await configByNTAPPEmail();
+    const configurado = await configByNTAPPEmailFn();
     if (!configurado) {
-      // Se updateValidApiKey for assíncrono, também use await
-      await updateValidApiKey();
+      await updateValidApiKeyFn(deps);
     }
   }
 
   return config;
 }
 
-export async function ensureValidApiKey() {
+export async function ensureValidApiKey(deps = {}) {
+  const configByNTAPPEmailFn = deps.configByNTAPPEmailFn || configByNTAPPEmail;
   try {
-    // Tenta validar a configuração
-    await validateConfiguration();
+    await validateConfiguration(deps);
   } catch (error) {
     console.log(chalk.red("❌ ACR not configured."));
-
-    // Aguarda a conclusão de configByNTAPPEmail e verifica o resultado
-    const configurado = await configByNTAPPEmail();
+    const configurado = await configByNTAPPEmailFn();
     if (!configurado) {
-      chalk.red("❌ ACR not configured. Set configs manualy.");
-      process.exit(1); 
+      console.log(chalk.red("❌ ACR not configured. Set configs manualy."));
+      throw new Error("ACR not configured.");
     }
   }
 }
 
-export async function updateValidApiKey() {
-  const { apiKey } = await inquirer.prompt([
+export async function updateValidApiKey(deps = {}) {
+  const promptFn = deps.promptFn || inquirer.prompt;
+  const { apiKey } = await promptFn([
     {
       type: "input",
       name: "apiKey",
@@ -152,13 +149,12 @@ export async function updateValidApiKey() {
 
   try {
     updateConfigFromString(`OPENAI_API_KEY=${apiKey}`);
-    
-    validateConfiguration();
+    await validateConfiguration(deps);
   } catch (updateError) {
     console.error(
       chalk.red("❌ Failed to configure API key: " + updateError.message)
     );
-    process.exit(1); // Sai se não for possível corrigir
+    throw updateError;
   }
 }
 
@@ -180,7 +176,6 @@ export function updateConfigFromString(configString) {
     throw new Error("Invalid format.\n\nUse 'acr set_config KEY=VALUE'");
   }
 
-  // Validate the configuration key
   const validKeys = Object.values(ConfigKeys);
   if (!validKeys.includes(key)) {
     throw new Error(
@@ -191,7 +186,6 @@ export function updateConfigFromString(configString) {
     );
   }
 
-  // Validate the AI model if the key is OPENAI_API_MODEL
   if (key === ConfigKeys.OPENAI_API_MODEL) {
     const validModels = Object.values(OpenAIModels);
     if (!validModels.includes(value)) {
@@ -204,7 +198,6 @@ export function updateConfigFromString(configString) {
     }
   }
 
-  // Validate the language if the key is OPENAI_RESPONSE_LANGUAGE
   if (key === ConfigKeys.OPENAI_RESPONSE_LANGUAGE) {
     const validLanguages = Object.values(SupportedLanguages).map(
       (lang) => lang.code
@@ -220,7 +213,7 @@ export function updateConfigFromString(configString) {
       );
     }
   }
-  // Save the configuration
+
   const config = loadConfig();
   config[key] = value;
   saveConfig(config);

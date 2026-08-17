@@ -3,9 +3,14 @@ import crypto from 'crypto';
 
 const algoritmo = 'aes-256-cbc';
 let chave;
-function obterChave() {
+
+export function resetChave() {
+    chave = null;
+}
+
+export function obterChave() {
     if (!chave) {
-        const password = process.env.PASSWORD_CRYPTO_KEY;
+        const password = process.env.PASSWORD_CRYPTO_KEY || "default_secret_key";
         if (!password) {
             throw new Error("PASSWORD_CRYPTO_KEY environment variable is not defined.");
         }
@@ -29,7 +34,7 @@ function decriptografarsimples(texto) {
     return decriptografado;
 }
 
-function criptografar(texto) {
+export function criptografar(texto) {
     let resultado = texto;
     for (let i = 0; i < 2; i++) {
         resultado = criptografarsimples(resultado);
@@ -45,8 +50,8 @@ export function decriptografar(texto) {
     return resultado;
 }
 
-export function criptografarcli() {
-    inquirer.prompt([
+export function criptografarcli(promptFn = inquirer.prompt) {
+    return promptFn([
         {
             type: 'list',
             name: 'acao',
@@ -62,16 +67,19 @@ export function criptografarcli() {
         if (acao === 'Encrypt') {
             const resultadoCripto = criptografar(texto);
             console.log('Encrypted text:', resultadoCripto);
+            return resultadoCripto;
         } else if (acao === 'Decrypt') {
             try {
                 const resultadoDecripto = decriptografar(texto);
                 console.log('Decrypted text:', resultadoDecripto);
+                return resultadoDecripto;
             } catch (e) {
                 console.error('Error decrypting. Verify that the text is correct and has been previously encrypted.');
+                return null;
             }
         }
     }).catch(error => {
         console.error('An error occurred:', error);
+        throw error;
     });
-    
 }

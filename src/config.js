@@ -8,15 +8,15 @@ import os from "os";
  * Function to get the appropriate configuration directory based on the operating system.
  * @returns {string} Path to the configuration directory.
  */
-function getConfigDirectory() {
-  const homeDir = os.homedir();
+export function getConfigDirectory(overridePlatform, overrideEnv = process.env, overrideHomeDir = os.homedir()) {
+  const platform = overridePlatform || process.platform;
+  const homeDir = overrideHomeDir;
   let configDir;
 
-  if (process.platform === "win32") {
-    const appData =
-      process.env.APPDATA || path.join(homeDir, "AppData", "Roaming");
+  if (platform === "win32") {
+    const appData = overrideEnv.APPDATA || path.join(homeDir, "AppData", "Roaming");
     configDir = path.join(appData, "ai-commit-review");
-  } else if (process.platform === "darwin") {
+  } else if (platform === "darwin") {
     configDir = path.join(
       homeDir,
       "Library",
@@ -24,8 +24,7 @@ function getConfigDirectory() {
       "ai-commit-review"
     );
   } else {
-    const xdgConfigHome =
-      process.env.XDG_CONFIG_HOME || path.join(homeDir, ".config");
+    const xdgConfigHome = overrideEnv.XDG_CONFIG_HOME || path.join(homeDir, ".config");
     configDir = path.join(xdgConfigHome, "ai-commit-review");
   }
 
@@ -66,7 +65,6 @@ export function deleteConfigFile() {
   }
   return false;
 }
-
 
 /**
  * Loads the configuration from the .config.json file.
