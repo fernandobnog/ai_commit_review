@@ -60,14 +60,14 @@ const configFilePath = path.join(configDirectory, ".config.json");
  * Exclui o arquivo de configuração (.config.json) caso exista.
  * @returns {boolean} true se o arquivo foi excluído, false caso não exista ou ocorra erro.
  */
-export function deleteConfigFile() {
+export function deleteConfigFile(filePath = process.env.ACR_CONFIG_FILE || configFilePath) {
   try {
-    if (fs.existsSync(configFilePath)) {
-      fs.removeSync(configFilePath);
-      console.log(`Arquivo de configuração excluído: ${configFilePath}`);
+    if (fs.existsSync(filePath)) {
+      fs.removeSync(filePath);
+      console.log(`Arquivo de configuração excluído: ${filePath}`);
       return true;
     } else {
-      console.log(`Arquivo de configuração não encontrado: ${configFilePath}`);
+      console.log(`Arquivo de configuração não encontrado: ${filePath}`);
     }
   } catch (error) {
     console.error("Erro ao excluir o arquivo de configuração:", error);
@@ -79,14 +79,14 @@ export function deleteConfigFile() {
  * Loads the configuration from the .config.json file.
  * @returns {Object} Configuration object or an empty object if the file does not exist or an error occurs.
  */
-export function loadConfig() {
+export function loadConfig(filePath = process.env.ACR_CONFIG_FILE || configFilePath) {
   try {
-    if (fs.existsSync(configFilePath)) {
-      console.log(`Loading configurations from: ${configFilePath}`);
-      return fs.readJsonSync(configFilePath);
+    if (fs.existsSync(filePath)) {
+      console.log(`Loading configurations from: ${filePath}`);
+      return fs.readJsonSync(filePath);
     } else {
       console.log(
-        `Configuration file not found at: ${configFilePath}. Using default configurations.`
+        `Configuration file not found at: ${filePath}. Using default configurations.`
       );
     }
   } catch (error) {
@@ -99,10 +99,11 @@ export function loadConfig() {
  * Saves the configuration to the .config.json file.
  * @param {Object} config - Configuration object to save.
  */
-export function saveConfig(config) {
+export function saveConfig(config, filePath = process.env.ACR_CONFIG_FILE || configFilePath) {
   try {
-    fs.writeJsonSync(configFilePath, config, { spaces: 2 });
-    console.log(`Configurations successfully saved to: ${configFilePath}`);
+    fs.ensureDirSync(path.dirname(filePath));
+    fs.writeJsonSync(filePath, config, { spaces: 2 });
+    console.log(`Configurations successfully saved to: ${filePath}`);
   } catch (error) {
     console.error("Error saving configurations:", error);
   }

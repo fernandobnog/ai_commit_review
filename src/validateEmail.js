@@ -22,13 +22,13 @@ const EMAIL_CONFIG = {
 const DEFAULT_FROM_EMAIL = process.env.FROM_EMAIL;
 
 // Map to store validation codes and their validity
-const codigoMap = new Map();
+export const codigoMap = new Map();
 
 // Email transport configuration
-const transporter = nodemailer.createTransport(EMAIL_CONFIG);
+export const transporter = nodemailer.createTransport(EMAIL_CONFIG);
 
 // Function to send email
-async function enviarEmail(email, codigo) {
+export async function enviarEmail(email, codigo) {
   const mailOptions = {
     from: DEFAULT_FROM_EMAIL,
     to: email,
@@ -40,12 +40,12 @@ async function enviarEmail(email, codigo) {
 }
 
 // Generates a unique and short code
-function gerarCodigo() {
+export function gerarCodigo() {
   return uuidv4().split("-")[0];
 }
 
 // Validates the code entered by the user
-function validarCodigo(email, codigo) {
+export function validarCodigo(email, codigo) {
   const entry = codigoMap.get(email);
   if (!entry) return false;
 
@@ -58,11 +58,11 @@ function validarCodigo(email, codigo) {
   return code === codigo;
 }
 
-function isFormatoEmailValido(email) {
+export function isFormatoEmailValido(email) {
   return /\S+@\S+\.\S+/.test(email);
 }
 
-function emailTemDominioNtapp(email) {
+export function emailTemDominioNtapp(email) {
   return email.endsWith("@ntapp.com.br") || email.endsWith("@ntadvogados.com.br");
 }
 

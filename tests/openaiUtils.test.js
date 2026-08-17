@@ -25,33 +25,12 @@ function createMockOpenAI(responseContent = "Análise mock da IA", shouldFail = 
 }
 
 test("openaiUtils.js - Cobertura 100% de Integração com OpenAI (Padrão AAA)", async (t) => {
-  let mockServer;
-
-  t.before(async () => {
-    await new Promise((resolve) => {
-      mockServer = http.createServer((req, res) => {
-        res.writeHead(200, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ choices: [{ message: { content: "Resposta do servidor HTTP local" } }] }));
-      });
-      mockServer.listen(9999, "127.0.0.1", resolve);
-    });
-  });
-
-  t.after(async () => {
-    if (mockServer) {
-      if (typeof mockServer.closeAllConnections === "function") {
-        mockServer.closeAllConnections();
-      }
-      await new Promise((resolve) => mockServer.close(resolve));
-    }
-  });
-
   t.beforeEach(() => {
     saveConfig({
       OPENAI_API_KEY: "sk-test-key",
       OPENAI_API_MODEL: "gpt-5-nano",
       OPENAI_RESPONSE_LANGUAGE: "pt-BR",
-      OPENAI_API_BASEURL: "http://127.0.0.1:9999/v1"
+      OPENAI_API_BASEURL: "https://api.openai.com/v1"
     });
   });
 
@@ -113,7 +92,8 @@ test("openaiUtils.js - Cobertura 100% de Integração com OpenAI (Padrão AAA)",
     const diffGigante = "LARGE_DIFF_LINE_".repeat(2000); // ~34.000 chars
     const files = [
       { filename: "pequeno.js", diff: "const a = 1;" },
-      { filename: "grande.js", diff: diffGigante }
+      { filename: "grande.js", diff: diffGigante },
+      { filename: "vazio.js", diff: "" }
     ];
     const mockClient = createMockOpenAI("Review de diff truncado");
 
@@ -202,28 +182,50 @@ test("openaiUtils.js - Cobertura 100% de Integração com OpenAI (Padrão AAA)",
     );
   });
 
-  await t.test("deve testar getOpenAIClient sem a opção de mock conectando ao servidor HTTP local", async () => {
+  await t.test("deve testar integrações com e sem a opção OPENAI_API_BASEURL via OpenAIConstructor", async () => {
+    // Arrange: Mock de construtor que retorna o cliente simulado
+    class MockOpenAIClass {
+      constructor(opts) {
+        this.opts = opts;
+        this.chat = {
+          completions: {
+            create: async () => ({ choices: [{ message: { content: "Instância criada com sucesso" } }] })
+          }
+        };
+      }
+    }
+
     // Act 1: Com BASEURL
     saveConfig({
       OPENAI_API_KEY: "sk-test-key",
       OPENAI_API_MODEL: "gpt-5-nano",
       OPENAI_RESPONSE_LANGUAGE: "pt-BR",
-      OPENAI_API_BASEURL: "http://127.0.0.1:9999/v1"
+      OPENAI_API_BASEURL: "https://custom.api.openai.com/v1"
     });
-    const resAnalyze = await analyzeUpdatedCode([{ filename: "a.js", diff: "diff" }]);
-    assert.equal(resAnalyze, "Resposta do servidor HTTP local");
+    const resAnalyze = await analyzeUpdatedCode([{ filename: "a.js", diff: "diff" }], PromptType.ANALYZE, { OpenAIConstructor: MockOpenAIClass });
+    assert.equal(resAnalyze, "Instância criada com sucesso");
 
-    const resSummarize = await summarizeText("teste");
-    assert.equal(resSummarize, "Resposta do servidor HTTP local");
+    const resSummarize = await summarizeText("teste", { OpenAIConstructor: MockOpenAIClass });
+    assert.equal(resSummarize, "Instância criada com sucesso");
 
-    // Act 2: Sem BASEURL (usando mockClient para não fazer chamada externa)
+    // Act 2: Sem BASEURL
     saveConfig({
       OPENAI_API_KEY: "sk-test-key",
       OPENAI_API_MODEL: "gpt-5-nano",
       OPENAI_RESPONSE_LANGUAGE: "pt-BR"
     });
-    const mockClient = createMockOpenAI("Resposta sem BASEURL");
-    const resNoBaseUrl = await analyzeUpdatedCode([{ filename: "b.js", diff: "diff" }], PromptType.ANALYZE, { openaiClient: mockClient });
-    assert.equal(resNoBaseUrl, "Resposta sem BASEURL");
+    const resNoBaseUrl = await analyzeUpdatedCode([{ filename: "b.js", diff: "diff" }], PromptType.ANALYZE, { OpenAIConstructor: MockOpenAIClass });
+    assert.equal(resNoBaseUrl, "Instância criada com sucesso");
+
+    const resSummarizeNoBaseUrl = await summarizeText("teste2", { OpenAIConstructor: MockOpenAIClass });
+    assert.equal(resSummarizeNoBaseUrl, "Instância criada com sucesso");
+  });
+
+  await t.test("analyzeUpdatedCode deve lançar erro para promptType desconhecido", async () => {
+    const mockClient = createMockOpenAI("ok");
+    await assert.rejects(
+      async () => await analyzeUpdatedCode([{ filename: "a.js", diff: "diff" }], "TIPO_INVALIDO", { openaiClient: mockClient }),
+      /Invalid prompt type/
+    );
   });
 });

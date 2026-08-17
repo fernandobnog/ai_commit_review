@@ -47,12 +47,13 @@ O módulo `src/openaiUtils.js` é a camada de integração com a API da OpenAI (
 
 ## 🔄 Funções Exportadas
 
-### `analyzeUpdatedCode(files, promptType = PromptType.ANALYZE)`
+### `analyzeUpdatedCode(files, promptType = PromptType.ANALYZE, deps = {})`
 - **Parâmetros**:
   - `files`: `Array<{ filename: string, diff: string, status: string }>`
   - `promptType`: `PromptType.ANALYZE` ou `PromptType.CREATE`
+  - `deps`: `Object` contendo `{ openaiClient, updateValidApiKeyFn, OpenAIConstructor }` para testes e isolamento.
 - **Funcionamento**:
-  - Valida a configuração e instancia o cliente `OpenAI` (com `baseURL` customizada se definida).
+  - Valida a configuração e instancia o cliente `OpenAI` (com `baseURL` customizada se definida ou via `deps`).
   - Calcula o tamanho estimado de tokens do prompt (`Math.ceil(prompt.length / 4)`).
   - Reserva `2000` tokens para a resposta da IA.
   - Se o prompt exceder o limite de contexto do modelo, realiza o truncamento proporcional dos diffs dos arquivos para ocupar até 60% do limite permitido e regenera o prompt.
@@ -62,6 +63,7 @@ O módulo `src/openaiUtils.js` é a camada de integração com a API da OpenAI (
 ### `getModelContextLimit()`
 - **Descrição**: Retorna o limite de tokens de contexto para o modelo ativo na configuração (consultando `ModelContextLimits`).
 
-### `summarizeText(text)`
+### `summarizeText(text, deps = {})`
+- **Descrição**: Sumariza um texto arbitrário utilizando o modelo configurado, respeitando limites e truncamento. Aceita `{ openaiClient, OpenAIConstructor }` em `deps`.
 - **Parâmetros**: `text` (`string`) - Conteúdo a ser resumido.
 - **Descrição**: Função auxiliar que utiliza o modelo ativo para gerar um resumo conciso e técnico do texto. Realiza truncamento defensivo antes do envio caso o texto exceda a capacidade do modelo.

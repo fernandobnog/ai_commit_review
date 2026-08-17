@@ -56,3 +56,9 @@ O envio de e-mails exige as seguintes variáveis de ambiente configuradas no sis
   5. Solicita ao usuário o código recebido no e-mail.
   6. Se o código for válido, executa `setApiKeyOpenAINTapp()` para salvar a chave de API institucional e retorna `true`.
   7. Se inválido ou em caso de erro no envio do e-mail, retorna `false`.
+
+### `enviarEmail(email, codigo)`
+- **Descrição**: Envia o e-mail contendo o código de validação via transporter do `nodemailer`.
+
+### `gerarCodigo()`, `validarCodigo(email, codigo)`, `isFormatoEmailValido(email)`, `emailTemDominioNtapp(email)`
+- **Descrição**: Funções utilitárias puras de geração e verificação de regras de e-mail e código OTP temporário.

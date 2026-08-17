@@ -26,34 +26,13 @@ function cleanCacheFile() {
 }
 
 test("contextManager.js - Cobertura 100% de Gerenciamento de Contexto e Ramificações (Padrão AAA)", async (t) => {
-  let mockServer;
-
-  t.before(async () => {
-    await new Promise((resolve) => {
-      mockServer = http.createServer((req, res) => {
-        res.writeHead(200, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ choices: [{ message: { content: "Resumo mock" } }] }));
-      });
-      mockServer.listen(9998, "127.0.0.1", resolve);
-    });
-  });
-
-  t.after(async () => {
-    if (mockServer) {
-      if (typeof mockServer.closeAllConnections === "function") {
-        mockServer.closeAllConnections();
-      }
-      await new Promise((resolve) => mockServer.close(resolve));
-    }
-  });
-
   t.beforeEach(() => {
     cleanCacheFile();
     saveConfig({
       OPENAI_API_KEY: "sk-test-key",
       OPENAI_API_MODEL: "gpt-5-nano",
       OPENAI_RESPONSE_LANGUAGE: "pt-BR",
-      OPENAI_API_BASEURL: "http://127.0.0.1:9998/v1"
+      OPENAI_API_BASEURL: "https://api.openai.com/v1"
     });
   });
 
@@ -98,22 +77,36 @@ test("contextManager.js - Cobertura 100% de Gerenciamento de Contexto e Ramifica
       { filename: "sem_diff.js", diff: null },
       { filename: "curto.js", diff: "const x = 1;" }
     ];
-    const res1 = await buildContextForFiles(files1, "analyze");
+    const res1 = await buildContextForFiles(files1, "analyze", {
+      getModelContextLimitFn: async () => 128000,
+      summarizeTextFn: async () => "Resumo mock"
+    });
     assert.equal(res1[0].filename, "sem_diff.js");
     assert.equal(res1[1].diff, "const x = 1;");
 
     // Act 2: com diff grande e re-sumarização (combined.length > maxCombinedChars)
     const files2 = [{ filename: "grande.js", diff: "DIFF_CHUNK_CONTENT_".repeat(10) }];
-    const res2 = await buildContextForFiles(files2, "analyze", { maxChars: 30, maxCombinedChars: 5 });
+    const res2 = await buildContextForFiles(files2, "analyze", {
+      maxChars: 30,
+      maxCombinedChars: 5,
+      summarizeTextFn: async () => "Resumo mock"
+    });
     assert.match(res2[0].diff, /\/\* SUMMARY:\nResumo mock\n\*\//);
 
     // Act 3: com diff grande sem re-sumarização (combined.length <= maxCombinedChars)
     cleanCacheFile();
-    const res3 = await buildContextForFiles(files2, "analyze", { maxChars: 30, maxCombinedChars: 1000 });
+    const res3 = await buildContextForFiles(files2, "analyze", {
+      maxChars: 30,
+      maxCombinedChars: 1000,
+      summarizeTextFn: async () => "Resumo mock"
+    });
     assert.match(res3[0].diff, /\/\* SUMMARY:\n/);
 
     // Act 4: leitura do cache gerado
-    const resCached = await buildContextForFiles(files2, "analyze", { maxChars: 30 });
+    const resCached = await buildContextForFiles(files2, "analyze", {
+      maxChars: 30,
+      summarizeTextFn: async () => "Resumo mock"
+    });
     assert.match(resCached[0].diff, /\/\* SUMMARY \(cached\):/);
   });
 
@@ -176,16 +169,13 @@ test("contextManager.js - Cobertura 100% de Gerenciamento de Contexto e Ramifica
 
   await t.test("buildContextForFiles deve tratar exceção graciosa quando summarizeFileChunks falha", async () => {
     // Arrange
-    saveConfig({
-      OPENAI_API_KEY: "sk-invalid",
-      OPENAI_API_MODEL: "gpt-5-nano",
-      OPENAI_RESPONSE_LANGUAGE: "pt-BR",
-      OPENAI_API_BASEURL: "http://127.0.0.1:1111/v1" // Porta sem servidor
-    });
     const fileLongo = { filename: "erro.js", diff: "EXTRA_LONG_".repeat(30) };
 
     // Act
-    const result = await buildContextForFiles([fileLongo], "analyze", { maxChars: 10 });
+    const result = await buildContextForFiles([fileLongo], "analyze", {
+      maxChars: 10,
+      summarizeTextFn: () => { throw new Error("Connection error."); }
+    });
 
     // Assert
     assert.equal(result[0].filename, "erro.js");

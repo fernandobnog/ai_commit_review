@@ -31,19 +31,21 @@ Ao carregar o módulo, o diretório é criado automaticamente via `fs.ensureDirS
 
 ---
 
-## 🔄 Funções Exportadas
+### `ensureConfigDirectory()`
+- **Descrição**: Cria o diretório de configurações do sistema operacional caso não exista.
+- **Retorno**: `boolean` indicando sucesso.
 
-### `loadConfig()`
-- **Descrição**: Carrega o conteúdo do arquivo `.config.json`.
+### `loadConfig(filePath = process.env.ACR_CONFIG_FILE || configFilePath)`
+- **Descrição**: Carrega o conteúdo do arquivo `.config.json` ou caminho customizado.
 - **Retorno**: `Object` contendo as configurações lidas do JSON. Retorna `{}` se o arquivo não existir ou se ocorrer um erro na leitura.
 
-### `saveConfig(config)`
-- **Parâmetros**: `config` (`Object`) - Objeto de configuração a ser gravado.
-- **Descrição**: Grava o objeto `config` no arquivo `.config.json` formatado com 2 espaços de recuo (`{ spaces: 2 }`).
+### `saveConfig(config, filePath = process.env.ACR_CONFIG_FILE || configFilePath)`
+- **Parâmetros**: `config` (`Object`) - Objeto de configuração a ser gravado, `filePath` (`string` opcional).
+- **Descrição**: Grava o objeto `config` no arquivo de configuração formatado com 2 espaços de recuo (`{ spaces: 2 }`).
 
-### `deleteConfigFile()`
+### `deleteConfigFile(filePath = process.env.ACR_CONFIG_FILE || configFilePath)`
 - **Descrição**: Remove o arquivo `.config.json` do disco se ele existir.
 - **Retorno**: `boolean` (`true` se excluído com sucesso; `false` se o arquivo não existir ou se ocorrer falha).
 
 ### `configFilePath`
-- **Descrição**: Constante exportada contendo o caminho absoluto completo até o arquivo `.config.json`.
+- **Descrição**: Constante exportada contendo o caminho absoluto padrão até o arquivo `.config.json`.
