@@ -75,7 +75,16 @@ test("contextManager.js - Cobertura 100% de Gerenciamento de Contexto e Ramifica
   });
 
   await t.test("buildContextForFiles deve cobrir todas as ramificações de options e diffs nulos/curtos", async () => {
-    // Act 1: sem options (usando fallbacks de maxChars e maxCombinedChars)
+    // Act 0: chamada sem argumento options (cobrindo fallbacks de getModelContextLimit, summarizeText e options = {})
+    const files0 = [
+      { filename: "sem_diff.js", diff: null },
+      { filename: "curto.js", diff: "const x = 1;" }
+    ];
+    const res0 = await buildContextForFiles(files0, "analyze");
+    assert.equal(res0[0].filename, "sem_diff.js");
+    assert.equal(res0[1].diff, "const x = 1;");
+
+    // Act 1: com options explícitos
     const files1 = [
       { filename: "sem_diff.js", diff: null },
       { filename: "curto.js", diff: "const x = 1;" }
@@ -114,9 +123,11 @@ test("contextManager.js - Cobertura 100% de Gerenciamento de Contexto e Ramifica
   });
 
   await t.test("ensureCache, readCache e writeCache devem cobrir ramificações de arquivos vazios/ausentes e erros", () => {
-    // Act 1: ensureCache quando CACHE_DIR existe mas CACHE_FILE não existe
+    // Act 1: ensureCache quando nem CACHE_DIR nem CACHE_FILE existem
     cleanCacheFile();
-    if (!fs.existsSync(CACHE_DIR)) fs.mkdirSync(CACHE_DIR);
+    if (fs.existsSync(CACHE_DIR)) {
+      try { fs.rmSync(CACHE_DIR, { recursive: true, force: true }); } catch (e) {}
+    }
     ensureCache();
     assert.ok(fs.existsSync(CACHE_FILE));
 

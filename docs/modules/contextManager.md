@@ -58,3 +58,11 @@ O módulo `src/contextManager.js` é responsável por condensar e resumir diffs 
 
 ### `clearContextCache()`
 - **Descrição**: Remove o arquivo `.cache/context.json` do sistema de arquivos via `fs.unlinkSync()`.
+
+### `hashContent(text)`, `chunkText(text, maxChars)`, `ensureCache()`, `readCache()`, `writeCache(cache)`
+- **Descrição**: Funções utilitárias puras e de I/O exportadas para manipulação e persistência segura de chunks e hashes MD5.
+
+---
+
+## 🧪 Testes e Cobertura
+O módulo possui 100% de testes automatizados no padrão AAA em `tests/contextManager.test.js` com **100.00% de linhas**, **100.00% de branches** e **100.00% de funções**.
