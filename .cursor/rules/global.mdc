@@ -1,0 +1,16 @@
+---
+description: Global AI Governance and Coding Rules for ai-commit-review
+globs: "*"
+---
+
+# Global Governance Rules
+
+Always follow the governance rules defined in [AGENTS.md](file:///d:/GitHub/ai_commit_review/AGENTS.md), the testing strategy in [docs/TESTING_STRATEGY.md](file:///d:/GitHub/ai_commit_review/docs/TESTING_STRATEGY.md), security guidelines in [docs/SECURITY_AND_RESILIENCE.md](file:///d:/GitHub/ai_commit_review/docs/SECURITY_AND_RESILIENCE.md), and system architecture in [docs/ARCHITECTURE.md](file:///d:/GitHub/ai_commit_review/docs/ARCHITECTURE.md).
+
+- **Docs-as-Code Policy**: Concurrently update `docs/modules/<module>.md` for any changes in logic, parameters, or contracts. Update `docs/MAP_INDEX.md` for new modules.
+- **Function limit**: <= 30 lines.
+- **File limit**: <= 250 lines.
+- **Cyclomatic Complexity**: <= 5.
+- **Security**: Mandatory input sanitization, safe command execution without raw string interpolation (`execFileSync`), no hardcoded secrets, no `process.exit()` in internal helper modules.
+- **Testing**: AAA pattern (Arrange, Act, Assert) required for all new features and services.
+- **Golden Files**: Refer to `src/models.js`, `src/config.js`, `src/contextManager.js`, and `src/crypto.js`.

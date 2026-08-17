@@ -1,4 +1,4 @@
-// testServerUpdate.js
+// productionServerUpdate.js
 import {
   createPullRequest,
   mergeBranch,
@@ -82,7 +82,7 @@ export async function updateServerToProduction() {
         console.log(chalk.yellow("Operation cancelled by user."));
         return;
       }
-    } 
+    }
     if (!deployConfirm) {
       console.log(chalk.yellow("Operation cancelled by user."));
       process.exit(0);
