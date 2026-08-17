@@ -159,24 +159,7 @@ export async function updateValidApiKey(deps = {}) {
   }
 }
 
-/**
- * Updates the configuration from a key-value string.
- * @param {string} configString - The configuration string in the format KEY=VALUE.
- * @throws Will throw an error if the format is invalid or if the key/value is not supported.
- */
-export function updateConfigFromString(configString) {
-  const index = configString.indexOf("=");
-  if (index === -1) {
-    throw new Error("Invalid format.\n\nUse 'acr set_config KEY=VALUE'");
-  }
-
-  const key = configString.substring(0, index).trim().toUpperCase();
-  const value = configString.substring(index + 1).trim();
-
-  if (!key || !value) {
-    throw new Error("Invalid format.\n\nUse 'acr set_config KEY=VALUE'");
-  }
-
+function validateConfigKey(key) {
   const validKeys = Object.values(ConfigKeys);
   if (!validKeys.includes(key)) {
     throw new Error(
@@ -186,7 +169,9 @@ export function updateConfigFromString(configString) {
         `\n\nUse one of the listed keys.`
     );
   }
+}
 
+function validateConfigValue(key, value) {
   if (key === ConfigKeys.OPENAI_API_MODEL) {
     const validModels = Object.values(OpenAIModels);
     if (!validModels.includes(value)) {
@@ -214,6 +199,28 @@ export function updateConfigFromString(configString) {
       );
     }
   }
+}
+
+/**
+ * Updates the configuration from a key-value string.
+ * @param {string} configString - The configuration string in the format KEY=VALUE.
+ * @throws Will throw an error if the format is invalid or if the key/value is not supported.
+ */
+export function updateConfigFromString(configString) {
+  const index = configString.indexOf("=");
+  if (index === -1) {
+    throw new Error("Invalid format.\n\nUse 'acr set_config KEY=VALUE'");
+  }
+
+  const key = configString.substring(0, index).trim().toUpperCase();
+  const value = configString.substring(index + 1).trim();
+
+  if (!key || !value) {
+    throw new Error("Invalid format.\n\nUse 'acr set_config KEY=VALUE'");
+  }
+
+  validateConfigKey(key);
+  validateConfigValue(key, value);
 
   const config = loadConfig();
   config[key] = value;

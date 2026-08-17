@@ -10,7 +10,7 @@ O arquivo [`package.json`](file:///d:/GitHub/ai_commit_review/package.json) é o
 | Propriedade | Valor Explícito | Descrição Técnica |
 | :--- | :--- | :--- |
 | `name` | `"ai-commit-review"` | Nome do pacote no ecossistema Node.js / NPM. |
-| `version` | `"1.2.88"` | Versão semântica atual do pacote. |
+| `version` | `"1.2.89"` | Versão semântica atual do pacote. |
 | `type` | `"module"` | Define o padrão nativo de módulos da aplicação como ES Modules (ESM). |
 | `description` | `"AI-powered commit and code analysis from the local Git repository"` | Descrição resumida da funcionalidade do projeto. |
 | `main` | `"dist/bundle.cjs"` | Arquivo principal de distribuição do módulo. |
@@ -26,6 +26,8 @@ O arquivo [`package.json`](file:///d:/GitHub/ai_commit_review/package.json) é o
 | Script | Comando Executado | Finalidade Técnica Explícita |
 | :--- | :--- | :--- |
 | `start` | `node -r dotenv/config cli.js` | Executa o arquivo [`cli.js`](file:///d:/GitHub/ai_commit_review/cli.js) injetando o pré-carregamento de variáveis de ambiente via `dotenv/config`. |
+| `test` | `node --test "tests/*.test.js"` | Executa toda a suíte de testes de forma nativa e cross-platform. |
+| `test:coverage` | `node --experimental-test-coverage --test --test-concurrency=1 "tests/*.test.js"` | Executa os testes gerando o relatório de cobertura de código nativo do Node.js. |
 | `publish-npm` | `powershell -File ./publish-npm.ps1` | Aciona a execução do script PowerShell [`publish-npm.ps1`](file:///d:/GitHub/ai_commit_review/publish-npm.ps1) para automação de publicação. |
 | `build` | `webpack --mode production` | Executa o empacotador Webpack no modo de produção utilizando [`webpack.config.js`](file:///d:/GitHub/ai_commit_review/webpack.config.js). |
 

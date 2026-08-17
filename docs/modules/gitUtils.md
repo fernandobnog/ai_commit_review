@@ -1,7 +1,9 @@
 # 📄 Documentação do Módulo: `src/gitUtils.js`
 
 ## 📌 Visão Geral
-O módulo `src/gitUtils.js` fornece um conjunto abrangente de funções auxiliares para interagir com o repositório Git local e com o GitHub CLI (`gh`). Ele abstrai a execução de comandos de controle de versão (commits, diffs, branches, stashes, merges, resolução de conflitos e pull requests) utilizando o módulo síncrono `child_process.execSync`.
+O módulo `src/gitUtils.js` atua como um padrão de projeto **Facade** (Fachada) unificado para todo o sistema de controle de versão da aplicação. Ele não implementa lógica diretamente; em vez disso, agrega, encapsula e reexporta funções utilitárias especializadas de submódulos de mais baixo nível ([`src/gitCore.js`](file:///d:/GitHub/ai_commit_review/src/gitCore.js), [`src/gitBranch.js`](file:///d:/GitHub/ai_commit_review/src/gitBranch.js), e [`src/githubCli.js`](file:///d:/GitHub/ai_commit_review/src/githubCli.js)).
+
+Dessa forma, fornece uma interface única e simplificada para commits, diffs, branches, stashes, merges, resolução de conflitos e criação de pull requests.
 
 ---
 

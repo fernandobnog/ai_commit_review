@@ -81,20 +81,15 @@ acr set_config OPENAI_API_KEY=sk-your-key
 Use the `set_config` command:
 
 ```bash
-acr set_config OPENAI_API_MODEL=gpt-4o-mini
+acr set_config OPENAI_API_MODEL=gpt-5-nano
 ```
 
 **Available Models:**
 
-The tool currently integrates only with OpenAI’s ChatGPT models:
+The tool integrates with the following models:
 
-- `gpt-4o`
-- `gpt-4o-mini`
-- `gpt-4`
-- `gpt-4-turbo`
-- `gpt-3.5-turbo`
-- `o1-preview`
-- `o1-mini`
+- `gpt-5-nano` (Default NTAPP / OpenAI model)
+- `openai/gpt-oss-20b` (Default local model fallback)
 
 ### Set the Response Language
 
@@ -200,7 +195,7 @@ acr help
 - **Set the OpenAI Model:**
 
   ```bash
-  acr set_config OPENAI_API_MODEL=gpt-4o-mini
+  acr set_config OPENAI_API_MODEL=gpt-5-nano
   ```
 
 - **Set the Response Language:**
@@ -254,7 +249,7 @@ Contributions are welcome! Feel free to open issues and pull requests in the rep
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+This project is licensed under the ISC License. See the [LICENSE](LICENSE) file for details.
 
 ## Notes and Suggestions
 
@@ -262,7 +257,6 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 - **API Limitations:** Be mindful of OpenAI API token limits. Analyzing only diffs helps avoid exceeding these limits.
 - **Sensitive Configurations:** Do not expose your API key in public or in files that will be committed.
 - **Future Improvements:**
-  - Implement unit tests to ensure code quality.
   - Add support for additional OpenAI models as they become available.
   - Enhance error handling and user messages.
 - **Support:** If you encounter issues or have questions, open an issue on GitHub.

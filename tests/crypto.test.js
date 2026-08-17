@@ -35,6 +35,18 @@ test("crypto.js - Cobertura 100% de Criptografia AES-256-CBC (Padrão AAA)", asy
     assert.equal(decifrado, textoOriginal);
   });
 
+  await t.test("deve decriptografar texto legado sem IV (retrocompatibilidade) com sucesso", () => {
+    // Arrange
+    process.env.PASSWORD_CRYPTO_KEY = "segredo_para_teste_unitario";
+    const legacyCipher = "0a7ed6ea56f0cd14a159382f61cb20e655f5dcd95e06a060ee02f92ea2667e5331ce5593cf0fdaaca35500be2253267f";
+
+    // Act
+    const decifrado = decriptografar(legacyCipher);
+
+    // Assert
+    assert.equal(decifrado, "Teste CLI");
+  });
+
   await t.test("deve tratar erro ao tentar decriptografar string hex inválida", () => {
     // Arrange
     process.env.PASSWORD_CRYPTO_KEY = "segredo_para_teste_unitario";

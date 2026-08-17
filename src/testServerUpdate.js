@@ -44,6 +44,23 @@ export function getDockerFolders(baseDir) {
   return folders;
 }
 
+async function writeNewVersion(versionFilePath, d) {
+  const { version } = await d.promptFn([
+    {
+      type: 'input',
+      name: 'version',
+      message: 'Enter the new version (format yyyy.nn.nnn):',
+      validate: (input) => {
+        const versionRegex = /^\d{4}\.\d{2}\.\d{3}$/;
+        return versionRegex.test(input) ? true : 'The version must be in the format yyyy.nn.nnn';
+      },
+    },
+  ]);
+
+  fs.writeFileSync(versionFilePath, version + os.EOL, 'utf8');
+  console.log(chalk.green('Version updated successfully!'));
+}
+
 export async function promptVersionUpdate(folder, deps = {}) {
   const d = getDeps(deps);
   const versionFilePath = path.join(d.baseDir, folder, 'versao.txt');
@@ -59,20 +76,7 @@ export async function promptVersionUpdate(folder, deps = {}) {
   ]);
 
   if (updateVersion) {
-    const { version } = await d.promptFn([
-      {
-        type: 'input',
-        name: 'version',
-        message: 'Enter the new version (format yyyy.nn.nnn):',
-        validate: (input) => {
-          const versionRegex = /^\d{4}\.\d{2}\.\d{3}$/;
-          return versionRegex.test(input) ? true : 'The version must be in the format yyyy.nn.nnn';
-        },
-      },
-    ]);
-
-    fs.writeFileSync(versionFilePath, version + os.EOL, 'utf8');
-    console.log(chalk.green('Version updated successfully!'));
+    await writeNewVersion(versionFilePath, d);
   } else {
     console.log(chalk.yellow('Version was not updated.'));
   }

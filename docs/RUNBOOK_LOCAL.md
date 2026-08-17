@@ -89,25 +89,20 @@ Conforme estabelecido em `docs/TESTING_STRATEGY.md` e `AGENTS.md`, a suíte de t
 ### 4.1 Execução de Suíte Completa de Testes
 ```bash
 # Executar todos os testes unitários e de integração:
-npx vitest run
+npm test
 
-# Executar testes em modo watch durante desenvolvimento:
-npx vitest
+# Executar com relatório de cobertura de código nativo:
+npm run test:coverage
 ```
 
 ### 4.2 Execução de Teste Atômico/Isolado (Essencial para IA e DX)
 Para rodar apenas um arquivo específico ou um teste individual rapidamente sem rodar toda a suíte:
 ```bash
 # Rodar apenas os testes do módulo de criptografia:
-npx vitest run tests/crypto.test.js
+node --test tests/crypto.test.js
 
-# Rodar apenas testes que correspondam a um nome de função:
-npx vitest run -t "deve decriptografar com sucesso"
-```
-
-### 4.3 Verificação de Cobertura de Código (`Coverage`)
-```bash
-npx vitest run --coverage
+# Rodar apenas testes que correspondam a um padrão no nome (utilizando regex):
+node --test --test-name-pattern="deve decriptografar" tests/crypto.test.js
 ```
 
 ### 4.4 Verificação de Tipos e Linters / Validação de Clean Code

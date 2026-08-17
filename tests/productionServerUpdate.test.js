@@ -9,7 +9,6 @@ import assert from "node:assert/strict";
 import inquirer from "inquirer";
 import {
   getDeps,
-  verificaBranch,
   ensureBranch,
   checkUncommittedChanges,
   confirmProductionDeploy,
@@ -67,11 +66,7 @@ test("productionServerUpdate.js - Cobertura 100% de Linhas, Branches e Funções
     assert.equal(injected.createPullRequestFn, dummy);
   });
 
-  await t.test("verificaBranch deve retornar o nome da branch informado ou padrao", async () => {
-    const deps = { promptFn: createPromptMock([{ branch: "feature/test" }]) };
-    const branch = await verificaBranch(deps);
-    assert.equal(branch, "feature/test");
-  });
+
 
   await t.test("ensureBranch deve alternar branch se diferente ou apenas informar se ja estiver nela", () => {
     let checkedOutBranch = "";

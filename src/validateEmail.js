@@ -132,6 +132,40 @@ export async function configBaseUrlLocal() {
 }
 
 
+async function sendAndValidateOtp(email) {
+  const codigo = gerarCodigo();
+  codigoMap.set(email, {
+    code: codigo,
+    expires: Date.now() + 10 * 60 * 1000,
+  });
+
+  console.log("Sending code to email...");
+  try {
+    await enviarEmail(email, codigo);
+    console.log(chalk.green("Code sent! Check your inbox."));
+  } catch (emailError) {
+    console.error(chalk.red("Error sending email:"), emailError);
+    return false;
+  }
+
+  const { codigoUsuario } = await inquirer.prompt([
+    {
+      type: "input",
+      name: "codigoUsuario",
+      message: "Enter the code sent to your email:",
+    },
+  ]);
+
+  if (validarCodigo(email, codigoUsuario)) {
+    setApiKeyOpenAINTapp();
+    console.log(chalk.green("✅ Code successfully validated!"));
+    return true;
+  } else {
+    console.log(chalk.red("❌ Invalid or expired code."));
+    return false;
+  }
+}
+
 export async function configByNTAPPEmail() {
   const { isNTapp } = await inquirer.prompt([
     {
@@ -141,50 +175,17 @@ export async function configByNTAPPEmail() {
     },
   ]);
 
-  if (isNTapp) {
-    console.log(chalk.yellow("Starting default configuration for NTAPP..."));
-    const email = await obterEmail();
-    if (!email) {
-        console.log(chalk.red("❌ Invalid email or not in the ntapp.com.br domain."));
-        return false;
-    }
-
-    const codigo = gerarCodigo();
-    codigoMap.set(email, {
-      code: codigo,
-      expires: Date.now() + 10 * 60 * 1000,
-    });
-
-    console.log("Sending code to email...");
-    try {
-      await enviarEmail(email, codigo);
-      console.log(
-        chalk.green("Code sent! Check your inbox.")
-      );
-    } catch (emailError) {
-      console.error(chalk.red("Error sending email:"), emailError);
-      return false; // Returns false in case of email sending error
-    }
-
-    const { codigoUsuario } = await inquirer.prompt([
-      {
-        type: "input",
-        name: "codigoUsuario",
-        message: "Enter the code sent to your email:",
-      },
-    ]);
-
-    if (validarCodigo(email, codigoUsuario)) {
-      //TODO Não está salvando as configs de IA NTAPP
-      setApiKeyOpenAINTapp();
-      console.log(chalk.green("✅ Code successfully validated!"));
-      return true; // Returns true to indicate success in configuration
-    } else {
-      console.log(chalk.red("❌ Invalid or expired code."));
-      return false; // Returns false if the code is invalid
-    }
-  } else {
+  if (!isNTapp) {
     console.log(chalk.yellow("Default configuration will be used."));
-    return false; // Returns false if not NTapp
+    return false;
   }
+
+  console.log(chalk.yellow("Starting default configuration for NTAPP..."));
+  const email = await obterEmail();
+  if (!email) {
+    console.log(chalk.red("❌ Invalid email or not in the ntapp.com.br domain."));
+    return false;
+  }
+
+  return sendAndValidateOtp(email);
 }

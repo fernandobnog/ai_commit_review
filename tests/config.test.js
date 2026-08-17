@@ -118,6 +118,41 @@ test("config.js - Cobertura 100% de Configuração e I/O por Plataforma (Padrão
     fs.writeJsonSync = originalWriteJsonSync;
   });
 
+  await t.test("saveConfig deve cobrir alteração de permissão em POSIX e limpeza de temp em caso de erro", () => {
+    // Arrange
+    const originalChmodSync = fs.chmodSync;
+    const originalWriteJsonSync = fs.writeJsonSync;
+    const originalExistsSync = fs.existsSync;
+    const originalRemoveSync = fs.removeSync;
+
+    let chmodCalled = false;
+    fs.chmodSync = () => { chmodCalled = true; };
+
+    // Act 1: Chmod POSIX sucess
+    saveConfig({ key: "posix" }, undefined, "linux");
+    assert.equal(chmodCalled, true);
+
+    // Act 2: Chmod POSIX throwing error
+    fs.chmodSync = () => { throw new Error("Chmod failure"); };
+    assert.doesNotThrow(() => saveConfig({ key: "posix_fail" }, undefined, "linux"));
+
+    // Act 3: Save failure and temp file cleanup
+    let tempFileRemoved = false;
+    fs.writeJsonSync = () => { throw new Error("Write JSON error"); };
+    fs.existsSync = (p) => p.endsWith(".tmp");
+    fs.removeSync = (p) => { if (p.endsWith(".tmp")) tempFileRemoved = true; };
+
+    assert.doesNotThrow(() => saveConfig({ key: "fail" }));
+    assert.equal(tempFileRemoved, true);
+
+    // Cleanup
+    fs.chmodSync = originalChmodSync;
+    fs.writeJsonSync = originalWriteJsonSync;
+    fs.existsSync = originalExistsSync;
+    fs.removeSync = originalRemoveSync;
+    deleteConfigFile();
+  });
+
   await t.test("configFilePath deve ser exposto como string válida de caminho", () => {
     // Arrange & Act & Assert
     assert.equal(typeof configFilePath, "string");

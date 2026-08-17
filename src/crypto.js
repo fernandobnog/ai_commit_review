@@ -18,18 +18,29 @@ export function obterChave() {
     }
     return chave;
 }
-const iv = Buffer.alloc(16, 0);
+const staticIv = Buffer.alloc(16, 0);
 
 function criptografarsimples(texto) {
+    const iv = crypto.randomBytes(16);
     const cifrador = crypto.createCipheriv(algoritmo, obterChave(), iv);
     let criptografado = cifrador.update(texto, 'utf8', 'hex');
     criptografado += cifrador.final('hex');
-    return criptografado;
+    return iv.toString('hex') + ':' + criptografado;
 }
 
 function decriptografarsimples(texto) {
-    const decifrador = crypto.createDecipheriv(algoritmo, obterChave(), iv);
-    let decriptografado = decifrador.update(texto, 'hex', 'utf8');
+    const partes = texto.split(':');
+    let ivParaUso;
+    let textoParaDecifrar;
+    if (partes.length === 2) {
+        ivParaUso = Buffer.from(partes[0], 'hex');
+        textoParaDecifrar = partes[1];
+    } else {
+        ivParaUso = staticIv;
+        textoParaDecifrar = texto;
+    }
+    const decifrador = crypto.createDecipheriv(algoritmo, obterChave(), ivParaUso);
+    let decriptografado = decifrador.update(textoParaDecifrar, 'hex', 'utf8');
     decriptografado += decifrador.final('utf8');
     return decriptografado;
 }
@@ -50,6 +61,22 @@ export function decriptografar(texto) {
     return resultado;
 }
 
+function handleCliAction(acao, texto) {
+    if (acao === 'Encrypt') {
+        const resultadoCripto = criptografar(texto);
+        console.log('Encrypted text:', resultadoCripto);
+        return resultadoCripto;
+    }
+    try {
+        const resultadoDecripto = decriptografar(texto);
+        console.log('Decrypted text:', resultadoDecripto);
+        return resultadoDecripto;
+    } catch (e) {
+        console.error('Error decrypting. Verify that the text is correct and has been previously encrypted.');
+        return null;
+    }
+}
+
 export function criptografarcli(promptFn = inquirer.prompt) {
     return promptFn([
         {
@@ -64,20 +91,7 @@ export function criptografarcli(promptFn = inquirer.prompt) {
             message: 'Enter the text:'
         }
     ]).then(({ acao, texto }) => {
-        if (acao === 'Encrypt') {
-            const resultadoCripto = criptografar(texto);
-            console.log('Encrypted text:', resultadoCripto);
-            return resultadoCripto;
-        } else if (acao === 'Decrypt') {
-            try {
-                const resultadoDecripto = decriptografar(texto);
-                console.log('Decrypted text:', resultadoDecripto);
-                return resultadoDecripto;
-            } catch (e) {
-                console.error('Error decrypting. Verify that the text is correct and has been previously encrypted.');
-                return null;
-            }
-        }
+        return handleCliAction(acao, texto);
     }).catch(error => {
         console.error('An error occurred:', error);
         throw error;

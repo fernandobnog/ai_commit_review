@@ -5,14 +5,18 @@ import chalk from "chalk";
 /**
  * Displays the help message to the user.
  */
-export function showHelp() {
-  const usage = `${chalk.bold("Usage:")}
+export function getUsageHelp() {
+  return `${chalk.bold("Usage:")}
   ${chalk.cyan("acr [commands]")}`;
+}
 
-  const description = `${chalk.bold("Description:")}
+export function getDescriptionHelp() {
+  return `${chalk.bold("Description:")}
   A tool to analyze and create commits and code with AI assistance directly from the local Git repository.`;
+}
 
-  const requiredVariables = `${chalk.bold("Required Variables:")}
+export function getRequiredVariablesHelp() {
+  return `${chalk.bold("Required Variables:")}
   - ${chalk.yellow("OPENAI_API_KEY")}: Your OpenAI API key.
   - ${chalk.yellow(
     "OPENAI_API_MODEL"
@@ -20,8 +24,10 @@ export function showHelp() {
   - ${chalk.yellow(
     "OPENAI_RESPONSE_LANGUAGE"
   )}: The language for AI responses (e.g., en-US, pt-BR).`;
+}
 
-  const commands = `${chalk.bold("Commands:")}
+export function getCommandsHelp() {
+  return `${chalk.bold("Commands:")}
   ${chalk.cyan(
     "acr analyze"
   )}                  Lists and analyzes the latest commits.
@@ -32,8 +38,10 @@ export function showHelp() {
     "acr set_config <key=value>"
   )} Updates the configurations (e.g., OPENAI_API_KEY, OPENAI_API_MODEL, OPENAI_RESPONSE_LANGUAGE).
   ${chalk.cyan("acr help")}                     Displays this detailed help message.`;
+}
 
-  const examples = `${chalk.bold("Examples:")}
+export function getExamplesHelp() {
+  return `${chalk.bold("Examples:")}
   - Analyze a specific commit:
     ${chalk.cyan("acr 123456")}
 
@@ -51,8 +59,10 @@ export function showHelp() {
 
   - Create a commit with AI assistance:
     ${chalk.cyan("acr create")}`;
+}
 
-  const tips = `${chalk.bold("Tips:")}
+export function getTipsHelp() {
+  return `${chalk.bold("Tips:")}
   - Use ${chalk.cyan(
     "acr set_config"
   )} to configure your preferences before using the tool.
@@ -61,18 +71,20 @@ export function showHelp() {
   )}) is kept secure.
   - Analyze only the most recent commits to improve accuracy and save API resources.
   - Refer to the documentation or open an issue on GitHub if you encounter problems.`;
+}
 
+export function showHelp() {
   return `
-${usage}
+${getUsageHelp()}
 
-${description}
+${getDescriptionHelp()}
 
-${requiredVariables}
+${getRequiredVariablesHelp()}
 
-${commands}
+${getCommandsHelp()}
 
-${examples}
+${getExamplesHelp()}
 
-${tips}
+${getTipsHelp()}
   `;
 }

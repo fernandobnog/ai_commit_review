@@ -3,9 +3,9 @@
 Este documento estabelece o plano formal, a matriz de asserções e os relatórios de cobertura de código da suíte de testes automatizados do repositório `ai-commit-review`.
 
 > [!NOTE]
-> **Status da Execução dos Testes**: **100% IMPLEMENTADO E APROVADO**.  
+> **Status da Execução dos Testes**: **100% IMPLEMENTADO, COBERTO E APROVADO**.  
 > Todos os módulos possuem testes automatizados no padrão **AAA (Arrange, Act, Assert)** executados via runner nativo (`npm test`).  
-> **42/42 testes aprovados com 0 falhas**.
+> **139/139 testes aprovados com 0 falhas**.
 
 ---
 
@@ -13,27 +13,34 @@ Este documento estabelece o plano formal, a matriz de asserções e os relatóri
 
 Métricas obtidas via relatório nativo de cobertura (`node --experimental-test-coverage`):
 
-- **Linhas Totais Cobertas (`line %`)**: **58.56%**
-- **Ramificações Cobertas (`branch %`)**: **66.12%**
-- **Funções Cobertas (`funcs %`)**: **55.43%**
+- **Linhas Totais Cobertas (`line %`)**: **100.00%**
+- **Ramificações Cobertas (`branch %`)**: **100.00%**
+- **Funções Cobertas (`funcs %`)**: **100.00%**
 
 ### Detalhamento por Módulo:
 
 | Módulo Fonte | Cobertura de Linhas | Cobertura de Funções | Status |
 | :--- | :---: | :---: | :---: |
-| [`src/models.js`](file:///d:/GitHub/ai_commit_review/src/models.js) | **100.00%** | **100.00%** | 🟢 Total |
-| [`src/helpers.js`](file:///d:/GitHub/ai_commit_review/src/helpers.js) | **100.00%** | **100.00%** | 🟢 Total |
-| [`src/prompts.js`](file:///d:/GitHub/ai_commit_review/src/prompts.js) | **100.00%** | **100.00%** | 🟢 Total |
+| [`src/acr-wrapper.js`](file:///d:/GitHub/ai_commit_review/src/acr-wrapper.js) | **100.00%** | **100.00%** | 🟢 Total |
+| [`src/analyzeCommit.js`](file:///d:/GitHub/ai_commit_review/src/analyzeCommit.js) | **100.00%** | **100.00%** | 🟢 Total |
+| [`src/commitFlowHandlers.js`](file:///d:/GitHub/ai_commit_review/src/commitFlowHandlers.js) | **100.00%** | **100.00%** | 🟢 Total |
+| [`src/commitStaged.js`](file:///d:/GitHub/ai_commit_review/src/commitStaged.js) | **100.00%** | **100.00%** | 🟢 Total |
+| [`src/config.js`](file:///d:/GitHub/ai_commit_review/src/config.js) | **100.00%** | **100.00%** | 🟢 Total |
+| [`src/configManager.js`](file:///d:/GitHub/ai_commit_review/src/configManager.js) | **100.00%** | **100.00%** | 🟢 Total |
+| [`src/contextManager.js`](file:///d:/GitHub/ai_commit_review/src/contextManager.js) | **100.00%** | **100.00%** | 🟢 Total |
+| [`src/createCommit.js`](file:///d:/GitHub/ai_commit_review/src/createCommit.js) | **100.00%** | **100.00%** | 🟢 Total |
+| [`src/crypto.js`](file:///d:/GitHub/ai_commit_review/src/crypto.js) | **100.00%** | **100.00%** | 🟢 Total |
+| [`src/gitBranch.js`](file:///d:/GitHub/ai_commit_review/src/gitBranch.js) | **100.00%** | **100.00%** | 🟢 Total |
+| [`src/gitCore.js`](file:///d:/GitHub/ai_commit_review/src/gitCore.js) | **100.00%** | **100.00%** | 🟢 Total |
+| [`src/githubCli.js`](file:///d:/GitHub/ai_commit_review/src/githubCli.js) | **100.00%** | **100.00%** | 🟢 Total |
 | [`src/gitUtils.js`](file:///d:/GitHub/ai_commit_review/src/gitUtils.js) | **100.00%** | **100.00%** | 🟢 Total |
-| [`src/githubCli.js`](file:///d:/GitHub/ai_commit_review/src/githubCli.js) | **83.87%** | **100.00%** | 🟢 Alta |
-| [`src/config.js`](file:///d:/GitHub/ai_commit_review/src/config.js) | **78.85%** | **100.00%** | 🟢 Alta |
-| [`src/configManager.js`](file:///d:/GitHub/ai_commit_review/src/configManager.js) | **62.05%** | **87.50%** | 🟢 Moderada |
-| [`src/contextManager.js`](file:///d:/GitHub/ai_commit_review/src/contextManager.js) | **57.81%** | **70.00%** | 🟢 Moderada |
-| [`src/gitCore.js`](file:///d:/GitHub/ai_commit_review/src/gitCore.js) | **57.59%** | **50.00%** | 🟡 Parcial |
-| [`src/gitBranch.js`](file:///d:/GitHub/ai_commit_review/src/gitBranch.js) | **45.45%** | **40.00%** | 🟡 Parcial |
-| [`src/crypto.js`](file:///d:/GitHub/ai_commit_review/src/crypto.js) | **44.16%** | **50.00%** | 🟡 Parcial |
-| [`src/validateEmail.js`](file:///d:/GitHub/ai_commit_review/src/validateEmail.js) | **21.83%** | **0.00%** | 🟡 Parcial |
-| [`src/openaiUtils.js`](file:///d:/GitHub/ai_commit_review/src/openaiUtils.js) | **19.27%** | **16.67%** | 🟡 Parcial |
+| [`src/helpers.js`](file:///d:/GitHub/ai_commit_review/src/helpers.js) | **100.00%** | **100.00%** | 🟢 Total |
+| [`src/models.js`](file:///d:/GitHub/ai_commit_review/src/models.js) | **100.00%** | **100.00%** | 🟢 Total |
+| [`src/openaiUtils.js`](file:///d:/GitHub/ai_commit_review/src/openaiUtils.js) | **100.00%** | **100.00%** | 🟢 Total |
+| [`src/productionServerUpdate.js`](file:///d:/GitHub/ai_commit_review/src/productionServerUpdate.js) | **100.00%** | **100.00%** | 🟢 Total |
+| [`src/prompts.js`](file:///d:/GitHub/ai_commit_review/src/prompts.js) | **100.00%** | **100.00%** | 🟢 Total |
+| [`src/testServerUpdate.js`](file:///d:/GitHub/ai_commit_review/src/testServerUpdate.js) | **100.00%** | **100.00%** | 🟢 Total |
+| [`src/validateEmail.js`](file:///d:/GitHub/ai_commit_review/src/validateEmail.js) | **100.00%** | **100.00%** | 🟢 Total |
 
 ---
 
@@ -60,12 +67,9 @@ Todo teste unitário ou de integração no repositório segue rigorosamente a es
 
 Comandos para executar os testes e gerar relatório de cobertura:
 ```bash
-# Execução padrão (Linux/Bash)
+# Execução padrão (Cross-platform)
 npm test
-node --experimental-test-coverage --test tests/*.test.js
-
-# Execução no PowerShell (Windows com expansão de globbing)
-node --experimental-test-coverage --test (Get-ChildItem tests/*.test.js)
+npm run test:coverage
 ```
 
 ---
@@ -76,5 +80,3 @@ Ao solicitar ou executar a suíte de testes automatizados:
 1. **Sem Alteração de Estado do Git**: É **estritamente proibido** realizar trocas de commit, `git checkout`, `git switch`, `git reset`, `git add` ou alterar a branch/staged area no repositório de trabalho durante os testes.
 2. **Injeção Obrigatória de Mocks (`safeDeps`)**: Todos os testes unitários e de integração de módulos de fluxo (`createCommit`, `commitStaged`, `gitCore`, `gitBranch`, `gitUtils`, `analyzeCommit`) devem utilizar injeção de dependências (`execSyncFn`, `executeGitCommandFn`, `safeDeps`) para garantir que 0 sub-processos do Git real sejam invocados contra o repositório local.
 3. **Execução Segura em Working Tree Local**: Os testes executam unicamente a partir de dados em memória e mocks estritos, preservando o repositório limpo e inalterado antes, durante e após cada execução.
-
-```

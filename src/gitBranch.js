@@ -71,6 +71,20 @@ export function pushChanges(deps = {}) {
   }
 }
 
+function saveStashAndPull(originalBranch, deps, d) {
+  let hadStash = false;
+  const statusOutput = (d.executeGitCommandFn("git status --porcelain", deps) || "").toString().trim();
+  if (statusOutput.length > 0) {
+    console.log(chalk.blue("ℹ️ Saving uncommitted changes with stash..."));
+    d.executeGitCommandFn("git stash", deps);
+    hadStash = true;
+  }
+
+  console.log(chalk.blue("ℹ️ Updating current branch with git pull..."));
+  d.executeGitCommandFn("git pull --no-rebase", deps);
+  return hadStash;
+}
+
 /**
  * Switches to a target branch handling stashes cleanly.
  */
@@ -82,18 +96,9 @@ export function switchBranch(branch, deps = {}) {
   }
 
   const originalBranch = (d.executeGitCommandFn("git rev-parse --abbrev-ref HEAD", deps) || "").toString().trim();
-  let hadStash = false;
 
   try {
-    const statusOutput = (d.executeGitCommandFn("git status --porcelain", deps) || "").toString().trim();
-    if (statusOutput.length > 0) {
-      console.log(chalk.blue("ℹ️ Saving uncommitted changes with stash..."));
-      d.executeGitCommandFn("git stash", deps);
-      hadStash = true;
-    }
-
-    console.log(chalk.blue("ℹ️ Updating current branch with git pull..."));
-    d.executeGitCommandFn("git pull --no-rebase", deps);
+    const hadStash = saveStashAndPull(originalBranch, deps, d);
 
     d.executeGitCommandFn("git checkout " + branch, deps);
     console.log(chalk.green(`✔ Switched to branch '${branch}' successfully.`));

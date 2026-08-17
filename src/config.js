@@ -99,13 +99,34 @@ export function loadConfig(filePath = process.env.ACR_CONFIG_FILE || configFileP
  * Saves the configuration to the .config.json file.
  * @param {Object} config - Configuration object to save.
  */
-export function saveConfig(config, filePath = process.env.ACR_CONFIG_FILE || configFilePath) {
+export function saveConfig(config, filePath = process.env.ACR_CONFIG_FILE || configFilePath, overridePlatform = process.platform) {
+  const dir = path.dirname(filePath);
+  const tempFilePath = `${filePath}.tmp`;
   try {
-    fs.ensureDirSync(path.dirname(filePath));
-    fs.writeJsonSync(filePath, config, { spaces: 2 });
+    fs.ensureDirSync(dir);
+    // Write atomically to temporary file
+    fs.writeJsonSync(tempFilePath, config, { spaces: 2 });
+    
+    // Set strict permissions (0o600) on the temp file before replacing the target file
+    if (overridePlatform !== "win32") {
+      try {
+        fs.chmodSync(tempFilePath, 0o600);
+      } catch (chmodErr) {
+        console.warn("Warning: Failed to set strict permissions on configuration file:", chmodErr.message);
+      }
+    }
+    
+    // Rename/replace target file atomically
+    fs.renameSync(tempFilePath, filePath);
     console.log(`Configurations successfully saved to: ${filePath}`);
   } catch (error) {
     console.error("Error saving configurations:", error);
+    // Cleanup temp file in case of failure
+    try {
+      if (fs.existsSync(tempFilePath)) {
+        fs.removeSync(tempFilePath);
+      }
+    } catch (_) {}
   }
 }
 

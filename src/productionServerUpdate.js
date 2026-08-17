@@ -20,19 +20,6 @@ export function getDeps(deps = {}) {
   };
 }
 
-export async function verificaBranch(deps = {}) {
-  const d = getDeps(deps);
-  const { branch } = await d.promptFn([
-    {
-      type: "input",
-      name: "branch",
-      message: "Enter the branch name to verify:",
-      default: "teste"
-    }
-  ]);
-  return branch;
-}
-
 export function ensureBranch(targetBranch, deps = {}) {
   const d = getDeps(deps);
   const currentBranch = d.executeGitCommandFn("git rev-parse --abbrev-ref HEAD");
@@ -58,6 +45,30 @@ export function checkUncommittedChanges(deps = {}) {
   }
 }
 
+async function promptDeployConfirm(d) {
+  const { deployConfirm } = await d.promptFn([
+    {
+      type: "confirm",
+      name: "deployConfirm",
+      message: "The 'teste' branch is working correctly. Do you want to put it into production?",
+      default: true
+    }
+  ]);
+  return deployConfirm;
+}
+
+async function promptFinalDeploy(d) {
+  const { finalDeploy } = await d.promptFn([
+    {
+      type: "confirm",
+      name: "finalDeploy",
+      message: "Are you sure? This action cannot be undone.",
+      default: false
+    }
+  ]);
+  return finalDeploy;
+}
+
 export async function confirmProductionDeploy(deps = {}) {
   const d = getDeps(deps);
   const { confirm } = await d.promptFn([
@@ -73,35 +84,33 @@ export async function confirmProductionDeploy(deps = {}) {
     throw new Error('The "teste" branch is not working correctly. Fix it and try again.');
   }
 
-  const { deployConfirm } = await d.promptFn([
-    {
-      type: "confirm",
-      name: "deployConfirm",
-      message: "The 'teste' branch is working correctly. Do you want to put it into production?",
-      default: true
-    }
-  ]);
-
-  if (!deployConfirm) {
+  if (!(await promptDeployConfirm(d))) {
     console.log(chalk.yellow("Operation cancelled by user."));
     return false;
   }
 
-  const { finalDeploy } = await d.promptFn([
-    {
-      type: "confirm",
-      name: "finalDeploy",
-      message: "Are you sure? This action cannot be undone.",
-      default: false
-    }
-  ]);
-
-  if (!finalDeploy) {
+  if (!(await promptFinalDeploy(d))) {
     console.log(chalk.yellow("Operation cancelled by user."));
     return false;
   }
 
   return true;
+}
+
+function executePullRequestAndPush(branchPR, branchOrigem, branchDestino, revisor, d, deps) {
+  console.log(chalk.blue(`ℹ️ Creating pull request from ${branchOrigem} to '${branchPR}'...`));
+  d.createPullRequestFn({
+    base: branchPR,
+    head: branchOrigem,
+    title: `Merge from ${branchOrigem} to ${branchPR}`,
+    body: `Update Production Server: This pull request was automatically created to merge the '${branchOrigem}' branch into the ${branchPR} branch.`,
+    reviewer: revisor
+  });
+  console.log(chalk.green("ℹ️ Pull request created successfully!"));
+  console.log(chalk.yellow("⚠️ Warning: DO NOT approve the pull request. Wait for Fernando to review the request."));
+
+  ensureBranch(branchDestino, deps);
+  d.pushChangesFn();
 }
 
 export async function updateServerToProduction(deps = {}) {
@@ -124,19 +133,7 @@ export async function updateServerToProduction(deps = {}) {
     console.log(chalk.blue(`ℹ️ Merging branch ${branchOrigem}...`));
     await d.mergeBranchFn(branchOrigem, branchDestino);
 
-    console.log(chalk.blue(`ℹ️ Creating pull request from ${branchOrigem} to '${branchPR}'...`));
-    d.createPullRequestFn({
-      base: branchPR,
-      head: branchOrigem,
-      title: `Merge from ${branchOrigem} to ${branchPR}`,
-      body: `Update Production Server: This pull request was automatically created to merge the '${branchOrigem}' branch into the ${branchPR} branch.`,
-      reviewer: revisor
-    });
-    console.log(chalk.green("ℹ️ Pull request created successfully!"));
-    console.log(chalk.yellow("⚠️ Warning: DO NOT approve the pull request. Wait for Fernando to review the request."));
-
-    ensureBranch(branchDestino, deps);
-    d.pushChangesFn();
+    executePullRequestAndPush(branchPR, branchOrigem, branchDestino, revisor, d, deps);
   } catch (error) {
     console.error(chalk.red("❌ Error in pull request and merge flow:"), error.message);
     throw error;

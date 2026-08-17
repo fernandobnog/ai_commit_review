@@ -68,6 +68,17 @@ export async function confirmOrSwitchBranch(deps = {}) {
   }
 }
 
+async function handleConflictResolution(resolutionOption, conflicts, deps) {
+  if (resolutionOption === "manual") {
+    await resolveConflictsManually(conflicts, deps);
+  } else if (resolutionOption === "automatic") {
+    await resolveConflictsAutomatically(conflicts, deps);
+  } else {
+    console.log(chalk.red("❌ Resolve the conflicts before proceeding."));
+    throw new Error("Conflicts unresolved.");
+  }
+}
+
 export async function verifyConflicts(deps = {}) {
   const d = getDeps(deps);
   const conflicts = d.checkConflictsFn();
@@ -92,14 +103,7 @@ export async function verifyConflicts(deps = {}) {
     },
   ]);
 
-  if (resolutionOption === "manual") {
-    await resolveConflictsManually(conflicts, deps);
-  } else if (resolutionOption === "automatic") {
-    await resolveConflictsAutomatically(conflicts, deps);
-  } else {
-    console.log(chalk.red("❌ Resolve the conflicts before proceeding."));
-    throw new Error("Conflicts unresolved.");
-  }
+  await handleConflictResolution(resolutionOption, conflicts, deps);
 }
 
 export async function resolveConflictsManually(conflicts, deps = {}) {
@@ -150,6 +154,37 @@ export async function resolveConflictsAutomatically(conflicts, deps = {}) {
   }
 }
 
+async function generateInitialMessage(messageOption, stagedFiles, d) {
+  if (messageOption === "cancel") {
+    throw new Error("Commit process canceled by user.");
+  }
+  if (messageOption === "ai") {
+    console.log(chalk.blue("📤 Generating commit message with AI..."));
+    const condensed = await d.buildContextForFilesFn(stagedFiles, PromptType.CREATE);
+    return d.analyzeUpdatedCodeFn(condensed, PromptType.CREATE);
+  }
+  const { manualMessage } = await d.promptFn([
+    {
+      type: "input",
+      name: "manualMessage",
+      message: "Enter your commit message:",
+      validate: (input) => (input.trim() === "" ? "Cannot be empty." : true),
+    },
+  ]);
+  return manualMessage;
+}
+
+function editMessageInTempFile(commitMessage, d) {
+  const tempFile = path.join(os.tmpdir(), `commit_msg_${process.pid}_${Date.now()}_${Math.random().toString(36).slice(2)}.txt`);
+  fs.writeFileSync(tempFile, commitMessage, { encoding: "utf-8" });
+  d.commitChangesWithEditorFn(tempFile);
+  const updatedMessage = fs.readFileSync(tempFile, { encoding: "utf-8" }).trim();
+  if (fs.existsSync(tempFile)) {
+    fs.unlinkSync(tempFile);
+  }
+  return updatedMessage;
+}
+
 export async function obtainCommitMessage(stagedFiles, deps = {}) {
   const d = getDeps(deps);
   let commitMessage = "";
@@ -169,34 +204,8 @@ export async function obtainCommitMessage(stagedFiles, deps = {}) {
       },
     ]);
 
-    if (messageOption === "cancel") {
-      throw new Error("Commit process canceled by user.");
-    }
-
-    if (messageOption === "ai") {
-      console.log(chalk.blue("📤 Generating commit message with AI..."));
-      const condensed = await d.buildContextForFilesFn(stagedFiles, PromptType.CREATE);
-      commitMessage = await d.analyzeUpdatedCodeFn(condensed, PromptType.CREATE);
-    } else {
-      const { manualMessage } = await d.promptFn([
-        {
-          type: "input",
-          name: "manualMessage",
-          message: "Enter your commit message:",
-          validate: (input) => (input.trim() === "" ? "Cannot be empty." : true),
-        },
-      ]);
-      commitMessage = manualMessage;
-    }
-
-    const tempFile = path.join(os.tmpdir(), `commit_msg_${process.pid}_${Date.now()}_${Math.random().toString(36).slice(2)}.txt`);
-    fs.writeFileSync(tempFile, commitMessage, { encoding: "utf-8" });
-    d.commitChangesWithEditorFn(tempFile);
-
-    const updatedMessage = fs.readFileSync(tempFile, { encoding: "utf-8" }).trim();
-    if (fs.existsSync(tempFile)) {
-      fs.unlinkSync(tempFile);
-    }
+    commitMessage = await generateInitialMessage(messageOption, stagedFiles, d);
+    const updatedMessage = editMessageInTempFile(commitMessage, d);
 
     if (updatedMessage) {
       commitMessage = updatedMessage;

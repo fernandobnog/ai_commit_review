@@ -50,6 +50,43 @@ export function chunkText(text, maxChars) {
   return chunks;
 }
 
+async function processFileDiff(file, cache, maxChars, maxCombinedChars, CHARS_PER_TOKEN, summarizeTextFn) {
+  const key = `${file.filename}:${hashContent(file.diff)}`;
+  if (cache[key]) {
+    return { ...file, diff: `/* SUMMARY (cached): ${cache[key].summary} */\n` };
+  }
+
+  if ((file.diff || "").length <= maxChars) {
+    return file;
+  }
+
+  const chunks = chunkText(file.diff, maxChars);
+  console.log(chalk.yellow(` 📦 Splitting ${file.filename} into ${chunks.length} chunks for summarization...`));
+  
+  const chunkSummaries = [];
+  for (let i = 0; i < chunks.length; i++) {
+    const chunk = chunks[i];
+    const chunkTokens = Math.ceil(chunk.length / CHARS_PER_TOKEN);
+    console.log(chalk.gray(` → Chunk ${i+1}/${chunks.length}: ${chunk.length} chars (~${chunkTokens} tokens)`));
+    
+    const prompt = `Resuma de forma concisa e técnica o seguinte trecho de diff (responda no mesmo idioma do conteúdo):\n\n${chunk}`;
+    const summary = await summarizeTextFn(prompt);
+    chunkSummaries.push(summary);
+  }
+
+  let combined = chunkSummaries.join("\n\n");
+
+  if (combined.length > maxCombinedChars) {
+    const prompt = `Resuma de forma sucinta e técnica o seguinte conjunto de resumos de diff em um único parágrafo que capture as mudanças mais importantes:\n\n${combined}`;
+    combined = await summarizeTextFn(prompt);
+  }
+
+  cache[key] = { summary: combined, timestamp: Date.now() };
+  writeCache(cache);
+
+  return { ...file, diff: `/* SUMMARY:\n${combined}\n*/\n` };
+}
+
 export async function buildContextForFiles(files, promptType, options = {}) {
   const cache = readCache();
   const getModelContextLimitFn = options.getModelContextLimitFn || getModelContextLimit;
@@ -69,43 +106,8 @@ export async function buildContextForFiles(files, promptType, options = {}) {
   const result = [];
   for (const file of files) {
     try {
-      const key = `${file.filename}:${hashContent(file.diff)}`;
-      if (cache[key]) {
-        result.push({ ...file, diff: `/* SUMMARY (cached): ${cache[key].summary} */\n` });
-        continue;
-      }
-
-      if ((file.diff || "").length <= maxChars) {
-        result.push(file);
-        continue;
-      }
-
-      const chunks = chunkText(file.diff, maxChars);
-      console.log(chalk.yellow(` 📦 Splitting ${file.filename} into ${chunks.length} chunks for summarization...`));
-      
-      const chunkSummaries = [];
-      for (let i = 0; i < chunks.length; i++) {
-        const chunk = chunks[i];
-        const chunkTokens = Math.ceil(chunk.length / CHARS_PER_TOKEN);
-        console.log(chalk.gray(` → Chunk ${i+1}/${chunks.length}: ${chunk.length} chars (~${chunkTokens} tokens)`));
-        
-        const prompt = `Resuma de forma concisa e técnica o seguinte trecho de diff (responda no mesmo idioma do conteúdo):\n\n${chunk}`;
-        const summary = await summarizeTextFn(prompt);
-        chunkSummaries.push(summary);
-      }
-
-      let combined = chunkSummaries.join("\n\n");
-
-      if (combined.length > maxCombinedChars) {
-        const prompt = `Resuma de forma sucinta e técnica o seguinte conjunto de resumos de diff em um único parágrafo que capture as mudanças mais importantes:\n\n${combined}`;
-        const finalSummary = await summarizeTextFn(prompt);
-        combined = finalSummary;
-      }
-
-      cache[key] = { summary: combined, timestamp: Date.now() };
-      writeCache(cache);
-
-      result.push({ ...file, diff: `/* SUMMARY:\n${combined}\n*/\n` });
+      const processed = await processFileDiff(file, cache, maxChars, maxCombinedChars, CHARS_PER_TOKEN, summarizeTextFn);
+      result.push(processed);
     } catch (err) {
       console.warn(chalk.yellow(`⚠️ failed to build context for ${file.filename}: ${err.message}`));
       result.push(file);

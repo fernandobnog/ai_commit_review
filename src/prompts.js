@@ -33,12 +33,11 @@ export function generatePrompt(files, promptType, config) {
   throw new Error(`Invalid prompt type: ${promptType}`);
 }
 
-function buildAnalyzePrompt(diffs, languageInstruction) {
-  return `Assume the role of a senior code reviewer.
+const ANALYZE_PROMPT_TEMPLATE = `Assume the role of a senior code reviewer.
 
 Analyze in detail the following code changes (commits) provided:
 
-${diffs}
+[[DIFFS]]
 
 For each modified file, organize your analysis as follows:
 
@@ -66,24 +65,22 @@ For each modified file, organize your analysis as follows:
     * Does the code follow style conventions?
     * Are comments adequate?
 
-${languageInstruction}`;
-}
+[[LANG]]`;
 
-function buildCreatePrompt(diffs, languageInstruction) {
-  return `Your task is to generate a commit title and commit message (body).
+const CREATE_PROMPT_TEMPLATE = `Your task is to generate a commit title and commit message (body).
 
 **Diffs:**
-${diffs}
+[[DIFFS]]
 
 **Output Instructions:**
 - **Commit Title:**
-  - ${languageInstruction}
+  - [[LANG]]
   - Start with a relevant emoji (🚀, ✨, 🐛, 🔧, 📝, ♻️, 🔒, 📈).
   - Use an imperative verb.
   - Maximum of 50 characters.
 
 - **Commit Message (Body):**
-  - ${languageInstruction}
+  - [[LANG]]
   - Detailed Description of Changes (What Was Done)
   - Motivation and Context (Why the Change)
   - Project Impact (How It Affects)
@@ -91,4 +88,15 @@ ${diffs}
 **Response Format (Exactly as in the example):**
 Title
 Message (body)`;
+
+function buildAnalyzePrompt(diffs, languageInstruction) {
+  return ANALYZE_PROMPT_TEMPLATE
+    .replace("[[DIFFS]]", diffs)
+    .replace("[[LANG]]", languageInstruction);
+}
+
+function buildCreatePrompt(diffs, languageInstruction) {
+  return CREATE_PROMPT_TEMPLATE
+    .replace("[[DIFFS]]", diffs)
+    .replace(/\[\[LANG\]\]/g, languageInstruction);
 }

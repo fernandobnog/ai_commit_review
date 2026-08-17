@@ -7,12 +7,7 @@ import { generatePrompt, generateLanguageInstruction } from "./prompts.js";
 /**
  * Analyzes updated code using OpenAI.
  */
-export async function analyzeUpdatedCode(
-  files,
-  promptType = PromptType.ANALYZE,
-  deps = {}
-) {
-  const config = await validateConfiguration();
+export function createOpenAIInstance(config, deps = {}) {
   const OpenAIConstructor = deps.OpenAIConstructor || OpenAI;
   let openai = deps.openaiClient || null;
   if (!openai) {
@@ -22,6 +17,19 @@ export async function analyzeUpdatedCode(
       openai = new OpenAIConstructor({ apiKey: config.OPENAI_API_KEY });
     }
   }
+  return openai;
+}
+
+/**
+ * Analyzes updated code using OpenAI.
+ */
+export async function analyzeUpdatedCode(
+  files,
+  promptType = PromptType.ANALYZE,
+  deps = {}
+) {
+  const config = await validateConfiguration();
+  const openai = createOpenAIInstance(config, deps);
   
   const prompt = generatePrompt(files, promptType, config);
   
@@ -104,42 +112,37 @@ export async function getModelContextLimit() {
   return ModelContextLimits[model] || ModelContextLimits["default"];
 }
 
+function truncateTextForSummary(text, promptPrefix, contextLimit) {
+  const RESERVED_FOR_RESPONSE = 1000;
+  const prefixTokens = Math.ceil(promptPrefix.length / 4);
+  const maxTextTokens = contextLimit - RESERVED_FOR_RESPONSE - prefixTokens;
+  const maxTextChars = maxTextTokens * 4;
+
+  if (text.length > maxTextChars) {
+    console.warn(chalk.yellow(`⚠️  Text truncated from ${text.length} to ${maxTextChars} chars to fit model context`));
+    return text.substring(0, maxTextChars) + "\n... [truncated]";
+  }
+  return text;
+}
+
 /**
  * Summarize arbitrary text using the configured OpenAI model.
  * This helper is intended for internal use by contextManager to reduce token usage.
  */
 export async function summarizeText(text, deps = {}) {
   const config = await validateConfiguration();
-  const OpenAIConstructor = deps.OpenAIConstructor || OpenAI;
-  let openai = deps.openaiClient || null;
-  if (!openai) {
-    if (config.OPENAI_API_BASEURL) {
-      openai = new OpenAIConstructor({ baseURL: config.OPENAI_API_BASEURL, apiKey: config.OPENAI_API_KEY });
-    } else {
-      openai = new OpenAIConstructor({ apiKey: config.OPENAI_API_KEY });
-    }
-  }
+  const openai = createOpenAIInstance(config, deps);
 
   try {
     const languageInstruction = generateLanguageInstruction(config.OPENAI_RESPONSE_LANGUAGE);
     const promptPrefix = `${languageInstruction}\nResuma de forma concisa e técnica o conteúdo a seguir. Seja direto e foque nas mudanças e impacto:\n\n`;
     
-    // Estimate tokens and check if we need to truncate
     const contextLimit = await getModelContextLimit();
-    const RESERVED_FOR_RESPONSE = 1000; // Reserve tokens for the AI response
-    const prefixTokens = Math.ceil(promptPrefix.length / 4);
-    const maxTextTokens = contextLimit - RESERVED_FOR_RESPONSE - prefixTokens;
-    const maxTextChars = maxTextTokens * 4;
-    
-    // Truncate text if necessary
-    let contentToSummarize = text;
-    if (text.length > maxTextChars) {
-      console.warn(chalk.yellow(`⚠️  Text truncated from ${text.length} to ${maxTextChars} chars to fit model context`));
-      contentToSummarize = text.substring(0, maxTextChars) + "\n... [truncated]";
-    }
+    const contentToSummarize = truncateTextForSummary(text, promptPrefix, contextLimit);
     
     const fullPrompt = promptPrefix + contentToSummarize;
     const estimatedTokens = Math.ceil(fullPrompt.length / 4);
+    const RESERVED_FOR_RESPONSE = 1000;
     
     if (estimatedTokens + RESERVED_FOR_RESPONSE > contextLimit) {
       throw new Error(`Prompt too large: ${estimatedTokens} tokens (+ ${RESERVED_FOR_RESPONSE} for response) exceeds limit of ${contextLimit}`);
@@ -154,7 +157,6 @@ export async function summarizeText(text, deps = {}) {
     return response.choices[0].message.content.trim();
   } catch (error) {
     console.error(chalk.red("❌ Error while summarizing text:"), error.message);
-    // bubble up so caller can fallback
     throw error;
   }
 }

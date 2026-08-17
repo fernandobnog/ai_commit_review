@@ -43,6 +43,28 @@ export function loadMoreCommits(skip, limit, allCommits, getCommitsFn) {
   };
 }
 
+async function promptAndFilterSelected(choices, reachedEnd, d) {
+  const answers = await d.promptFn([
+    {
+      type: "checkbox",
+      name: "selectedShas",
+      message: "Select commits to analyze (Press Enter to finalize):",
+      choices,
+      pageSize: 100,
+      loop: false,
+    },
+  ]);
+  const userShas = answers.selectedShas || [];
+  if (userShas.includes("exit")) {
+    console.log(chalk.blue("👋 Process terminated by the user."));
+    throw new Error("Process terminated by user.");
+  }
+  return {
+    loadMore: userShas.includes("load_more"),
+    commitsSelected: userShas.filter((sha) => sha !== "load_more" && sha !== "exit")
+  };
+}
+
 export async function selectCommits(deps = {}) {
   const d = getDeps(deps);
   let skip = 0;
@@ -60,26 +82,7 @@ export async function selectCommits(deps = {}) {
     }
 
     const choices = buildChoicesList(allCommits, reachedEnd);
-    const answers = await d.promptFn([
-      {
-        type: "checkbox",
-        name: "selectedShas",
-        message: "Select commits to analyze (Press Enter to finalize):",
-        choices,
-        pageSize: 100,
-        loop: false,
-      },
-    ]);
-
-    const userShas = answers.selectedShas || [];
-    const loadMore = userShas.includes("load_more");
-    const exitSelected = userShas.includes("exit");
-    const commitsSelected = userShas.filter((sha) => sha !== "load_more" && sha !== "exit");
-
-    if (exitSelected) {
-      console.log(chalk.blue("👋 Process terminated by the user."));
-      throw new Error("Process terminated by user.");
-    }
+    const { loadMore, commitsSelected } = await promptAndFilterSelected(choices, reachedEnd, d);
 
     selectedShas = selectedShas.concat(commitsSelected);
 

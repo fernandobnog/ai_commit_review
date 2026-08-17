@@ -26,6 +26,23 @@ export function getDeps(deps = {}) {
   };
 }
 
+async function promptAndExecutePush(d) {
+  const { push } = await d.promptFn([
+    {
+      type: "confirm",
+      name: "push",
+      message: "Do you want to push to the remote repository?",
+      default: true,
+    },
+  ]);
+
+  if (push) {
+    d.pushChangesFn();
+  } else {
+    console.log(chalk.yellow("⚠️ Push not performed."));
+  }
+}
+
 export async function createCommit(deps = {}) {
   const d = getDeps(deps);
   try {
@@ -43,23 +60,8 @@ export async function createCommit(deps = {}) {
 
     await obtainCommitMessage(stagedFiles, deps);
     const proceed = await handleCommitAbortOrPush(deps);
-    if (!proceed) {
-      return;
-    }
-
-    const { push } = await d.promptFn([
-      {
-        type: "confirm",
-        name: "push",
-        message: "Do you want to push to the remote repository?",
-        default: true,
-      },
-    ]);
-
-    if (push) {
-      d.pushChangesFn();
-    } else {
-      console.log(chalk.yellow("⚠️ Push not performed."));
+    if (proceed) {
+      await promptAndExecutePush(d);
     }
   } catch (error) {
     console.error(
