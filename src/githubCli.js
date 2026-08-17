@@ -2,6 +2,13 @@
 import { execFileSync, execSync } from "child_process";
 import chalk from "chalk";
 
+export function getDeps(deps = {}) {
+  return {
+    execSyncFn: deps.execSyncFn || execSync,
+    execFileSyncFn: deps.execFileSyncFn || execFileSync
+  };
+}
+
 /**
  * Creates a pull request safely using GitHub CLI (gh).
  * Prevents command injection by passing arguments via execFileSync array.
@@ -9,11 +16,10 @@ import chalk from "chalk";
  * @returns {string} Output of the gh CLI command.
  */
 export function createPullRequest({ base, head, title, body, reviewer }, deps = {}) {
-  const runSync = deps.execSyncFn || execSync;
-  const runFileSync = deps.execFileSyncFn || execFileSync;
+  const d = getDeps(deps);
 
   try {
-    runSync("gh --version", { stdio: "ignore" });
+    d.execSyncFn("gh --version", { stdio: "ignore" });
   } catch (error) {
     console.error(chalk.red("❌ GitHub CLI (gh) is not installed. Please install it and try again."));
     throw new Error("GitHub CLI (gh) is not installed.");
@@ -24,7 +30,7 @@ export function createPullRequest({ base, head, title, body, reviewer }, deps = 
     if (reviewer) {
       args.push("--reviewer", reviewer);
     }
-    const resultado = runFileSync("gh", args, { encoding: "utf-8" }).trim();
+    const resultado = d.execFileSyncFn("gh", args, { encoding: "utf-8" }).trim();
     console.log(chalk.green(`✔ Pull request created successfully: ${resultado}`));
     return resultado;
   } catch (error) {
